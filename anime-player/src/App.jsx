@@ -108,19 +108,36 @@ function App() {
       hlsRef.current = null
     }
 
-    // Use direct video URL without proxy
-    let videoUrl = videoSource.url
-    
     // Check if the URL is a redirect URL
-    if (videoUrl.includes('/redirect/')) {
+    if (videoSource.url.includes('/redirect/')) {
       setError('Video source is a redirect URL. Please select a different source.')
       return
     }
 
-    console.log('Playing video:', videoUrl)
+    // Use proxy only if the source requires it (e.g., vidmoly has CORS restrictions)
+    let videoUrl = videoSource.url
+    
+    if (videoSource.requires_proxy) {
+      // Route through backend proxy to handle CORS
+      const proxyUrl = `${API_BASE_URL}/proxy/stream?url=${encodeURIComponent(videoSource.url)}`
+      
+      // Add custom headers if available
+      if (videoSource.headers) {
+        const headerParams = Object.entries(videoSource.headers)
+          .map(([key, value]) => `h_${key}=${encodeURIComponent(value)}`)
+          .join('&')
+        videoUrl = `${proxyUrl}&${headerParams}`
+      } else {
+        videoUrl = proxyUrl
+      }
+      console.log(`Playing ${videoSource.host || 'video'} via proxy:`, videoUrl)
+    } else {
+      // Direct access for sources that don't need proxy
+      console.log(`Playing ${videoSource.host || 'video'} directly:`, videoUrl)
+    }
 
     // Handle M3U8 streams
-    if (videoUrl.includes('.m3u8')) {
+    if (videoSource.url.includes('.m3u8')) {
       if (Hls.isSupported()) {
         const hls = new Hls({
           enableWorker: true,
@@ -129,7 +146,7 @@ function App() {
         })
         
         hlsRef.current = hls
-        hls.loadSource(videoUrl)
+        hls.loadSource(videoUrl) // Use the proxied URL
         hls.attachMedia(video)
         
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -357,7 +374,7 @@ function App() {
           🚀 Backend: <code>{API_BASE_URL}</code> | 
           🎬 Player: React + HLS.js | 
           🌐 Language: {availableLanguages.find(lang => lang.key === selectedLanguage)?.label || selectedLanguage} |
-          🔗 Direct: No proxy, direct video streaming
+          🔗 Smart: Direct streaming + proxy when required
         </p>
       </footer>
     </div>

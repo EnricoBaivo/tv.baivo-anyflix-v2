@@ -31,6 +31,8 @@ def ytdlp_extractor(url: str) -> List[VideoSource]:
                     url=video_url,
                     original_url=url,
                     quality=quality,
+                    host="ytdlp",
+                    requires_proxy=False,  # ytdlp sources don't need proxy
                     headers=None,
                     subtitles=None,
                     audios=None,
@@ -45,6 +47,8 @@ def ytdlp_extractor(url: str) -> List[VideoSource]:
                             url=fmt["url"],
                             original_url=url,
                             quality=fmt.get("format_id", "unknown"),
+                            host="ytdlp",
+                            requires_proxy=False,  # ytdlp sources don't need proxy
                             headers=None,
                             subtitles=None,
                             audios=None,

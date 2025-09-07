@@ -20,6 +20,10 @@ async def vidmoly_extractor(
     """
     ytflp_sources = ytdlp_extractor(url)
     if ytflp_sources:
+        # Update ytdlp sources to mark them as vidmoly and requiring proxy
+        for source in ytflp_sources:
+            source.host = "vidmoly"
+            source.requires_proxy = True
         return ytflp_sources
     client = HTTPClient(follow_redirects=True)
 
@@ -46,7 +50,15 @@ async def vidmoly_extractor(
         if headers:
             m3u8_headers.update(headers)
 
-        return await m3u8_extractor(playlist_url, m3u8_headers)
+        # Get video sources from M3U8 extractor
+        video_sources = await m3u8_extractor(playlist_url, m3u8_headers)
+
+        # Update each source to mark it as vidmoly and requiring proxy
+        for source in video_sources:
+            source.host = "vidmoly"
+            source.requires_proxy = True
+
+        return video_sources
 
     except Exception as e:
         logging.error(f"Failed to extract video sources: {e}")

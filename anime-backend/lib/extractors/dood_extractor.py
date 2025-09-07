@@ -75,7 +75,12 @@ async def dood_extractor(
 
         return [
             VideoSource(
-                url=video_url, original_url=video_url, quality="", headers=video_headers
+                url=video_url,
+                original_url=video_url,
+                quality="",
+                host="doodstream",
+                requires_proxy=False,  # DoodStream doesn't need proxy
+                headers=video_headers,
             )
         ]
 

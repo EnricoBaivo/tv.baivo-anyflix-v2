@@ -628,6 +628,8 @@ def extract_voe(URL, lang=None, type_str=None):
                     quality=quality,  # VOE doesn't specify quality
                     language=lang,
                     type=type_str,
+                    host="voe",
+                    requires_proxy=False,  # VOE doesn't need proxy
                     headers=headers,
                 )
                 video_source_list.append(video_source)
@@ -661,6 +663,8 @@ def extract_voe(URL, lang=None, type_str=None):
                     quality=quality,  # VOE doesn't specify quality
                     language=lang,
                     type=type_str,
+                    host="voe",
+                    requires_proxy=False,  # VOE doesn't need proxy
                     headers=headers,
                 )
                 video_source_list.append(video_source)

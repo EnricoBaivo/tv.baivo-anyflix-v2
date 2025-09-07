@@ -106,6 +106,8 @@ class VideoSource(BaseModel):
     quality: str
     language: Optional[str] = None
     type: Optional[str] = None  # "Dub" or "Sub"
+    host: Optional[str] = None  # Video host name (e.g., "vidmoly", "voe", "doodstream")
+    requires_proxy: bool = False  # Whether this source requires proxy due to CORS
     headers: Optional[Dict[str, str]] = None
     subtitles: Optional[List[Dict[str, str]]] = None
     audios: Optional[List[Dict[str, str]]] = None

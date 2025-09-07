@@ -133,10 +133,10 @@ class TestVOEExtractor:
         """Return test URL for VOE."""
         return "https://voe.sx/e/nrn8djmpn2mm"
 
-    def test_voe_extraction(self, test_url):
+    async def test_voe_extraction(self, test_url):
         """Test VOE video extraction."""
-        # Note: VOE extractor appears to be sync based on the original test
-        sources = voe_extractor(test_url)
+        # VOE extractor is async, so we need to await it
+        sources = await voe_extractor(test_url)
 
         # Basic assertions
         assert sources is not None, "Sources should not be None"
@@ -150,12 +150,12 @@ class TestVOEExtractor:
                 assert source.url, "URL should not be empty"
                 assert source.quality, "Quality should not be empty"
 
-    def test_voe_invalid_url(self):
+    async def test_voe_invalid_url(self):
         """Test VOE extractor with invalid URL."""
         invalid_url = "https://jilliandescribecompany.com/e/invalid"
 
         # Should not raise an exception, but may return empty list
-        sources = voe_extractor(invalid_url)
+        sources = await voe_extractor(invalid_url)
         assert sources is not None, "Sources should not be None even for invalid URLs"
 
 
@@ -256,7 +256,7 @@ class TestExtractorsIntegration:
             print(f"{name}: {result} sources from {url}")
 
     @pytest.mark.slow
-    def test_sync_extractors_integration(self):
+    async def test_sync_extractors_integration(self):
         """Integration test for sync extractors."""
         extractors_and_urls = [
             (voe_extractor, "https://jilliandescribecompany.com/e/nrn8djmpn2mm"),
@@ -266,7 +266,10 @@ class TestExtractorsIntegration:
         results = []
         for extractor, url in extractors_and_urls:
             try:
-                sources = extractor(url)
+                if extractor == voe_extractor:
+                    sources = await extractor(url)
+                else:
+                    sources = extractor(url)
                 results.append(
                     (extractor.__name__, url, len(sources) if sources else 0)
                 )

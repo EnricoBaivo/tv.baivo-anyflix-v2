@@ -79,7 +79,7 @@ function App() {
     
     try {
       const response = await axios.get(`${API_BASE_URL}/sources/${selectedSource}/videos`, {
-        params: { url: episode.url }
+        params: { url: episode.url, lang: selectedLanguage }
       })
       setVideoSources(response.data.videos || [])
     } catch (err) {

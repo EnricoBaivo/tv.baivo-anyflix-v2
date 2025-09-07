@@ -79,7 +79,7 @@ class AnimeService:
             async with provider:
                 result = await provider.get_popular(page)
                 self.logger.info(
-                    f"Retrieved {len(result.anime)} popular anime from {source} (page {page})"
+                    f"Retrieved {len(result.list)} popular anime from {source} (page {page})"
                 )
                 return result
 
@@ -108,7 +108,7 @@ class AnimeService:
         source: str,
         query: str,
         page: int = 1,
-        filters: Optional[Dict[str, Any]] = None,
+        lang: Optional[str] = None,
     ) -> SearchResponse:
         """Search for anime in source.
 
@@ -116,7 +116,7 @@ class AnimeService:
             source: Source name
             query: Search query
             page: Page number
-            filters: Optional search filters
+            lang: Optional language filter (de, en, sub, all)
 
         Returns:
             SearchResponse
@@ -129,7 +129,7 @@ class AnimeService:
             raise ValueError(f"Source '{source}' not found")
 
         async with provider:
-            return await provider.search(query, page, filters)
+            return await provider.search(query, page, lang)
 
     async def get_detail(self, source: str, url: str) -> DetailResponse:
         """Get anime details from source.

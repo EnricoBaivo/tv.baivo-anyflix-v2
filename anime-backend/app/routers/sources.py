@@ -183,6 +183,7 @@ async def search_anime(
     source: str = Path(..., description="Source identifier"),
     q: str = Query(..., description="Search query (anime title)", min_length=1),
     page: int = Query(1, ge=1, description="Page number for pagination"),
+    lang: str = Query(None, description="Language filter (de, en, sub, all)"),
     anime_service: AnimeService = Depends(get_anime_service),
 ):
     """
@@ -191,7 +192,7 @@ async def search_anime(
     Performs a text search across anime titles and returns matching results.
     """
     try:
-        return await anime_service.search(source, q, page)
+        return await anime_service.search(source, q, page, lang)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

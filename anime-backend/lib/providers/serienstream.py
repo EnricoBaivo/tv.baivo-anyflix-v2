@@ -105,18 +105,24 @@ class SerienStreamProvider(BaseProvider):
         return LatestResponse(list=anime_list, has_next_page=False)
 
     async def search(
-        self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None
+        self, query: str, page: int = 1, lang: Optional[str] = None
     ) -> SearchResponse:
         """Search for series on SerienStream.
 
         Args:
             query: Search query
             page: Page number (not used)
-            filters: Optional search filters (not used)
+            lang: Optional language filter (de, en, sub, all) - not used in serienstream
 
         Returns:
             SearchResponse with search results
         """
+        # Log language filter for debugging (not implemented for serienstream)
+        if lang:
+            self.logger.info(
+                f"Search with language filter: {lang} (not implemented for serienstream)"
+            )
+
         base_url = self.source.base_url
         res = await self.client.get(f"{base_url}/serien")
         elements = Document(res.body).select("#seriesContainer > div > ul > li > a")

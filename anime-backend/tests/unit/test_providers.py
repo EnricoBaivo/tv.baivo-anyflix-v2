@@ -35,7 +35,7 @@ class TestAniWorldProvider:
         assert lang_pref.list_preference is not None
         assert lang_pref.list_preference["title"] == "Bevorzugte Sprache"
         assert lang_pref.list_preference["entries"] == ["Deutsch", "Englisch"]
-        assert lang_pref.list_preference["entryValues"] == ["Deutscher", "Englischer"]
+        assert lang_pref.list_preference["entryValues"] == ["Deutsch", "Englisch"]
 
         # Test type preference
         type_pref = preferences[1]
@@ -68,9 +68,7 @@ class TestAniWorldProvider:
         lang_filter_pref = preferences[4]
         assert lang_filter_pref.key == "lang_filter"
         assert lang_filter_pref.multi_select_list_preference is not None
-        assert (
-            "Deutscher Dub" in lang_filter_pref.multi_select_list_preference["entries"]
-        )
+        assert "Deutsch Dub" in lang_filter_pref.multi_select_list_preference["entries"]
 
         host_filter_pref = preferences[5]
         assert host_filter_pref.key == "host_filter"
@@ -84,7 +82,7 @@ class TestSerienStreamProvider:
         """Test SerienStream provider initialization."""
         assert serienstream_provider.source.name == "SerienStream"
         assert serienstream_provider.source.lang == "de"
-        assert serienstream_provider.source.base_url == "https://s.to"
+        assert serienstream_provider.source.base_url == "https://serienstream.to"
         assert serienstream_provider.source.version == "0.0.9"
 
     def test_get_source_preferences(self, serienstream_provider):

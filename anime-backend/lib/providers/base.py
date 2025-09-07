@@ -68,14 +68,14 @@ class BaseProvider(ABC):
 
     @abstractmethod
     async def search(
-        self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None
+        self, query: str, page: int = 1, lang: Optional[str] = None
     ) -> SearchResponse:
         """Search for anime.
 
         Args:
             query: Search query
             page: Page number
-            filters: Optional search filters
+            lang: Optional language filter (de, en, sub, all)
 
         Returns:
             SearchResponse with search results

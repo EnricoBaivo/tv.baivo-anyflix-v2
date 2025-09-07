@@ -30,12 +30,21 @@ def _map_language_to_code(lang: str) -> str:
     Map language names to standard language codes.
 
     Args:
-        lang: Language name (e.g., 'Deutsch', 'Englisch')
+        lang: Language name (e.g., 'Deutsch', 'Englisch') or code (e.g., 'de', 'en')
 
     Returns:
-        Standard language code (e.g., 'de', 'en')
+        Standard language code (e.g., 'de', 'en', 'sub', 'all')
     """
+    if not lang:
+        return "all"
+
     lang_lower = lang.lower()
+
+    # Handle direct language codes
+    if lang_lower in ["de", "en", "sub", "all"]:
+        return lang_lower
+
+    # Handle language names
     if "deutsch" in lang_lower:
         return "de"
     elif "englisch" in lang_lower or "english" in lang_lower:
@@ -128,18 +137,22 @@ class AniWorldProvider(BaseProvider):
         return LatestResponse(list=anime_list, has_next_page=False)
 
     async def search(
-        self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None
+        self, query: str, page: int = 1, lang: Optional[str] = None
     ) -> SearchResponse:
         """Search for anime on AniWorld.
 
         Args:
             query: Search query
             page: Page number (not used)
-            filters: Optional search filters (not used)
+            lang: Optional language filter (de, en, sub, all)
 
         Returns:
             SearchResponse with search results
         """
+        # Log language filter for debugging
+        if lang:
+            self.logger.info(f"Search with language filter: {lang}")
+
         base_url = self.source.base_url
         res = await self.client.get(f"{base_url}/animes")
         elements = Document(res.body).select("#seriesContainer > div > ul > li > a")
@@ -156,13 +169,23 @@ class AniWorldProvider(BaseProvider):
             name = element.text
             link = element.attr("href")
 
-            # Get image from detail page
+            # Get image from detail page and check for language availability
             try:
                 detail_res = await self.client.get(base_url + link)
                 detail_doc = Document(detail_res.body)
                 img_element = detail_doc.select_first("div.seriesCoverBox img")
                 img = img_element.attr("data-src") if img_element._element else ""
                 image_url = base_url + img if img else ""
+
+                # Check if language filter is specified
+                if lang and lang != "all":
+                    # Look for language indicators in the detail page
+                    has_language = self._check_anime_has_language(detail_doc, lang)
+                    if not has_language:
+                        self.logger.info(
+                            f"Skipping {name} - no {lang} language available"
+                        )
+                        continue
 
                 anime_list.append(
                     SearchResult(name=name, image_url=image_url, link=link)
@@ -172,6 +195,44 @@ class AniWorldProvider(BaseProvider):
                 continue
 
         return SearchResponse(list=anime_list, has_next_page=False)
+
+    def _check_anime_has_language(self, document: Document, lang_filter: str) -> bool:
+        """Check if an anime has the specified language available.
+
+        Args:
+            document: Parsed HTML document of the anime detail page
+            lang_filter: Language filter (de, en, sub, all)
+
+        Returns:
+            True if the anime has the specified language available
+        """
+        # Look for language indicators in the detail page
+        # Check for language selection box or episode links with data-lang-key
+        lang_elements = document.select("[data-lang-key]")
+
+        if not lang_elements:
+            # If no language elements found, assume all languages are available
+            return True
+
+        available_lang_keys = set()
+        for element in lang_elements:
+            lang_key = element.attr("data-lang-key")
+            if lang_key:
+                available_lang_keys.add(lang_key)
+
+        # Map language filter to expected lang keys
+        if lang_filter == "de":
+            # German: check for lang keys 1 (Dub) or 3 (Sub)
+            return "1" in available_lang_keys or "3" in available_lang_keys
+        elif lang_filter == "en":
+            # English: check for lang key 2 (Sub)
+            return "2" in available_lang_keys
+        elif lang_filter == "sub":
+            # Sub: check for lang keys 2 (English Sub) or 3 (German Sub)
+            return "2" in available_lang_keys or "3" in available_lang_keys
+        else:
+            # For any other filter, assume available
+            return True
 
     async def get_detail(self, url: str) -> DetailResponse:
         """Get anime details from AniWorld.
@@ -327,6 +388,13 @@ class AniWorldProvider(BaseProvider):
             VideoListResponse with video sources
         """
         base_url = self.source.base_url
+        if lang_filter and lang_filter != "all":
+            self.logger.info(
+                f"Getting video list for {url} with language filter: {lang_filter}"
+            )
+        else:
+            lang_filter = None
+            self.logger.info(f"Getting video list for {url}")
 
         # Use robust URL normalization
         full_url = normalize_url(base_url, url)

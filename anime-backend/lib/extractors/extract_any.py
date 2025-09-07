@@ -76,16 +76,7 @@ async def extract_any(
         return []
 
 
-# Wrapper for synchronous voe_extractor
-async def voe_extractor_wrapper(
-    url: str,
-    headers: Optional[Dict[str, str]] = None,
-) -> List[VideoSource]:
-    """Wrapper for synchronous voe_extractor."""
-    import asyncio
-
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(None, voe_extractor, url, None, None)
+# No wrapper needed - voe_extractor is already async
 
 
 # Placeholder extractors for not-yet-implemented methods
@@ -116,6 +107,6 @@ EXTRACTOR_METHODS: Dict[
     "vidhide": placeholder_extractor,
     "vidmoly": vidmoly_extractor,
     "vidoza": vidoza_extractor,
-    "voe": voe_extractor_wrapper,
+    "voe": voe_extractor,
     "yourupload": placeholder_extractor,
 }

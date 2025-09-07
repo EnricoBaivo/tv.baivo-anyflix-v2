@@ -1,0 +1,1 @@
+"""Anime Backend FastAPI Application."""

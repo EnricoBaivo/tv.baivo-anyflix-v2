@@ -17,12 +17,19 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
 
   const scrollToSelected = (index: number) => {
     if (scrollRef.current && containerRef.current) {
-      const cardWidth = 224; // w-56 = 224px (14rem = 224px)
+      const unselectedWidth = 300; // w-movie-md = 300px
       const gap = 16; // space-x-4 = 16px (1rem = 16px)
       const padding = 16; // px-4 = 16px padding on container
-      const totalCardWidth = cardWidth + gap;
-      // Calculate scroll position to align selected card flush-left with container padding
-      const scrollPosition = (index * totalCardWidth) - padding;
+      
+      // Calculate cumulative width up to the target card
+      // All cards before the target will be unselected (use unselectedWidth)
+      let scrollPosition = 0;
+      for (let i = 0; i < index; i++) {
+        scrollPosition += unselectedWidth + gap;
+      }
+      
+      // Subtract padding to align flush-left
+      scrollPosition -= padding;
       
       scrollRef.current.scrollTo({
         left: Math.max(0, scrollPosition), // Ensure we don't scroll to negative position
@@ -102,10 +109,10 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
           {movies.map((movie, index) => (
             <div 
               key={movie.id} 
-              className={`flex-none transition-all duration-300 ${
+              className={`flex-none transition-all duration-300 h-movie-2xl ${
                 selectedIndex === index
-                  ? 'w-movie-2xl h-movie-2xl' 
-                  : 'w-56 h-80'
+                  ? 'w-movie-2xl' 
+                  : 'w-movie-md'
               }`}
             >
               <MovieCard 

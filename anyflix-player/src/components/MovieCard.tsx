@@ -84,12 +84,12 @@ const MovieCard = ({ movie, isSelected = false, onClick }: MovieCardProps) => {
   }
 
   return (
-    <div className="movie-card group cursor-pointer" onClick={onClick}>
-      <div className="relative rounded-md overflow-hidden">
+    <div className="movie-card group cursor-pointer h-full flex flex-col" onClick={onClick}>
+      <div className="relative rounded-md overflow-hidden flex-1">
         <img
           src={getImageUrl(movie.poster_path)}
           alt={movie.title}
-          className="w-full h-72 object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
 

@@ -1,14 +1,14 @@
-# Netflix Clone
+# Anyflix Clone
 
-A modern Netflix clone built with React, TypeScript, and TailwindCSS. Features a beautiful dark theme, smooth animations, and real movie data from TMDB API.
+A modern Anyflix clone built with React, TypeScript, and TailwindCSS. Features a beautiful dark theme, smooth animations, and real movie data from TMDB API.
 
 ## Features
 
 - 🎬 Browse trending, popular, and top-rated movies
-- 🔥 Netflix-style hero banner with movie details
+- 🔥 Anyflix-style hero banner with movie details
 - 📱 Responsive design for desktop and mobile
 - ⚡ Smooth horizontal scrolling carousels
-- 🎨 Dark theme with Netflix-inspired design
+- 🎨 Dark theme with Anyflix-inspired design
 - 🔍 Movie search functionality (coming soon)
 - 👤 Authentication pages
 - 🎯 Hover effects and smooth animations
@@ -35,7 +35,7 @@ A modern Netflix clone built with React, TypeScript, and TailwindCSS. Features a
 1. Clone the repository:
 ```bash
 git clone <your-repo-url>
-cd netflix-clone
+cd Anyflix-clone
 ```
 
 2. Install dependencies:
@@ -75,14 +75,14 @@ src/
 ├── types/              # TypeScript type definitions
 │   └── movie.ts        # Movie-related types
 └── styles/             # Global styles and design system
-    └── index.css       # Netflix-inspired design tokens
+    └── index.css       # Anyflix-inspired design tokens
 ```
 
 ## Design System
 
-The app uses a carefully crafted design system inspired by Netflix:
+The app uses a carefully crafted design system inspired by Anyflix:
 
-- **Colors**: Deep blacks, Netflix red (#E50914), subtle grays
+- **Colors**: Deep blacks, Anyflix red (#E50914), subtle grays
 - **Typography**: Clean, modern fonts with excellent contrast
 - **Animations**: Smooth transitions and hover effects
 - **Layout**: Responsive grid system with mobile-first approach
@@ -107,4 +107,4 @@ The app fetches real movie data from TMDB API:
 
 ## License
 
-This project is for educational purposes. Netflix is a trademark of Netflix, Inc.
+This project is for educational purposes. Anyflix is a trademark of Anyflix, Inc.

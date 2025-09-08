@@ -9,7 +9,6 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -21,9 +20,30 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/tv-shows" element={<div className="pt-16 text-white text-center">TV Shows - Coming Soon</div>} />
-            <Route path="/movies" element={<div className="pt-16 text-white text-center">Movies - Coming Soon</div>} />
-            <Route path="/my-list" element={<div className="pt-16 text-white text-center">My List - Coming Soon</div>} />
+            <Route
+              path="/tv-shows"
+              element={
+                <div className="pt-16 text-white text-center">
+                  TV Shows - Coming Soon
+                </div>
+              }
+            />
+            <Route
+              path="/movies"
+              element={
+                <div className="pt-16 text-white text-center">
+                  Movies - Coming Soon
+                </div>
+              }
+            />
+            <Route
+              path="/my-list"
+              element={
+                <div className="pt-16 text-white text-center">
+                  My List - Coming Soon
+                </div>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

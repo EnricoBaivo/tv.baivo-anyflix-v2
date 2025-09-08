@@ -2,50 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Netflix-inspired Design System */
+/* Anyflix-inspired Design System */
 
 @layer base {
   :root {
-    /* Netflix color palette */
-    --netflix-red: 0 100% 45%;
-    --netflix-black: 0 0% 8%;
-    --netflix-dark-gray: 0 0% 14%;
-    --netflix-gray: 0 0% 25%;
-    --netflix-light-gray: 0 0% 45%;
-    --netflix-white: 0 0% 100%;
+    /* Anyflix color palette */
+    --anyflix-red: 0 100% 45%;
+    --anyflix-black: 0 0% 8%;
+    --anyflix-dark-gray: 0 0% 14%;
+    --anyflix-gray: 0 0% 25%;
+    --anyflix-light-gray: 0 0% 45%;
+    --anyflix-white: 0 0% 100%;
     
     /* Design system colors */
-    --background: var(--netflix-black);
-    --foreground: var(--netflix-white);
+    --background: var(--anyflix-black);
+    --foreground: var(--anyflix-white);
     
-    --card: var(--netflix-dark-gray);
-    --card-foreground: var(--netflix-white);
+    --card: var(--anyflix-dark-gray);
+    --card-foreground: var(--anyflix-white);
     
-    --popover: var(--netflix-dark-gray);
-    --popover-foreground: var(--netflix-white);
+    --popover: var(--anyflix-dark-gray);
+    --popover-foreground: var(--anyflix-white);
     
-    --primary: var(--netflix-red);
-    --primary-foreground: var(--netflix-white);
+    --primary: var(--anyflix-red);
+    --primary-foreground: var(--anyflix-white);
     
-    --secondary: var(--netflix-gray);
-    --secondary-foreground: var(--netflix-white);
+    --secondary: var(--anyflix-gray);
+    --secondary-foreground: var(--anyflix-white);
     
-    --muted: var(--netflix-gray);
-    --muted-foreground: var(--netflix-light-gray);
+    --muted: var(--anyflix-gray);
+    --muted-foreground: var(--anyflix-light-gray);
     
-    --accent: var(--netflix-red);
-    --accent-foreground: var(--netflix-white);
+    --accent: var(--anyflix-red);
+    --accent-foreground: var(--anyflix-white);
     
     --destructive: 0 100% 50%;
-    --destructive-foreground: var(--netflix-white);
+    --destructive-foreground: var(--anyflix-white);
     
-    --border: var(--netflix-gray);
-    --input: var(--netflix-dark-gray);
-    --ring: var(--netflix-red);
+    --border: var(--anyflix-gray);
+    --input: var(--anyflix-dark-gray);
+    --ring: var(--anyflix-red);
     
     --radius: 0.375rem;
     
-    /* Custom Netflix gradients */
+    /* Custom Anyflix gradients */
     --hero-gradient: linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(20,20,20,0.15) 15%, rgba(20,20,20,0.35) 29%, rgba(20,20,20,0.58) 44%, rgba(20,20,20,1) 68%, rgba(20,20,20,1) 100%);
     --card-hover-glow: 0 8px 25px rgba(229, 9, 20, 0.15);
     
@@ -70,12 +70,12 @@
 }
 
 @layer components {
-  /* Netflix-style components */
-  .netflix-button {
+  /* Anyflix-style components */
+  .anyflix-button {
     @apply bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded font-semibold transition-all duration-300 hover:scale-105;
   }
   
-  .netflix-button-outline {
+  .anyflix-button-outline {
     @apply border-2 border-white/70 text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-2 rounded font-semibold transition-all duration-300;
   }
   

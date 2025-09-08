@@ -40,7 +40,7 @@ const Auth = () => {
         <div className="bg-black/75 backdrop-blur-sm rounded-lg p-8">
           {/* Logo */}
           <Link to="/" className="block text-center mb-8">
-            <span className="text-primary text-3xl font-bold">NETFLIX</span>
+            <span className="text-primary text-3xl font-bold">Anyflix</span>
           </Link>
 
           {/* Form Title */}
@@ -61,7 +61,7 @@ const Auth = () => {
                 required
                 value={formData.email}
                 onChange={handleInputChange}
-                className="bg-netflix-dark-gray border-netflix-gray text-white"
+                className="bg-anyflix-dark-gray border-anyflix-gray text-white"
                 placeholder="Enter your email"
               />
             </div>
@@ -77,7 +77,7 @@ const Auth = () => {
                 required
                 value={formData.password}
                 onChange={handleInputChange}
-                className="bg-netflix-dark-gray border-netflix-gray text-white"
+                className="bg-anyflix-dark-gray border-anyflix-gray text-white"
                 placeholder="Enter your password"
               />
             </div>
@@ -94,22 +94,22 @@ const Auth = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className="bg-netflix-dark-gray border-netflix-gray text-white"
+                  className="bg-anyflix-dark-gray border-anyflix-gray text-white"
                   placeholder="Confirm your password"
                 />
               </div>
             )}
 
-            <Button type="submit" className="w-full netflix-button">
+            <Button type="submit" className="w-full anyflix-button">
               {isSignIn ? 'Sign In' : 'Sign Up'}
             </Button>
           </form>
 
           {/* Toggle Sign In/Sign Up */}
-          <div className="mt-6 text-center text-netflix-light-gray">
+          <div className="mt-6 text-center text-anyflix-light-gray">
             {isSignIn ? (
               <>
-                New to Netflix?{' '}
+                New to ANYFLIX?{' '}
                 <button
                   onClick={() => setIsSignIn(false)}
                   className="text-white hover:underline"
@@ -131,7 +131,7 @@ const Auth = () => {
           </div>
 
           {/* Additional Info */}
-          <div className="mt-4 text-xs text-netflix-light-gray">
+          <div className="mt-4 text-xs text-anyflix-light-gray">
             This page is protected by Google reCAPTCHA to ensure you're not a bot.
           </div>
         </div>

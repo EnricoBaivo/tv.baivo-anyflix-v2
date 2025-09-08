@@ -89,7 +89,7 @@ const MovieCard = ({ movie, isSelected = false, onClick }: MovieCardProps) => {
         <img
           src={getImageUrl(movie.poster_path)}
           alt={movie.title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 origin-center"
           loading="lazy"
         />
 

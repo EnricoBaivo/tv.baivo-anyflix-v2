@@ -52,13 +52,13 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        netflix: {
-          red: "hsl(var(--netflix-red))",
-          black: "hsl(var(--netflix-black))",
-          "dark-gray": "hsl(var(--netflix-dark-gray))",
-          gray: "hsl(var(--netflix-gray))",
-          "light-gray": "hsl(var(--netflix-light-gray))",
-          white: "hsl(var(--netflix-white))",
+        anyflix: {
+          red: "hsl(var(--anyflix-red))",
+          black: "hsl(var(--anyflix-black))",
+          "dark-gray": "hsl(var(--anyflix-dark-gray))",
+          gray: "hsl(var(--anyflix-gray))",
+          "light-gray": "hsl(var(--anyflix-light-gray))",
+          white: "hsl(var(--anyflix-white))",
         },
       },
       borderRadius: {

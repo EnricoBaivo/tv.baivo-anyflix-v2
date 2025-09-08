@@ -27,9 +27,9 @@ const Hero = ({ movie }: HeroProps) => {
       {/* Content */}
       <div className="relative z-10  flex items-end">
         <div className="max-w-2xl px-4 sm:px-6 lg:px-12 pb-24">
-          {/* Netflix badge */}
+          {/* Anyflix badge */}
           <div className="flex items-center space-x-2 mb-4">
-            <span className="text-netflix-red text-xl font-bold">A</span>
+            <span className="text-anyflix-red text-xl font-bold">A</span>
             <span className="text-white/80 text-sm uppercase tracking-wider">
               Series
             </span>

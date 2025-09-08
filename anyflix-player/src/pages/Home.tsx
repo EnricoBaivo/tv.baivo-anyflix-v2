@@ -77,7 +77,7 @@ const Home = () => {
       {heroMovie && <Hero movie={heroMovie} />}
 
       {/* Movie Rows */}
-      <div className="relative z-10 -mt-32 pb-16">
+      <div className="relative z-10 pb-16">
         <MovieRow
           title="Trending Now"
           movies={trendingMovies}

@@ -9,7 +9,6 @@ import {
 import Hero from "@/components/Hero";
 import MovieRow from "@/components/MovieRow";
 import { useToast } from "@/hooks/use-toast";
-import MultiRowCarousel from "@/components/MultiRowCarousel";
 
 const Home = () => {
   const [heroMovie, setHeroMovie] = useState<Movie | null>(null);

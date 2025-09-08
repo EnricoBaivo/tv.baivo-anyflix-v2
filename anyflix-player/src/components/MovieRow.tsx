@@ -15,20 +15,6 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 300;
-      const newScrollPosition = direction === 'left' 
-        ? scrollRef.current.scrollLeft - scrollAmount
-        : scrollRef.current.scrollLeft + scrollAmount;
-      
-      scrollRef.current.scrollTo({
-        left: newScrollPosition,
-        behavior: 'smooth'
-      });
-    }
-  };
-
   const scrollToSelected = (index: number) => {
     if (scrollRef.current && containerRef.current) {
       const cardWidth = 224; // w-56 = 224px (14rem = 224px)
@@ -100,10 +86,10 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
       <div className="relative">
         {/* Left scroll button */}
         <button
-          onClick={() => scroll('left')}
+          onClick={() => handleKeyNavigation('left')}
           className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white p-2 rounded-r-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70"
-          aria-label="Scroll left"
-          title="Scroll left"
+          aria-label="Navigate to previous movie"
+          title="Navigate to previous movie"
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
@@ -118,7 +104,7 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
               key={movie.id} 
               className={`flex-none transition-all duration-300 ${
                 selectedIndex === index
-                  ? 'w-movie-xl h-movie-xl' 
+                  ? 'w-movie-2xl h-movie-2xl' 
                   : 'w-56 h-80'
               }`}
             >
@@ -138,10 +124,10 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
 
         {/* Right scroll button */}
         <button
-          onClick={() => scroll('right')}
+          onClick={() => handleKeyNavigation('right')}
           className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white p-2 rounded-l-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70"
-          aria-label="Scroll right"
-          title="Scroll right"
+          aria-label="Navigate to next movie"
+          title="Navigate to next movie"
         >
           <ChevronRight className="h-6 w-6" />
         </button>

@@ -2,32 +2,48 @@ import { Movie } from "@/types/movie";
 import { getImageUrl } from "@/services/tmdb";
 import { Play, Plus, ThumbsUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWebOSFocus } from "@/hooks/useWebOSFocus";
+import { getFocusClasses, getWebOSProps } from "@/lib/webos-focus";
+import { MovieTitle } from "./typography";
 
 interface MovieCardProps {
   movie: Movie;
+  index: number;
   isSelected?: boolean;
   isHovered?: boolean;
   isAnyHovered?: boolean;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  onFocus?: () => void;
   onClick?: () => void;
 }
 
 const MovieCard = ({
   movie,
+  index,
   isSelected = false,
   isHovered = false,
   isAnyHovered = false,
   onMouseEnter,
   onMouseLeave,
+  onFocus,
   onClick,
 }: MovieCardProps) => {
+  // WebOS focus handling - when focused, automatically becomes selected
+  const { focusProps, navigationMode } = useWebOSFocus({
+    onFocus: onFocus, // Triggers selection when card receives focus
+    onEnter: onClick, // Triggers click action when Enter is pressed
+  });
+
   return (
     <div
+      {...focusProps}
+      {...getWebOSProps()}
       className={cn(
-        "cursor-pointer transition-transform duration-300 transform-gpu origin-center h-full flex flex-col",
+        "cursor-pointer transition-transform duration-300 transform-gpu origin-center h-full flex flex-col rounded-lg",
         isSelected ? "movie-card-selected" : "movie-card group",
-        isAnyHovered && !isHovered ? "scale-95" : "scale-100"
+        isAnyHovered && !isHovered ? "scale-95" : "scale-100",
+        getFocusClasses("card", navigationMode)
       )}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -61,6 +77,14 @@ const MovieCard = ({
         >
           <h2 className={"text-lg font-black truncate "}>{movie.title}</h2>
           <span>{new Date(movie.release_date).getFullYear()}</span>
+        </div>
+        <div
+          className={cn(
+            "absolute bottom-0 left-0 right-0 p-6 text-white transition-opacity duration-300 opacity-0",
+            isSelected && "opacity-100"
+          )}
+        >
+          <MovieTitle>{movie.title}</MovieTitle>
         </div>
       </div>
     </div>

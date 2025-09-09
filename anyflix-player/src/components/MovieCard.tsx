@@ -1,18 +1,36 @@
 import { Movie } from "@/types/movie";
 import { getImageUrl } from "@/services/tmdb";
 import { Play, Plus, ThumbsUp, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MovieCardProps {
   movie: Movie;
   isSelected?: boolean;
+  isHovered?: boolean;
+  isAnyHovered?: boolean;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
   onClick?: () => void;
 }
 
-const MovieCard = ({ movie, isSelected = false, onClick }: MovieCardProps) => {
+const MovieCard = ({
+  movie,
+  isSelected = false,
+  isHovered = false,
+  isAnyHovered = false,
+  onMouseEnter,
+  onMouseLeave,
+  onClick,
+}: MovieCardProps) => {
   if (isSelected) {
     return (
-      <div
-        className="movie-card-selected cursor-pointer"
+      <div 
+        className={cn(
+          "movie-card-selected cursor-pointer transition-transform duration-300 transform-gpu origin-center",
+          isAnyHovered && !isHovered ? "scale-95" : "scale-100"
+        )}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         onClick={onClick}
       >
         <div className="relative rounded-lg overflow-hidden h-full">
@@ -28,7 +46,9 @@ const MovieCard = ({ movie, isSelected = false, onClick }: MovieCardProps) => {
 
           {/* Content overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-8">
-            <h3 className="text-white text-3xl font-bold mb-4">{movie.title}</h3>
+            <h3 className="text-white text-3xl font-bold mb-4">
+              {movie.title}
+            </h3>
             <div className="flex items-center space-x-6 text-lg text-gray-300 mb-6">
               <span>{new Date(movie.release_date).getFullYear()}</span>
               <span className="flex items-center">
@@ -84,12 +104,20 @@ const MovieCard = ({ movie, isSelected = false, onClick }: MovieCardProps) => {
   }
 
   return (
-    <div className="movie-card group cursor-pointer h-full flex flex-col" onClick={onClick}>
+    <div
+      className={cn(
+        "movie-card group cursor-pointer h-full flex flex-col transition-transform duration-300 transform-gpu origin-center",
+        isAnyHovered && !isHovered ? "scale-95" : "scale-100"
+      )}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onClick={onClick}
+    >
       <div className="relative rounded-md overflow-hidden flex-1">
         <img
           src={getImageUrl(movie.poster_path)}
           alt={movie.title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 origin-center"
+          className="w-full h-full object-cover origin-center"
           loading="lazy"
         />
 

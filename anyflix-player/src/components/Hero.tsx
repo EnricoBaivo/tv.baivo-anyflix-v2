@@ -1,13 +1,13 @@
-import { Movie } from "@/types/movie";
+import { Media } from "@/types/media";
 import { getImageUrl } from "@/services/tmdb";
 import { Play, Info, Star } from "lucide-react";
 import { BoldH1 } from "./typography";
 
 interface HeroProps {
-  movie: Movie;
+  media: Media;
 }
 
-const Hero = ({ movie }: HeroProps) => {
+const Hero = ({ media }: HeroProps) => {
   return (
     <div className="relative flex flex-col justify-end mx-8 overflow-hidden rounded-3xl border border-white/10 mt-16 mb-8 min-h-[85vh]">
       {/* Background Image */}
@@ -15,7 +15,7 @@ const Hero = ({ movie }: HeroProps) => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url(${getImageUrl(
-            movie.backdrop_path,
+            media.backdrop_path,
             "original"
           )})`,
         }}
@@ -37,7 +37,7 @@ const Hero = ({ movie }: HeroProps) => {
           </div>
 
           {/* Title */}
-          <BoldH1> {movie.title}</BoldH1>
+          <BoldH1> {media.title}</BoldH1>
 
           {/* Metadata */}
           <div className="flex items-center space-x-4 text-sm text-white mb-4">
@@ -47,7 +47,7 @@ const Hero = ({ movie }: HeroProps) => {
             <span className="flex items-center">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
               Starring{" "}
-              {movie.vote_average > 7 ? "Award Winners" : "Popular Actors"}
+              {media.vote_average > 7 ? "Award Winners" : "Popular Actors"}
             </span>
           </div>
 
@@ -55,18 +55,18 @@ const Hero = ({ movie }: HeroProps) => {
           <div className="flex items-center space-x-3 text-white/70 text-sm mb-6">
             <span className="text-green-500 font-semibold">Family Time TV</span>
             <span>•</span>
-            <span>{new Date(movie.release_date).getFullYear()}</span>
+            <span>{new Date(media.release_date).getFullYear()}</span>
             <span>•</span>
             <span>Episodes</span>
             <span>•</span>
             <span className="border border-white/50 px-2 py-0.5 text-xs">
-              {movie.adult ? "TV-MA" : "TV-PG"}
+              {media.adult ? "TV-MA" : "TV-PG"}
             </span>
           </div>
 
           {/* Description */}
           <p className="text-lg text-white/90 mb-8 leading-relaxed max-w-xl line-clamp-3">
-            {movie.overview}
+            {media.overview}
           </p>
 
           {/* Action Buttons */}

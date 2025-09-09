@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Movie } from "@/types/movie";
+import { Media } from "@/types/media";
 import {
   getTrendingMovies,
   getPopularMovies,
@@ -7,20 +7,20 @@ import {
   getMoviesByGenre,
 } from "@/services/tmdb";
 import Hero from "@/components/Hero";
-import MovieRow from "@/components/MovieRow";
+import MediaRow from "@/components/MediaRow";
 import { useToast } from "@/hooks/use-toast";
 
 const Home = () => {
-  const [heroMovie, setHeroMovie] = useState<Movie | null>(null);
-  const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
-  const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
-  const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([]);
-  const [actionMovies, setActionMovies] = useState<Movie[]>([]);
+  const [heroMedia, setHeroMedia] = useState<Media | null>(null);
+  const [trendingMedia, setTrendingMedia] = useState<Media[]>([]);
+  const [popularMedia, setPopularMedia] = useState<Media[]>([]);
+  const [topRatedMedia, setTopRatedMedia] = useState<Media[]>([]);
+  const [actionMedia, setActionMedia] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchMovies = async () => {
+    const fetchMedia = async () => {
       try {
         setLoading(true);
 
@@ -31,20 +31,20 @@ const Home = () => {
           getMoviesByGenre(28), // Action genre ID
         ]);
 
-        setTrendingMovies(trending.results);
-        setPopularMovies(popular.results);
-        setTopRatedMovies(topRated.results);
-        setActionMovies(action.results);
+        setTrendingMedia(trending.results);
+        setPopularMedia(popular.results);
+        setTopRatedMedia(topRated.results);
+        setActionMedia(action.results);
 
-        // Set hero movie to first trending movie
+        // Set hero media to first trending item
         if (trending.results.length > 0) {
-          setHeroMovie(trending.results[0]);
+          setHeroMedia(trending.results[0]);
         }
       } catch (error) {
-        console.error("Error fetching movies:", error);
+        console.error("Error fetching media:", error);
         toast({
           title: "Error",
-          description: "Failed to load movies. Please try again later.",
+          description: "Failed to load media. Please try again later.",
           variant: "destructive",
         });
       } finally {
@@ -52,12 +52,12 @@ const Home = () => {
       }
     };
 
-    fetchMovies();
+    fetchMedia();
   }, [toast]);
 
-  const handleMovieClick = (movie: Movie) => {
-    console.log("Movie clicked:", movie);
-    // TODO: Navigate to movie detail page or open modal
+  const handleMediaClick = (media: Media) => {
+    console.log("Media clicked:", media);
+    // TODO: Navigate to media detail page or open modal
   };
 
   if (loading) {
@@ -74,32 +74,32 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      {heroMovie && <Hero movie={heroMovie} />}
+      {heroMedia && <Hero media={heroMedia} />}
 
-      {/* Movie Rows */}
+      {/* Media Rows */}
       <div className="relative z-10 pb-16">
-        <MovieRow
+        <MediaRow
           title="Trending Now"
-          movies={trendingMovies}
-          onMovieClick={handleMovieClick}
+          media={trendingMedia}
+          onMediaClick={handleMediaClick}
         />
 
-        <MovieRow
+        <MediaRow
           title="Popular Movies"
-          movies={popularMovies}
-          onMovieClick={handleMovieClick}
+          media={popularMedia}
+          onMediaClick={handleMediaClick}
         />
 
-        <MovieRow
+        <MediaRow
           title="Top Rated"
-          movies={topRatedMovies}
-          onMovieClick={handleMovieClick}
+          media={topRatedMedia}
+          onMediaClick={handleMediaClick}
         />
 
-        <MovieRow
+        <MediaRow
           title="Action Movies"
-          movies={actionMovies}
-          onMovieClick={handleMovieClick}
+          media={actionMedia}
+          onMediaClick={handleMediaClick}
         />
       </div>
     </div>

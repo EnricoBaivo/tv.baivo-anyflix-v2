@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
-import { Movie } from '@/types/movie';
+import { Media } from '@/types/media';
 import { searchMovies } from '@/services/tmdb';
-import MovieCard from './MovieCard';
+import MediaCard from './MediaCard';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -11,8 +11,8 @@ interface SearchModalProps {
 
 const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Movie[]>([]);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [results, setResults] = useState<Media[]>([]);
+  const [selectedMovie, setSelectedMovie] = useState<Media | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,6 +82,8 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
           <button
             onClick={handleClose}
             className="text-white hover:text-gray-300 transition-colors"
+            aria-label="Close search modal"
+            title="Close search modal"
           >
             <X className="h-8 w-8" />
           </button>
@@ -145,8 +147,9 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                     // Add selected movie in its own row
                     rows.push(
                       <div key={`selected-${movie.id}`} className="mb-6">
-                        <MovieCard 
-                          movie={movie}
+                        <MediaCard 
+                          media={movie}
+                          index={0}
                           isSelected={true}
                           onClick={() => setSelectedMovie(null)}
                         />
@@ -155,9 +158,10 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                   } else {
                     // Add to current row
                     currentRow.push(
-                      <MovieCard 
+                      <MediaCard 
                         key={movie.id}
-                        movie={movie}
+                        media={movie}
+                        index={i}
                         isSelected={false}
                         onClick={() => setSelectedMovie(movie)}
                       />

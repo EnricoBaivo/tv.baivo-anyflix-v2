@@ -1,13 +1,13 @@
-import { Movie } from "@/types/movie";
+import { Media } from "@/types/media";
 import { getImageUrl } from "@/services/tmdb";
 import { Play, Plus, ThumbsUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWebOSFocus } from "@/hooks/useWebOSFocus";
 import { getFocusClasses, getWebOSProps } from "@/lib/webos-focus";
-import { MovieTitle } from "./typography";
+import { MediaTitle } from "./typography";
 
-interface MovieCardProps {
-  movie: Movie;
+interface MediaCardProps {
+  media: Media;
   index: number;
   isSelected?: boolean;
   isHovered?: boolean;
@@ -18,8 +18,8 @@ interface MovieCardProps {
   onClick?: () => void;
 }
 
-const MovieCard = ({
-  movie,
+const MediaCard = ({
+  media,
   index,
   isSelected = false,
   isHovered = false,
@@ -28,7 +28,7 @@ const MovieCard = ({
   onMouseLeave,
   onFocus,
   onClick,
-}: MovieCardProps) => {
+}: MediaCardProps) => {
   // WebOS focus handling - when focused, automatically becomes selected
   const { focusProps, navigationMode } = useWebOSFocus({
     onFocus: onFocus, // Triggers selection when card receives focus
@@ -41,8 +41,8 @@ const MovieCard = ({
       {...getWebOSProps()}
       className={cn(
         "cursor-pointer transition-transform duration-300 transform-gpu origin-center h-full flex flex-col rounded-lg",
-        isSelected ? "movie-card-selected" : "movie-card group",
-        isAnyHovered && !isHovered ? "scale-95" : "scale-100",
+        isSelected ? "media-card-selected" : "media-card group",
+        !isSelected && isAnyHovered && !isHovered ? "scale-95" : "scale-100",
         getFocusClasses("card", navigationMode)
       )}
       onMouseEnter={onMouseEnter}
@@ -58,10 +58,10 @@ const MovieCard = ({
         <img
           src={getImageUrl(
             isSelected
-              ? movie.backdrop_path || movie.poster_path
-              : movie.poster_path
+              ? media.backdrop_path || media.poster_path
+              : media.poster_path
           )}
-          alt={movie.title}
+          alt={media.title}
           className="w-full h-full object-cover origin-center transform-gpu"
           loading="lazy"
         />
@@ -75,8 +75,8 @@ const MovieCard = ({
             isHovered && !isSelected && "opacity-100"
           )}
         >
-          <h2 className={"text-lg font-black truncate "}>{movie.title}</h2>
-          <span>{new Date(movie.release_date).getFullYear()}</span>
+          <h2 className={"text-lg font-black truncate "}>{media.title}</h2>
+          <span>{new Date(media.release_date).getFullYear()}</span>
         </div>
         <div
           className={cn(
@@ -84,11 +84,11 @@ const MovieCard = ({
             isSelected && "opacity-100"
           )}
         >
-          <MovieTitle>{movie.title}</MovieTitle>
+          <MediaTitle>{media.title}</MediaTitle>
         </div>
       </div>
     </div>
   );
 };
 
-export default MovieCard;
+export default MediaCard;

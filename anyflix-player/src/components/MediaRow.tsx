@@ -1,29 +1,30 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Play, Plus, ThumbsUp } from "lucide-react";
-import { Movie } from "@/types/movie";
-import MovieCard from "./MovieCard";
+import { Media } from "@/types/media";
+import MediaCard from "./MediaCard";
 import { getFocusClasses, getWebOSProps } from "@/lib/webos-focus";
 import { useWebOSFocus } from "@/hooks/useWebOSFocus";
 import { cn } from "@/lib/utils";
 import {
   SectionTitle,
-  MovieTitle,
+  MediaTitle,
   MetadataText,
   DescriptionText,
 } from "./typography";
 
-interface MovieRowProps {
+interface MediaRowProps {
   title: string;
-  movies: Movie[];
-  onMovieClick?: (movie: Movie) => void;
+  media: Media[];
+  onMediaClick?: (media: Media) => void;
 }
 
-const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
+const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [isRowHovered, setIsRowHovered] = useState<boolean>(false);
 
   // WebOS focus for navigation buttons
   const leftButtonFocus = useWebOSFocus({
@@ -59,10 +60,10 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
 
   const handleKeyNavigation = useCallback(
     (direction: "left" | "right") => {
-      if (movies.length === 0) return;
+      if (media.length === 0) return;
 
       let newIndex = selectedIndex;
-      if (direction === "right" && selectedIndex < movies.length - 1) {
+      if (direction === "right" && selectedIndex < media.length - 1) {
         newIndex = selectedIndex + 1;
       } else if (direction === "left" && selectedIndex > 0) {
         newIndex = selectedIndex - 1;
@@ -70,12 +71,12 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
 
       if (newIndex !== selectedIndex) {
         setSelectedIndex(newIndex);
-        setSelectedMovie(movies[newIndex]);
+        setSelectedMedia(media[newIndex]);
         scrollToSelected(newIndex);
-        onMovieClick?.(movies[newIndex]);
+        onMediaClick?.(media[newIndex]);
       }
     },
-    [selectedIndex, movies, onMovieClick]
+    [selectedIndex, media, onMediaClick]
   );
 
   useEffect(() => {
@@ -97,19 +98,21 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
     }
   }, [handleKeyNavigation]);
 
-  // Initialize first movie as selected
+  // Initialize first media as selected
   useEffect(() => {
-    if (movies.length > 0 && !selectedMovie) {
-      setSelectedMovie(movies[0]);
+    if (media.length > 0 && !selectedMedia) {
+      setSelectedMedia(media[0]);
       setSelectedIndex(0);
     }
-  }, [movies, selectedMovie]);
+  }, [media, selectedMedia]);
 
   return (
     <div
       ref={containerRef}
       className="relative group mb-16 focus:outline-none overflow-visible"
       tabIndex={0}
+      onMouseEnter={() => setIsRowHovered(true)}
+      onMouseLeave={() => setIsRowHovered(false)}
     >
       <SectionTitle className="ml-8 mb-0">{title}</SectionTitle>
       <div className="relative overflow-visible">
@@ -133,9 +136,9 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
           ref={scrollRef}
           className="flex space-x-8 overflow-x-auto overflow-y-visible scrollbar-hide px-8 py-12 group-hover:opacity-100 opacity-90 transition-all duration-300"
         >
-          {movies.map((movie, index) => (
+          {media.map((item, index) => (
             <div
-              key={movie.id}
+              key={item.id}
               className={`flex-none transition-all duration-300 overflow-visible relative ${
                 selectedIndex === index
                   ? "w-movie-2xl h-movie-2xl"
@@ -146,25 +149,25 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
                   : "z-10"
               }`}
             >
-              <MovieCard
-                movie={movie}
+              <MediaCard
+                media={item}
                 index={index}
                 isSelected={selectedIndex === index}
                 isHovered={hoveredIndex === index}
-                isAnyHovered={hoveredIndex !== null}
+                isAnyHovered={isRowHovered}
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
                 onFocus={() => {
                   setSelectedIndex(index);
-                  setSelectedMovie(movie);
+                  setSelectedMedia(item);
                   scrollToSelected(index);
-                  onMovieClick?.(movie);
+                  onMediaClick?.(item);
                 }}
                 onClick={() => {
                   setSelectedIndex(index);
-                  setSelectedMovie(movie);
+                  setSelectedMedia(item);
                   scrollToSelected(index);
-                  onMovieClick?.(movie);
+                  onMediaClick?.(item);
                 }}
               />
             </div>
@@ -180,18 +183,18 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
             "absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white p-2 rounded-l-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70 focus:opacity-100",
             getFocusClasses("button", rightButtonFocus.navigationMode)
           )}
-          aria-label="Navigate to next movie"
-          title="Navigate to next movie"
+          aria-label="Navigate to next media"
+          title="Navigate to next media"
         >
           <ChevronRight className="h-6 w-6" />
         </button>
       </div>
 
-      {/* Movie Info Section - positioned below selected card */}
+      {/* Media Info Section - positioned below selected card */}
 
-      {selectedMovie && (
+      {selectedMedia && (
         <div
-          key={selectedMovie.id}
+          key={selectedMedia.id}
           className="relative max-w-5xl h-48 ml-16 transition-all duration-700 ease-in-out animate-in fade-in slide-in-from-right-4 "
         >
           {/* Movie Info Section with Netflix-style typography */}
@@ -199,7 +202,7 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
             <MetadataText>
               <div className="flex items-center space-x-4 mb-2">
                 <span>
-                  {new Date(selectedMovie.release_date).getFullYear()}
+                  {new Date(selectedMedia.release_date).getFullYear()}
                 </span>
                 <span>•</span>
                 <span>Staffeln oder Film Länge</span>
@@ -223,7 +226,7 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
             <div className="mt-2">
               <DescriptionText>
                 <span className="line-clamp-3 block">
-                  {selectedMovie.overview}
+                  {selectedMedia.overview}
                 </span>
               </DescriptionText>
             </div>
@@ -234,4 +237,4 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
   );
 };
 
-export default MovieRow;
+export default MediaRow;

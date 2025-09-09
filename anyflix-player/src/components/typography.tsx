@@ -36,7 +36,7 @@ export const BoldH3 = ({ children }: { children: React.ReactNode }) => {
 // Netflix-style movie title in cards
 export const MediaTitle = ({ children }: { children: React.ReactNode }) => {
   return (
-    <h3 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-2 leading-tight">
+    <h3 className="text-anyflix-red  text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-2 leading-tight">
       {children}
     </h3>
   );

@@ -1,16 +1,11 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Play, Plus, ThumbsUp } from "lucide-react";
+// No longer need these imports as they're handled in NavigationButton
 import { Media } from "@/types/media";
 import MediaCard from "./MediaCard";
-import { getFocusClasses, getWebOSProps } from "@/lib/webos-focus";
-import { useWebOSFocus } from "@/hooks/useWebOSFocus";
 import { cn } from "@/lib/utils";
-import {
-  SectionTitle,
-  MediaTitle,
-  MetadataText,
-  DescriptionText,
-} from "./typography";
+import { SectionTitle } from "./typography";
+import MediaInfo from "./MediaInfo";
+import MediaRowNavigationButton from "./MediaRowNavigationButton";
 
 interface MediaRowProps {
   title: string;
@@ -26,14 +21,7 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isRowHovered, setIsRowHovered] = useState<boolean>(false);
 
-  // WebOS focus for navigation buttons
-  const leftButtonFocus = useWebOSFocus({
-    onEnter: () => handleKeyNavigation("left"),
-  });
-
-  const rightButtonFocus = useWebOSFocus({
-    onEnter: () => handleKeyNavigation("right"),
-  });
+  // WebOS focus is now handled within NavigationButton components
 
   const scrollToSelected = (index: number) => {
     if (scrollRef.current && containerRef.current) {
@@ -116,20 +104,13 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
     >
       <SectionTitle className="ml-8 mb-0">{title}</SectionTitle>
       <div className="relative overflow-visible">
-        {/* Left scroll button */}
-        <button
-          {...leftButtonFocus.focusProps}
-          {...getWebOSProps()}
+        {/* Left navigation button */}
+        <MediaRowNavigationButton
+          direction="left"
           onClick={() => handleKeyNavigation("left")}
-          className={cn(
-            "absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white p-2 rounded-r-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70 focus:opacity-100",
-            getFocusClasses("button", leftButtonFocus.navigationMode)
-          )}
-          aria-label="Navigate to previous movie"
-          title="Navigate to previous movie"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
+          ariaLabel="Navigate to previous media"
+          title="Navigate to previous media"
+        />
 
         {/* Movies container - overflow-y must be visible for focus rings and hover effects */}
         <div
@@ -174,65 +155,17 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
           ))}
         </div>
 
-        {/* Right scroll button */}
-        <button
-          {...rightButtonFocus.focusProps}
-          {...getWebOSProps()}
+        {/* Right navigation button */}
+        <MediaRowNavigationButton
+          direction="right"
           onClick={() => handleKeyNavigation("right")}
-          className={cn(
-            "absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white p-2 rounded-l-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70 focus:opacity-100",
-            getFocusClasses("button", rightButtonFocus.navigationMode)
-          )}
-          aria-label="Navigate to next media"
+          ariaLabel="Navigate to next media"
           title="Navigate to next media"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </button>
+        />
       </div>
 
       {/* Media Info Section - positioned below selected card */}
-
-      {selectedMedia && (
-        <div
-          key={selectedMedia.id}
-          className="relative max-w-5xl h-48 ml-16 transition-all duration-700 ease-in-out animate-in fade-in slide-in-from-right-4 "
-        >
-          {/* Movie Info Section with Netflix-style typography */}
-          <div className="absolute -top-4 left-0  ">
-            <MetadataText>
-              <div className="flex items-center space-x-4 mb-2">
-                <span>
-                  {new Date(selectedMedia.release_date).getFullYear()}
-                </span>
-                <span>•</span>
-                <span>Staffeln oder Film Länge</span>
-                <span>•</span>
-                <span className="flex items-center">FSK 18</span>
-              </div>
-            </MetadataText>
-            <MetadataText>
-              <div className="flex items-center space-x-4 mb-6  ">
-                <span className="px-3 py-2 bg-gray-600 rounded-md text-sm font-medium">
-                  Fantasy
-                </span>
-                <span className="px-3 py-2 bg-gray-600 rounded-md text-sm font-medium">
-                  Action
-                </span>
-                <span className="px-3 py-2 bg-gray-600 rounded-md text-sm font-medium">
-                  Adventure
-                </span>
-              </div>
-            </MetadataText>
-            <div className="mt-2">
-              <DescriptionText>
-                <span className="line-clamp-3 block">
-                  {selectedMedia.overview}
-                </span>
-              </DescriptionText>
-            </div>
-          </div>
-        </div>
-      )}
+      {selectedMedia && <MediaInfo media={selectedMedia} />}
     </div>
   );
 };

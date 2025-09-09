@@ -1,6 +1,7 @@
 import { Movie } from "@/types/movie";
 import { getImageUrl } from "@/services/tmdb";
 import { Play, Info, Star } from "lucide-react";
+import { BoldH1 } from "./typography";
 
 interface HeroProps {
   movie: Movie;
@@ -36,9 +37,7 @@ const Hero = ({ movie }: HeroProps) => {
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-none uppercase tracking-tight">
-            {movie.title}
-          </h1>
+          <BoldH1> {movie.title}</BoldH1>
 
           {/* Metadata */}
           <div className="flex items-center space-x-4 text-sm text-white mb-4">

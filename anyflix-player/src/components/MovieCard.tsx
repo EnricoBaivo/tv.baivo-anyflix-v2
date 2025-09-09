@@ -26,9 +26,7 @@ const MovieCard = ({
     <div
       className={cn(
         "cursor-pointer transition-transform duration-300 transform-gpu origin-center h-full flex flex-col",
-        isSelected
-          ? "movie-card-selected"
-          : "movie-card group",
+        isSelected ? "movie-card-selected" : "movie-card group",
         isAnyHovered && !isHovered ? "scale-95" : "scale-100"
       )}
       onMouseEnter={onMouseEnter}
@@ -54,62 +52,6 @@ const MovieCard = ({
         {/* Gradient overlay - only for selected */}
         {!isSelected && (
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        )}
-        {/* Content overlay - only for selected */}
-        {isSelected && (
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            <h3 className="text-white text-3xl font-bold mb-4">
-              {movie.title}
-            </h3>
-            <div className="flex items-center space-x-6 text-lg text-gray-300 mb-6">
-              <span>{new Date(movie.release_date).getFullYear()}</span>
-              <span className="flex items-center">
-                ⭐ {movie.vote_average.toFixed(1)}
-              </span>
-            </div>
-            <p className="text-white text-lg line-clamp-3 mb-8">
-              {movie.overview}
-            </p>
-
-            {/* Action buttons */}
-            <div
-              className="flex space-x-4"
-              role="group"
-              aria-label="Movie actions"
-            >
-              <button
-                className="bg-white text-black rounded-lg px-8 py-3 text-lg font-semibold hover:bg-white/80 transition-colors duration-200 flex items-center space-x-2"
-                aria-label={`Play ${movie.title}`}
-                role="button"
-                tabIndex={0}
-                data-webos-focusable="true"
-                data-webos-sound="true"
-              >
-                <Play className="h-6 w-6 fill-current" />
-                <span>Play</span>
-              </button>
-              <button
-                className="bg-gray-600/80 text-white rounded-full p-4 hover:bg-gray-500/80 transition-colors duration-200"
-                aria-label={`Add ${movie.title} to watchlist`}
-                role="button"
-                tabIndex={0}
-                data-webos-focusable="true"
-                data-webos-sound="true"
-              >
-                <Plus className="h-6 w-6" />
-              </button>
-              <button
-                className="bg-gray-600/80 text-white rounded-full p-4 hover:bg-gray-500/80 transition-colors duration-200"
-                aria-label={`Like ${movie.title}`}
-                role="button"
-                tabIndex={0}
-                data-webos-focusable="true"
-                data-webos-sound="true"
-              >
-                <ThumbsUp className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
         )}
         <div
           className={cn(

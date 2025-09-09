@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Plus, ThumbsUp } from "lucide-react";
 import { Movie } from "@/types/movie";
 import MovieCard from "./MovieCard";
 
@@ -145,6 +145,37 @@ const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
           <ChevronRight className="h-6 w-6" />
         </button>
       </div>
+
+      {/* Movie Info Section - positioned below selected card */}
+
+      {selectedMovie && (
+        <div
+          key={selectedMovie.id}
+          className="px-4 transition-all duration-700 ease-in-out animate-in fade-in slide-in-from-right-4"
+        >
+          {/* // TODO: add correct movie info section */}
+          <div className=" pl-8">
+            <h3 className="text-white text-3xl font-bold mb-4 transition-all duration-300">
+              {selectedMovie.title}
+            </h3>
+            <div className="flex items-center space-x-6 text-lg text-gray-300  transition-all duration-300">
+              <span>{new Date(selectedMovie.release_date).getFullYear()}</span>
+              <span>•</span>
+              <span> staffeln oder film länge</span>
+              <span>•</span>
+              <span className="flex items-center">fsk 18</span>
+            </div>
+            <ol className="flex items-center space-x-2 text-lg text-gray-300 mb-6 transition-all duration-300">
+              <li>fantasy</li>
+              <li>action</li>
+              <li>adventure</li>
+            </ol>
+            <p className="text-white text-lg line-clamp-3 mb-8 transition-all duration-300 text-wrap w-movie-2xl ">
+              {selectedMovie.overview}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

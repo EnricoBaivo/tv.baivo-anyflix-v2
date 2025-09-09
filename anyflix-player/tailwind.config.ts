@@ -54,6 +54,7 @@ export default {
         },
         anyflix: {
           red: "hsl(var(--anyflix-red))",
+          "red-selected": "hsl(var(--anyflix-red-selected))",
           black: "hsl(var(--anyflix-black))",
           "dark-gray": "hsl(var(--anyflix-dark-gray))",
           gray: "hsl(var(--anyflix-gray))",

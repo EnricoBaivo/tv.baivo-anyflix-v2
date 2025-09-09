@@ -8,6 +8,7 @@
   :root {
     /* Anyflix color palette */
     --anyflix-red: 0 100% 45%;
+    --anyflix-red-selected: 0 100% 22%;
     --anyflix-black: 0 0% 8%;
     --anyflix-dark-gray: 0 0% 14%;
     --anyflix-gray: 0 0% 25%;

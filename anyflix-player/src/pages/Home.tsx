@@ -1,66 +1,46 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Media } from "@/types/media";
-import {
-  getTrendingMovies,
-  getPopularMovies,
-  getTopRatedMovies,
-  getMoviesByGenre,
-} from "@/services/tmdb";
+import { useHomePageData } from "@/hooks/useTMDB";
 import Hero from "@/components/Hero";
 import MediaRow from "@/components/media/MediaRow";
 import { useToast } from "@/hooks/use-toast";
 
 const Home = () => {
-  const [heroMedia, setHeroMedia] = useState<Media | null>(null);
-  const [trendingMedia, setTrendingMedia] = useState<Media[]>([]);
-  const [popularMedia, setPopularMedia] = useState<Media[]>([]);
-  const [topRatedMedia, setTopRatedMedia] = useState<Media[]>([]);
-  const [actionMedia, setActionMedia] = useState<Media[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { trending, popular, topRated, action, isLoading, isError } = useHomePageData();
 
-  useEffect(() => {
-    const fetchMedia = async () => {
-      try {
-        setLoading(true);
+  // Memoized data extraction
+  const { heroMedia, trendingMedia, popularMedia, topRatedMedia, actionMedia } = useMemo(() => {
+    const trendingResults = trending.data?.results || [];
+    const popularResults = popular.data?.results || [];
+    const topRatedResults = topRated.data?.results || [];
+    const actionResults = action.data?.results || [];
 
-        const [trending, popular, topRated, action] = await Promise.all([
-          getTrendingMovies(),
-          getPopularMovies(),
-          getTopRatedMovies(),
-          getMoviesByGenre(28), // Action genre ID
-        ]);
-
-        setTrendingMedia(trending.results);
-        setPopularMedia(popular.results);
-        setTopRatedMedia(topRated.results);
-        setActionMedia(action.results);
-
-        // Set hero media to first trending item
-        if (trending.results.length > 0) {
-          setHeroMedia(trending.results[0]);
-        }
-      } catch (error) {
-        console.error("Error fetching media:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load media. Please try again later.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
+    return {
+      heroMedia: trendingResults.length > 0 ? trendingResults[0] : null,
+      trendingMedia: trendingResults,
+      popularMedia: popularResults,
+      topRatedMedia: topRatedResults,
+      actionMedia: actionResults,
     };
+  }, [trending.data, popular.data, topRated.data, action.data]);
 
-    fetchMedia();
-  }, [toast]);
+  // Handle errors
+  if (isError) {
+    console.error("Error fetching media:", isError);
+    toast({
+      title: "Error",
+      description: "Failed to load media. Please try again later.",
+      variant: "destructive",
+    });
+  }
 
   const handleMediaClick = (media: Media) => {
     console.log("Media clicked:", media);
     // TODO: Navigate to media detail page or open modal
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">

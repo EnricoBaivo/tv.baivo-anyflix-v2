@@ -115,7 +115,7 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
         {/* Movies container - overflow-y must be visible for focus rings and hover effects */}
         <div
           ref={scrollRef}
-          className="flex space-x-8 overflow-x-auto overflow-y-visible scrollbar-hide px-8 py-12 group-hover:opacity-100 opacity-90 transition-all duration-300"
+          className="flex space-x-8 overflow-x-auto overflow-y-visible scrollbar-hide px-8 pt-6 pb-12 group-hover:opacity-100 opacity-90 transition-all duration-300"
         >
           {media.map((item, index) => (
             <div

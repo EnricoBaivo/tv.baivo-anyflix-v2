@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Media } from "@/types/media";
-import { searchMovies } from "@/services/tmdb";
+import { useSearchMovies } from "@/hooks/useTMDB";
 import MediaInfo from "../media/MediaInfo";
 import SearchInput from "./SearchInput";
 import MediaCard from "../media/MediaCard";
@@ -13,11 +13,21 @@ interface SearchModalProps {
 
 const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Media[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [focusedCardIndex, setFocusedCardIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Use SWR for search
+  const { data, isLoading, error } = useSearchMovies(debouncedQuery);
+
+  // Memoized results and state
+  const { results, hasSearched, loading } = useMemo(() => {
+    return {
+      results: data?.results || [],
+      hasSearched: Boolean(debouncedQuery.trim()),
+      loading: isLoading,
+    };
+  }, [data, debouncedQuery, isLoading]);
 
   useEffect(() => {
     if (isOpen) {
@@ -37,40 +47,18 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
     };
   }, [isOpen]);
 
-  const handleSearch = useCallback(async () => {
-    if (!query.trim()) return;
-
-    setLoading(true);
-    setHasSearched(true);
-
-    try {
-      const response = await searchMovies(query);
-      setResults(response.results);
-    } catch (error) {
-      console.error("Search error:", error);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [query]);
-
+  // Debounce search query
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (query.trim()) {
-        handleSearch();
-      } else {
-        setResults([]);
-        setHasSearched(false);
-      }
+      setDebouncedQuery(query.trim());
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [query, handleSearch]);
+  }, [query]);
 
   const handleClose = () => {
     setQuery("");
-    setResults([]);
-    setHasSearched(false);
+    setDebouncedQuery("");
     setFocusedCardIndex(null);
     onClose();
   };

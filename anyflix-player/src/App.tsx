@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SWRConfig } from "swr";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Home from "./pages/Home";
@@ -9,9 +10,21 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+// SWR configuration
+const swrConfig = {
+  revalidateOnFocus: false,
+  revalidateOnReconnect: true,
+  shouldRetryOnError: true,
+  errorRetryCount: 3,
+  errorRetryInterval: 1000,
+  dedupingInterval: 2000,
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+    <SWRConfig value={swrConfig}>
+      <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -49,7 +62,8 @@ const App = () => (
           </Routes>
         </div>
       </BrowserRouter>
-    </TooltipProvider>
+      </TooltipProvider>
+    </SWRConfig>
   </QueryClientProvider>
 );
 

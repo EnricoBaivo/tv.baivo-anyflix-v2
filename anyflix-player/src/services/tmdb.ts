@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MovieResponse } from '@/types/movie';
+import { MediaResponse } from '@/types/media';
 
 // TMDB API configuration
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -20,22 +20,22 @@ export const getImageUrl = (path: string, size: string = 'w500') => {
   return `${IMAGE_BASE_URL}/${size}${path}`;
 };
 
-export const getTrendingMovies = async (): Promise<MovieResponse> => {
+export const getTrendingMovies = async (): Promise<MediaResponse> => {
   const response = await tmdbApi.get('/trending/movie/week');
   return response.data;
 };
 
-export const getPopularMovies = async (): Promise<MovieResponse> => {
+export const getPopularMovies = async (): Promise<MediaResponse> => {
   const response = await tmdbApi.get('/movie/popular');
   return response.data;
 };
 
-export const getTopRatedMovies = async (): Promise<MovieResponse> => {
+export const getTopRatedMovies = async (): Promise<MediaResponse> => {
   const response = await tmdbApi.get('/movie/top_rated');
   return response.data;
 };
 
-export const getMoviesByGenre = async (genreId: number): Promise<MovieResponse> => {
+export const getMoviesByGenre = async (genreId: number): Promise<MediaResponse> => {
   const response = await tmdbApi.get('/discover/movie', {
     params: {
       with_genres: genreId,
@@ -44,7 +44,7 @@ export const getMoviesByGenre = async (genreId: number): Promise<MovieResponse> 
   return response.data;
 };
 
-export const searchMovies = async (query: string): Promise<MovieResponse> => {
+export const searchMovies = async (query: string): Promise<MediaResponse> => {
   const response = await tmdbApi.get('/search/movie', {
     params: {
       query,

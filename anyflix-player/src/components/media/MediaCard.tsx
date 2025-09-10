@@ -4,7 +4,7 @@ import { Play, Plus, ThumbsUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWebOSFocus } from "@/hooks/useWebOSFocus";
 import { getFocusClasses, getWebOSProps } from "@/lib/webos-focus";
-import { MediaTitle } from "./typography";
+import { MediaTitle } from "../typography";
 
 interface MediaCardProps {
   media: Media;

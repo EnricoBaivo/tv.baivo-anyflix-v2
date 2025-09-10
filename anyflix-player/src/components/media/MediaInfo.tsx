@@ -1,6 +1,6 @@
 import { Media } from "@/types/media";
 import { Badge } from "@/components/ui/badge";
-import { MetadataText, DescriptionText } from "./typography";
+import { MetadataText, DescriptionText } from "../typography";
 
 interface MediaInfoProps {
   media: Media;

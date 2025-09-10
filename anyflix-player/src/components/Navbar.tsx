@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Search, Bell, User, Menu, X } from 'lucide-react';
-import SearchModal from './SearchModal';
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Search, Bell, User, Menu, X } from "lucide-react";
+import SearchModal from "./search/SearchModal";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -9,10 +9,10 @@ const Navbar = () => {
   const location = useLocation();
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'TV Shows', path: '/tv-shows' },
-    { name: 'Movies', path: '/movies' },
-    { name: 'My List', path: '/my-list' },
+    { name: "Home", path: "/" },
+    { name: "TV Shows", path: "/tv-shows" },
+    { name: "Movies", path: "/movies" },
+    { name: "My List", path: "/my-list" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -35,7 +35,7 @@ const Navbar = () => {
                 key={link.name}
                 to={link.path}
                 className={`text-sm font-medium transition-colors duration-200 hover:text-anyflix-light-gray ${
-                  isActive(link.path) ? 'text-white' : 'text-anyflix-light-gray'
+                  isActive(link.path) ? "text-white" : "text-anyflix-light-gray"
                 }`}
               >
                 {link.name}
@@ -45,7 +45,7 @@ const Navbar = () => {
 
           {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               onClick={() => setIsSearchOpen(true)}
               className="text-white hover:text-anyflix-light-gray transition-colors duration-200"
             >
@@ -54,7 +54,7 @@ const Navbar = () => {
             <button className="text-white hover:text-anyflix-light-gray transition-colors duration-200">
               <Bell className="h-5 w-5" />
             </button>
-            <Link 
+            <Link
               to="/auth"
               className="text-white hover:text-anyflix-light-gray transition-colors duration-200"
             >
@@ -66,7 +66,11 @@ const Navbar = () => {
               className="md:hidden text-white"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -81,8 +85,8 @@ const Navbar = () => {
                   to={link.path}
                   className={`block px-3 py-2 text-base font-medium transition-colors duration-200 rounded-md ${
                     isActive(link.path)
-                      ? 'text-white bg-anyflix-gray'
-                      : 'text-anyflix-light-gray hover:text-white hover:bg-anyflix-gray'
+                      ? "text-white bg-anyflix-gray"
+                      : "text-anyflix-light-gray hover:text-white hover:bg-anyflix-gray"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -95,9 +99,9 @@ const Navbar = () => {
       </div>
 
       {/* Search Modal */}
-      <SearchModal 
-        isOpen={isSearchOpen} 
-        onClose={() => setIsSearchOpen(false)} 
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
       />
     </nav>
   );

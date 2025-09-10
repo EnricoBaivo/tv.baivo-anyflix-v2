@@ -7,7 +7,7 @@ import {
   getMoviesByGenre,
 } from "@/services/tmdb";
 import Hero from "@/components/Hero";
-import MediaRow from "@/components/MediaRow";
+import MediaRow from "@/components/media/MediaRow";
 import { useToast } from "@/hooks/use-toast";
 
 const Home = () => {

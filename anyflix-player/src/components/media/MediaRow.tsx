@@ -3,7 +3,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { Media } from "@/types/media";
 import MediaCard from "./MediaCard";
 import { cn } from "@/lib/utils";
-import { SectionTitle } from "./typography";
+import { SectionTitle } from "../typography";
 import MediaInfo from "./MediaInfo";
 import MediaRowNavigationButton from "./MediaRowNavigationButton";
 

@@ -16,6 +16,7 @@ const Navbar = () => {
     { name: "TV Shows", path: "/tv-shows" },
     { name: "Movies", path: "/movies" },
     { name: "My List", path: "/my-list" },
+    { name: "Anime", path: "/anime" },
   ];
 
   const isActive = (path: string) => location.pathname === path;

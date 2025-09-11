@@ -7,12 +7,6 @@ from ..dependencies import get_anime_service
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
-@router.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy"}
-
-
 @router.get("/sources/status")
 async def get_sources_status():
     """Get status of all available sources."""

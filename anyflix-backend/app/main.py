@@ -210,6 +210,12 @@ async def root():
     }
 
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy"}
+
+
 # Include routers
 app.include_router(sources.router)
 app.include_router(proxy.router)

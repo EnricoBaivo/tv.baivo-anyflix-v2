@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import AnimeDemo from "./pages/AnimeDemo";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,10 @@ const App = () => (
                     My List - Coming Soon
                   </div>
                 }
+              />
+              <Route
+                path="/anime"
+                element={<AnimeDemo />}
               />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

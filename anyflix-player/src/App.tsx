@@ -25,43 +25,43 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <SWRConfig value={swrConfig}>
       <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <div className="min-h-screen bg-background">
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/tv-shows"
-              element={
-                <div className="pt-16 text-white text-center">
-                  TV Shows - Coming Soon
-                </div>
-              }
-            />
-            <Route
-              path="/movies"
-              element={
-                <div className="pt-16 text-white text-center">
-                  Movies - Coming Soon
-                </div>
-              }
-            />
-            <Route
-              path="/my-list"
-              element={
-                <div className="pt-16 text-white text-center">
-                  My List - Coming Soon
-                </div>
-              }
-            />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
-      </BrowserRouter>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <div className="min-h-screen bg-background">
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route
+                path="/tv-shows"
+                element={
+                  <div className="pt-16 text-white text-center">
+                    TV Shows - Coming Soon
+                  </div>
+                }
+              />
+              <Route
+                path="/movies"
+                element={
+                  <div className="pt-16 text-white text-center">
+                    Movies - Coming Soon
+                  </div>
+                }
+              />
+              <Route
+                path="/my-list"
+                element={
+                  <div className="pt-16 text-white text-center">
+                    My List - Coming Soon
+                  </div>
+                }
+              />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
       </TooltipProvider>
     </SWRConfig>
   </QueryClientProvider>

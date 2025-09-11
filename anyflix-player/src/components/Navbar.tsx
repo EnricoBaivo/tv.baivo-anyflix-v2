@@ -1,12 +1,15 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Bell, User, Menu, X } from "lucide-react";
 import SearchModal from "./search/SearchModal";
+import { useWebOSNavigation } from "../hooks/useWebOSFocus";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const navRef = useRef<HTMLDivElement>(null);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -17,13 +20,72 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // webOS TV navigation hook
+  const { navigationMode, updateFocusableElements } = useWebOSNavigation({
+    containerRef: navRef,
+    onNavigate: (direction) => {
+      if (direction === 'down' && !isMenuOpen) {
+        setIsMenuOpen(true);
+        return true; // Handled
+      }
+      return false; // Not handled, use default behavior
+    },
+    onBack: () => {
+      if (isSearchOpen) {
+        setIsSearchOpen(false);
+        return true;
+      } else if (isMenuOpen) {
+        setIsMenuOpen(false);
+        return true;
+      } else {
+        // Handle app-level back navigation
+        if (window.history.length > 1) {
+          navigate(-1);
+          return true;
+        } else {
+          // Let default behavior handle exit confirmation
+          return false;
+        }
+      }
+    },
+    autoFocus: true,
+  });
+
+  // Update focusable elements when menu state changes
+  React.useEffect(() => {
+    updateFocusableElements();
+  }, [isMenuOpen, updateFocusableElements]);
+
+  // Helper function to generate webOS-compatible button classes
+  const getWebOSButtonClasses = (baseClasses: string, isActive?: boolean) => {
+    const webOSClasses = [
+      'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+      navigationMode === '5way' ? 'focus:ring-offset-4' : 'focus:ring-offset-1',
+      'min-w-[75px] min-h-[50px] flex items-center justify-center',
+      'transition-all duration-200',
+    ].join(' ');
+
+    const activeClasses = isActive ? 'bg-anyflix-gray/30' : '';
+    
+    return `${baseClasses} ${webOSClasses} ${activeClasses}`.trim();
+  };
+
   return (
-    <nav className="fixed top-0 w-full z-50 bg-anyflix-black/95 backdrop-blur-sm transition-all duration-300">
+    <nav 
+      ref={navRef}
+      className="fixed top-0 w-full z-50 bg-anyflix-black/95 backdrop-blur-sm transition-all duration-300"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="text-primary text-2xl font-bold">
+            <Link 
+              to="/" 
+              className={getWebOSButtonClasses(
+                "text-primary text-2xl font-bold focus:ring-offset-anyflix-black rounded-md px-2 py-1"
+              )}
+              tabIndex={0}
+            >
               ANYFLIX
             </Link>
           </div>
@@ -34,9 +96,13 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.path}
-                className={`text-sm font-medium transition-colors duration-200 hover:text-anyflix-light-gray ${
-                  isActive(link.path) ? "text-white" : "text-anyflix-light-gray"
-                }`}
+                className={getWebOSButtonClasses(
+                  `text-sm font-medium hover:text-anyflix-light-gray focus:ring-offset-anyflix-black rounded-md px-3 py-2 ${
+                    isActive(link.path) ? "text-white" : "text-anyflix-light-gray"
+                  }`,
+                  isActive(link.path)
+                )}
+                tabIndex={0}
               >
                 {link.name}
               </Link>
@@ -47,24 +113,42 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="text-white hover:text-anyflix-light-gray transition-colors duration-200"
+              className={getWebOSButtonClasses(
+                "text-white hover:text-anyflix-light-gray focus:ring-offset-anyflix-black rounded-md p-3"
+              )}
+              tabIndex={0}
+              aria-label="Open search"
             >
               <Search className="h-5 w-5" />
             </button>
-            <button className="text-white hover:text-anyflix-light-gray transition-colors duration-200">
+            <button 
+              className={getWebOSButtonClasses(
+                "text-white hover:text-anyflix-light-gray focus:ring-offset-anyflix-black rounded-md p-3"
+              )}
+              tabIndex={0}
+              aria-label="Notifications"
+            >
               <Bell className="h-5 w-5" />
             </button>
             <Link
               to="/auth"
-              className="text-white hover:text-anyflix-light-gray transition-colors duration-200"
+              className={getWebOSButtonClasses(
+                "text-white hover:text-anyflix-light-gray focus:ring-offset-anyflix-black rounded-md p-3"
+              )}
+              tabIndex={0}
+              aria-label="User profile"
             >
               <User className="h-5 w-5" />
             </Link>
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden text-white"
+              className={getWebOSButtonClasses(
+                "md:hidden text-white focus:ring-offset-anyflix-black rounded-md p-3"
+              )}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              tabIndex={0}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -83,12 +167,16 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`block px-3 py-2 text-base font-medium transition-colors duration-200 rounded-md ${
+                  className={getWebOSButtonClasses(
+                    `px-3 py-2 text-base font-medium rounded-md focus:ring-offset-anyflix-dark-gray ${
+                      isActive(link.path)
+                        ? "text-white bg-anyflix-gray"
+                        : "text-anyflix-light-gray hover:text-white hover:bg-anyflix-gray"
+                    }`,
                     isActive(link.path)
-                      ? "text-white bg-anyflix-gray"
-                      : "text-anyflix-light-gray hover:text-white hover:bg-anyflix-gray"
-                  }`}
+                  )}
                   onClick={() => setIsMenuOpen(false)}
+                  tabIndex={0}
                 >
                   {link.name}
                 </Link>

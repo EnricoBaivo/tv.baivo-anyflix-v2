@@ -24,13 +24,13 @@ class TestAPIEndpoints:
         assert "message" in data
         assert "version" in data
         assert "available_sources" in data
-        assert data["message"] == "Anime Backend Service"
+        assert data["message"] == "Media Streaming Backend Service"
         assert data["version"] == "1.0.0"
         assert isinstance(data["available_sources"], list)
 
     def test_health_endpoint(self, client):
         """Test the health check endpoint."""
-        response = client.get("/admin/health")
+        response = client.get("/health")
         assert response.status_code == 200
 
         data = response.json()
@@ -103,9 +103,9 @@ class TestAPIEndpoints:
         response = client.get("/sources/invalid/search?q=test")
         assert response.status_code == 404
 
-    def test_detail_endpoint_invalid_source(self, client):
-        """Test detail endpoint with invalid source."""
-        response = client.get("/sources/invalid/detail?url=/test")
+    def test_series_endpoint_invalid_source(self, client):
+        """Test series endpoint with invalid source."""
+        response = client.get("/sources/invalid/series?url=/test")
         assert response.status_code == 404
 
     def test_videos_endpoint_invalid_source(self, client):
@@ -118,9 +118,9 @@ class TestAPIEndpoints:
         response = client.get("/sources/aniworld/search")
         assert response.status_code == 422  # Validation error
 
-    def test_detail_missing_url(self, client):
-        """Test detail endpoint without url parameter."""
-        response = client.get("/sources/aniworld/detail")
+    def test_series_missing_url(self, client):
+        """Test series endpoint without url parameter."""
+        response = client.get("/sources/aniworld/series")
         assert response.status_code == 422  # Validation error
 
     def test_videos_missing_url(self, client):

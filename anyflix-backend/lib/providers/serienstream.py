@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional
 from ..models.base import (
     AnimeInfo,
     AnimeSource,
-    LegacyEpisode,
     SearchResult,
     SourcePreference,
     VideoSource,
@@ -235,7 +234,7 @@ class SerienStreamProvider(BaseProvider):
 
         return DetailResponse(anime=anime_info)
 
-    async def parse_episodes_from_series(self, element) -> List[LegacyEpisode]:
+    async def parse_episodes_from_series(self, element) -> List[Dict[str, Any]]:
         """Parse episodes from a season.
 
         Args:
@@ -253,14 +252,14 @@ class SerienStreamProvider(BaseProvider):
         # Process episodes with concurrency limit
         return await self.async_pool(13, episode_elements, self.episode_from_element)
 
-    async def episode_from_element(self, element) -> LegacyEpisode:
+    async def episode_from_element(self, element) -> Dict[str, Any]:
         """Create episode from table row element.
 
         Args:
             element: Episode row element
 
         Returns:
-            LegacyEpisode object
+            Episode dictionary
         """
         title_anchor = element.select_first("td.seasonEpisodeTitle a")
         episode_span = title_anchor.select_first("span")
@@ -286,9 +285,9 @@ class SerienStreamProvider(BaseProvider):
                 )
 
         if name and url:
-            return LegacyEpisode(name=name, url=url, date_upload=date_upload)
+            return {"name": name, "url": url, "date_upload": date_upload}
         else:
-            return LegacyEpisode(name="", url="")
+            return {"name": "", "url": "", "date_upload": None}
 
     async def get_upload_date_from_episode(self, url: str) -> str:
         """Get upload date from episode page.

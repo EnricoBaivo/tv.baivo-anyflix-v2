@@ -131,8 +131,8 @@ class AnimeService:
         async with provider:
             return await provider.search(query, page, lang)
 
-    async def get_detail(self, source: str, url: str) -> DetailResponse:
-        """Get anime details from source.
+    async def _get_detail(self, source: str, url: str) -> DetailResponse:
+        """Get anime details from source (internal use only).
 
         Args:
             source: Source name
@@ -168,22 +168,18 @@ class AnimeService:
         if not provider:
             raise ValueError(f"Source '{source}' not found")
 
-        async with provider:
-            # Get flat detail response
-            detail_response = await provider.get_detail(url)
+        # Get flat detail response using internal method
+        detail_response = await self._get_detail(source, url)
 
-            # Convert episodes to dict format for normalization
-            episodes_data = [
-                {"name": ep.name, "url": ep.url, "date_upload": ep.date_upload}
-                for ep in detail_response.anime.episodes
-            ]
+        # Convert episodes to dict format for normalization
+        episodes_data = detail_response.anime.episodes
 
-            # Normalize to hierarchical structure
-            series_detail = normalize_series_detail(
-                {"episodes": episodes_data}, slug=self._extract_slug_from_url(url)
-            )
+        # Normalize to hierarchical structure
+        series_detail = normalize_series_detail(
+            {"episodes": episodes_data}, slug=self._extract_slug_from_url(url)
+        )
 
-            return SeriesDetailResponse(series=series_detail)
+        return SeriesDetailResponse(series=series_detail)
 
     def _extract_slug_from_url(self, url: str) -> str:
         """Extract slug from anime URL."""

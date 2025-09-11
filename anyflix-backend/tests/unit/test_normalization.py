@@ -7,7 +7,6 @@ from lib.utils.normalization import (
     _parse_episode_name,
     _parse_movie_name,
     normalize_series_detail,
-    series_detail_to_legacy_episodes,
 )
 
 
@@ -305,91 +304,6 @@ class TestNormalization:
         result = normalize_series_detail(data)  # No slug provided
 
         assert result.slug == "my-anime-series"
-
-
-class TestLegacyConversion:
-    """Test conversion back to legacy format."""
-
-    def test_series_detail_to_legacy_episodes(self):
-        """Test conversion from SeriesDetail to legacy episodes."""
-        series = SeriesDetail(
-            slug="test",
-            seasons=[
-                Season(
-                    season=1,
-                    title="Staffel 1",
-                    episodes=[
-                        Episode(
-                            season=1,
-                            episode=1,
-                            title="First Episode",
-                            url="/anime/stream/test/staffel-1/episode-1",
-                            tags=["HD"],
-                        ),
-                        Episode(
-                            season=1,
-                            episode=2,
-                            title="Second Episode",
-                            url="/anime/stream/test/staffel-1/episode-2",
-                            tags=[],
-                        ),
-                    ],
-                )
-            ],
-            movies=[
-                Movie(
-                    number=1,
-                    title="Test Movie",
-                    kind=MovieKind.MOVIE,
-                    url="/anime/stream/test/filme/film-1",
-                    tags=[],
-                ),
-                Movie(
-                    number=2,
-                    title="Test OVA",
-                    kind=MovieKind.OVA,
-                    url="/anime/stream/test/filme/film-2",
-                    tags=["Special"],
-                ),
-            ],
-        )
-
-        legacy_episodes = series_detail_to_legacy_episodes(series)
-
-        assert len(legacy_episodes) == 4
-        assert legacy_episodes[0].name == "Staffel 1 Folge 1 : First Episode [HD]"
-        assert legacy_episodes[1].name == "Staffel 1 Folge 2 : Second Episode"
-        assert legacy_episodes[2].name == "Film 1 : Test Movie [Movie]"
-        assert legacy_episodes[3].name == "Film 2 : Test OVA [OVA] [Special]"
-
-    def test_roundtrip_conversion(self):
-        """Test roundtrip conversion: flat -> hierarchical -> flat."""
-        original_data = {
-            "episodes": [
-                {
-                    "name": "Staffel 1 Folge 1 : Test Episode [HD]",
-                    "url": "/anime/stream/test/staffel-1/episode-1",
-                    "date_upload": None,
-                },
-                {
-                    "name": "Film 1 : Test Movie [OVA]",
-                    "url": "/anime/stream/test/filme/film-1",
-                    "date_upload": None,
-                },
-            ]
-        }
-
-        # Convert to hierarchical
-        series_detail = normalize_series_detail(original_data, "test")
-
-        # Convert back to flat
-        legacy_episodes = series_detail_to_legacy_episodes(series_detail)
-
-        # Should match original (order might be different due to sorting)
-        episode_names = {ep.name for ep in legacy_episodes}
-        original_names = {ep["name"] for ep in original_data["episodes"]}
-
-        assert episode_names == original_names
 
 
 class TestEdgeCases:

@@ -79,34 +79,15 @@ async def extract_any(
 # No wrapper needed - voe_extractor is already async
 
 
-# Placeholder extractors for not-yet-implemented methods
-async def placeholder_extractor(
-    url: str, headers: Optional[Dict[str, str]] = None
-) -> List[VideoSource]:
-    """Placeholder extractor for unimplemented methods."""
-    return []
-
-
 # Mapping of extractor methods to their implementations
 EXTRACTOR_METHODS: Dict[
     str, Callable[[str, Optional[Dict[str, str]]], Awaitable[List[VideoSource]]]
 ] = {
-    "amazon": placeholder_extractor,
-    "burstcloud": placeholder_extractor,
     "doodstream": dood_extractor,
     "filemoon": filemoon_extractor,
     "luluvdo": luluvdo_extractor,
-    "mixdrop": placeholder_extractor,
-    "mp4upload": placeholder_extractor,
-    "okru": placeholder_extractor,
-    "sendvid": placeholder_extractor,
     "speedfiles": speedfiles_extractor,
-    "streamtape": placeholder_extractor,
-    "streamwish": placeholder_extractor,
-    "vidguard": placeholder_extractor,
-    "vidhide": placeholder_extractor,
     "vidmoly": vidmoly_extractor,
     "vidoza": vidoza_extractor,
     "voe": voe_extractor,
-    "yourupload": placeholder_extractor,
 }

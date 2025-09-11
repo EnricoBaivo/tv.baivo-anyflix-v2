@@ -108,10 +108,10 @@ class TestAnimeService:
             await anime_service.search("invalid", "test query")
 
     @pytest.mark.asyncio
-    async def test_get_detail_invalid_source(self, anime_service):
-        """Test get_detail with invalid source."""
+    async def test_get_series_detail_invalid_source(self, anime_service):
+        """Test get_series_detail with invalid source."""
         with pytest.raises(ValueError, match="Source 'invalid' not found"):
-            await anime_service.get_detail("invalid", "/test/url")
+            await anime_service.get_series_detail("invalid", "/test/url")
 
     @pytest.mark.asyncio
     async def test_get_video_list_invalid_source(self, anime_service):

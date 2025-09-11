@@ -43,14 +43,6 @@ class Episode(BaseModel):
     tags: List[str] = Field(default_factory=list)
 
 
-class LegacyEpisode(BaseModel):
-    """Legacy episode format for backward compatibility."""
-
-    name: str
-    url: str
-    date_upload: Optional[str] = None
-
-
 class Season(BaseModel):
     """Season information."""
 
@@ -87,7 +79,7 @@ class AnimeInfo(BaseModel):
     author: str = ""
     status: int = 5
     genre: List[str] = Field(default_factory=list)
-    episodes: List[LegacyEpisode] = Field(default_factory=list)
+    episodes: List[Dict[str, Any]] = Field(default_factory=list)  # Internal use only
 
 
 class SearchResult(BaseModel):

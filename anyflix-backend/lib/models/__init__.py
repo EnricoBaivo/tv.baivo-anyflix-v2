@@ -9,7 +9,6 @@ from .base import (
     VideoSource,
 )
 from .responses import (
-    DetailResponse,
     LatestResponse,
     PopularResponse,
     SearchResponse,
@@ -26,6 +25,5 @@ __all__ = [
     "PopularResponse",
     "LatestResponse",
     "SearchResponse",
-    "DetailResponse",
     "VideoListResponse",
 ]

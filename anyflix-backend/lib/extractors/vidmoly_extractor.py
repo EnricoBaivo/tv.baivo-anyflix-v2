@@ -51,11 +51,10 @@ async def vidmoly_extractor(
             m3u8_headers.update(headers)
 
         # Get video sources from M3U8 extractor
-        video_sources = await m3u8_extractor(playlist_url, m3u8_headers)
+        video_sources = await m3u8_extractor(playlist_url, m3u8_headers, host="vidmoly")
 
-        # Update each source to mark it as vidmoly and requiring proxy
+        # Update each source to mark it as requiring proxy
         for source in video_sources:
-            source.host = "vidmoly"
             source.requires_proxy = True
 
         return video_sources

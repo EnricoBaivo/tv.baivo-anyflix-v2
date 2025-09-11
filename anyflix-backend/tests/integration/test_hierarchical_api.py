@@ -7,15 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.dependencies import get_anime_service
 from app.main import app
-from lib.models.base import (
-    AnimeInfo,
-    Episode,
-    LegacyEpisode,
-    Movie,
-    MovieKind,
-    Season,
-    SeriesDetail,
-)
+from lib.models.base import AnimeInfo, Episode, Movie, MovieKind, Season, SeriesDetail
 from lib.models.responses import DetailResponse, SeriesDetailResponse
 
 
@@ -42,36 +34,36 @@ def sample_detail_response():
             status=5,
             genre=["Action", "Drama"],
             episodes=[
-                LegacyEpisode(
-                    name="Staffel 4 Folge 30 : The Final Chapter Part 2 [Series Final Episode]",
-                    url="/anime/stream/attack-on-titan/staffel-4/episode-30",
-                    date_upload=None,
-                ),
-                LegacyEpisode(
-                    name="Staffel 4 Folge 29 : The Final Chapter Part 1",
-                    url="/anime/stream/attack-on-titan/staffel-4/episode-29",
-                    date_upload=None,
-                ),
-                LegacyEpisode(
-                    name="Staffel 3 Folge 1 : Smoke Signal",
-                    url="/anime/stream/attack-on-titan/staffel-3/episode-1",
-                    date_upload=None,
-                ),
-                LegacyEpisode(
-                    name="Staffel 1 Folge 1 : To You, in 2000 Years",
-                    url="/anime/stream/attack-on-titan/staffel-1/episode-1",
-                    date_upload=None,
-                ),
-                LegacyEpisode(
-                    name="Film 12 : The Last Attack [Movie]",
-                    url="/anime/stream/attack-on-titan/filme/film-12",
-                    date_upload=None,
-                ),
-                LegacyEpisode(
-                    name="Film 11 : Great need [OVA]",
-                    url="/anime/stream/attack-on-titan/filme/film-11",
-                    date_upload=None,
-                ),
+                {
+                    "name": "Staffel 4 Folge 30 : The Final Chapter Part 2 [Series Final Episode]",
+                    "url": "/anime/stream/attack-on-titan/staffel-4/episode-30",
+                    "date_upload": None,
+                },
+                {
+                    "name": "Staffel 4 Folge 29 : The Final Chapter Part 1",
+                    "url": "/anime/stream/attack-on-titan/staffel-4/episode-29",
+                    "date_upload": None,
+                },
+                {
+                    "name": "Staffel 3 Folge 1 : Smoke Signal",
+                    "url": "/anime/stream/attack-on-titan/staffel-3/episode-1",
+                    "date_upload": None,
+                },
+                {
+                    "name": "Staffel 1 Folge 1 : To You, in 2000 Years",
+                    "url": "/anime/stream/attack-on-titan/staffel-1/episode-1",
+                    "date_upload": None,
+                },
+                {
+                    "name": "Film 12 : The Last Attack [Movie]",
+                    "url": "/anime/stream/attack-on-titan/filme/film-12",
+                    "date_upload": None,
+                },
+                {
+                    "name": "Film 11 : Great need [OVA]",
+                    "url": "/anime/stream/attack-on-titan/filme/film-11",
+                    "date_upload": None,
+                },
             ],
         )
     )
@@ -368,76 +360,6 @@ class TestHierarchicalEndpoints:
         assert "Movie 99 not found" in response.json()["detail"]
 
 
-class TestBackwardCompatibility:
-    """Test backward compatibility endpoints."""
-
-    def test_legacy_episodes_endpoint_deprecated(
-        self, mock_anime_service, sample_detail_response
-    ):
-        """Test deprecated /sources/{source}/episodes endpoint."""
-        mock_anime_service.get_detail.return_value = sample_detail_response
-
-        client = TestClient(app)
-        response = client.get(
-            "/sources/aniworld/episodes", params={"url": "/anime/attack-on-titan"}
-        )
-
-        assert response.status_code == 200
-
-        # Check deprecation headers
-        assert response.headers.get("Deprecation") == "true"
-        assert "successor-version" in response.headers.get("Link", "")
-        assert "deprecated" in response.headers.get("Warning", "").lower()
-
-        # Should return original flat format
-        data = response.json()
-        assert "anime" in data
-        assert "episodes" in data["anime"]
-        assert len(data["anime"]["episodes"]) == 6
-
-    def test_detail_endpoint_with_flat_param(
-        self, mock_anime_service, sample_detail_response
-    ):
-        """Test detail endpoint with flat=true parameter."""
-        mock_anime_service.get_detail.return_value = sample_detail_response
-
-        client = TestClient(app)
-        response = client.get(
-            "/sources/aniworld/detail",
-            params={"url": "/anime/attack-on-titan", "flat": "true"},
-        )
-
-        assert response.status_code == 200
-
-        # Check deprecation headers
-        assert response.headers.get("Deprecation") == "true"
-
-        # Should return original flat format
-        data = response.json()
-        assert "anime" in data
-        assert "episodes" in data["anime"]
-
-    def test_detail_endpoint_hierarchical_by_default(
-        self, mock_anime_service, sample_detail_response
-    ):
-        """Test detail endpoint returns hierarchical by default."""
-        mock_anime_service.get_detail.return_value = sample_detail_response
-
-        client = TestClient(app)
-        response = client.get(
-            "/sources/aniworld/detail", params={"url": "/anime/attack-on-titan"}
-        )
-
-        assert response.status_code == 200
-
-        # Should not have deprecation headers
-        assert "Deprecation" not in response.headers
-
-        # Should return flat format (current behavior)
-        data = response.json()
-        assert "anime" in data
-
-
 class TestErrorHandling:
     """Test error handling in hierarchical endpoints."""
 
@@ -572,11 +494,11 @@ class TestPerformance:
         for season in range(1, 11):  # 10 seasons
             for episode in range(1, 26):  # 25 episodes each
                 episodes.append(
-                    LegacyEpisode(
-                        name=f"Staffel {season} Folge {episode} : Episode {episode}",
-                        url=f"/anime/stream/long-series/staffel-{season}/episode-{episode}",
-                        date_upload=None,
-                    )
+                    {
+                        "name": f"Staffel {season} Folge {episode} : Episode {episode}",
+                        "url": f"/anime/stream/long-series/staffel-{season}/episode-{episode}",
+                        "date_upload": None,
+                    }
                 )
 
         large_response = DetailResponse(

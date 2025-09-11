@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, st
 from fastapi.responses import JSONResponse
 
 from lib.models.responses import (
-    DetailResponse,
     EpisodeResponse,
     LatestResponse,
     MovieResponse,
@@ -24,7 +23,7 @@ from ..dependencies import get_anime_service
 
 router = APIRouter(
     prefix="/sources",
-    tags=["anime-sources"],
+    tags=["media-api"],
     responses={
         404: {"description": "Source not found"},
         500: {"description": "Internal server error"},
@@ -34,9 +33,10 @@ router = APIRouter(
 
 @router.get(
     "/",
-    summary="Get Available Anime Sources",
-    description="Retrieve a list of all available anime streaming sources.",
-    response_description="List of available anime sources",
+    summary="📋 List Available Sources",
+    description="**Source Management**: Retrieve a list of all available streaming sources for media content.",
+    response_description="List of available streaming sources",
+    operation_id="list_sources",
     responses={
         200: {
             "description": "Successfully retrieved sources",
@@ -60,9 +60,10 @@ async def get_sources(anime_service: AnimeService = Depends(get_anime_service)):
 
 @router.get(
     "/{source}/preferences",
-    summary="Get Source Preferences",
-    description="Retrieve configuration preferences for a specific anime source.",
+    summary="📋 Get Source Configuration",
+    description="**Source Management**: Retrieve configuration preferences for a specific streaming source including language, quality, and host settings.",
     response_description="Source preferences configuration",
+    operation_id="get_source_preferences",
     responses={
         200: {
             "description": "Successfully retrieved preferences",
@@ -106,9 +107,10 @@ async def get_source_preferences(
 @router.get(
     "/{source}/popular",
     response_model=PopularResponse,
-    summary="Get Popular Anime",
-    description="Retrieve a list of popular anime from the specified source.",
-    response_description="List of popular anime with pagination info",
+    summary="🔍 Get Popular Content",
+    description="**Content Discovery**: Retrieve a list of popular media content from the specified source, sorted by popularity rankings.",
+    response_description="List of popular content with pagination info",
+    operation_id="get_popular_content",
     responses={
         200: {
             "description": "Successfully retrieved popular anime",
@@ -150,9 +152,10 @@ async def get_popular(
 @router.get(
     "/{source}/latest",
     response_model=LatestResponse,
-    summary="Get Latest Updates",
-    description="Retrieve the latest anime updates from the specified source.",
-    response_description="List of recently updated anime",
+    summary="🔍 Get Latest Updates",
+    description="**Content Discovery**: Retrieve the latest media updates from the specified source with new episodes or content.",
+    response_description="List of recently updated content",
+    operation_id="get_latest_updates",
 )
 async def get_latest_updates(
     source: str = Path(..., description="Source identifier"),
@@ -175,13 +178,14 @@ async def get_latest_updates(
 @router.get(
     "/{source}/search",
     response_model=SearchResponse,
-    summary="Search Anime",
-    description="Search for anime by title in the specified source.",
-    response_description="List of anime matching the search query",
+    summary="🔍 Search Content",
+    description="**Content Discovery**: Search for media content by title in the specified source with optional language filtering.",
+    response_description="List of content matching the search query",
+    operation_id="search_content",
 )
-async def search_anime(
+async def search_content(
     source: str = Path(..., description="Source identifier"),
-    q: str = Query(..., description="Search query (anime title)", min_length=1),
+    q: str = Query(..., description="Search query (content title)", min_length=1),
     page: int = Query(1, ge=1, description="Page number for pagination"),
     lang: str = Query(None, description="Language filter (de, en, sub, all)"),
     anime_service: AnimeService = Depends(get_anime_service),
@@ -200,76 +204,12 @@ async def search_anime(
 
 
 @router.get(
-    "/{source}/detail",
-    response_model=DetailResponse,
-    summary="Get Anime Details (Legacy)",
-    description="Get detailed information about a specific anime including flat episodes list.",
-    response_description="Detailed anime information with flat episodes structure",
-    responses={
-        200: {
-            "description": "Successfully retrieved anime details",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "anime": {
-                            "name": "Attack on Titan",
-                            "image_url": "https://example.com/image.jpg",
-                            "description": "Anime description...",
-                            "author": "Hajime Isayama",
-                            "status": 5,
-                            "genre": ["Action", "Drama"],
-                            "episodes": [
-                                {
-                                    "name": "Staffel 4 Folge 30 : The Final Chapter Part 2",
-                                    "url": "/anime/stream/attack-on-titan/staffel-4/episode-30",
-                                    "date_upload": None,
-                                }
-                            ],
-                        }
-                    }
-                }
-            },
-        }
-    },
-    deprecated=True,
-)
-async def get_anime_detail(
-    source: str = Path(..., description="Source identifier"),
-    url: str = Query(..., description="Anime URL path"),
-    flat: bool = Query(False, description="Return flat episodes (legacy format)"),
-    response: Response = None,
-    anime_service: AnimeService = Depends(get_anime_service),
-):
-    """
-    Get detailed information about a specific anime (Legacy Endpoint).
-
-    **⚠️ DEPRECATED:** This endpoint returns episodes in a flat structure.
-    Use `/sources/{source}/series` for the new hierarchical structure with seasons and movies.
-
-    Returns comprehensive anime information including metadata and a flat list of all episodes.
-    """
-    try:
-        if flat:
-            # Add deprecation warning for flat format
-            response.headers["Deprecation"] = "true"
-            response.headers["Link"] = (
-                f'</sources/{source}/series>; rel="successor-version"'
-            )
-            return await anime_service.get_detail(source, url)
-        else:
-            return await anime_service.get_detail(source, url)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-
-
-@router.get(
     "/{source}/videos",
     response_model=VideoListResponse,
-    summary="Get Video Sources",
-    description="Get available video streams for a specific episode with optional language preference.",
+    summary="🎬 Get Video Streaming Links",
+    description="**Video Sources**: Get available video streams for a specific episode with optional language preference and multiple hosting providers.",
     response_description="List of video sources with different hosts and qualities",
+    operation_id="get_video_sources",
 )
 async def get_video_sources(
     source: str = Path(..., description="Source identifier"),
@@ -295,15 +235,16 @@ async def get_video_sources(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-# ========== NEW HIERARCHICAL API ENDPOINTS ==========
+# ========== SERIES STRUCTURE ENDPOINTS ==========
 
 
 @router.get(
     "/{source}/series",
     response_model=SeriesDetailResponse,
-    summary="Get Series Detail (Hierarchical)",
-    description="Get anime series with episodes organized by seasons and movies/OVAs separately.",
+    summary="📺 Get Full Series Data",
+    description="**Series Structure**: Get complete media series with episodes organized by seasons and movies/specials separately.",
     response_description="Hierarchical series structure with seasons and movies",
+    operation_id="get_series_detail",
     responses={
         200: {
             "description": "Successfully retrieved hierarchical series detail",
@@ -344,7 +285,7 @@ async def get_video_sources(
             },
         }
     },
-    tags=["hierarchical-api"],
+    tags=["media-api"],
 )
 async def get_series_detail(
     source: str = Path(..., description="Source identifier"),
@@ -354,15 +295,15 @@ async def get_series_detail(
     """
     Get anime series with hierarchical episode organization.
 
-    **🆕 NEW ENDPOINT:** Returns episodes organized by seasons and movies/OVAs/specials
+    **🆕 NEW ENDPOINT:** Returns episodes organized by seasons and movies/specials
     separately, providing a better structure for frontend applications.
 
     **Features:**
     - Episodes grouped by season number
-    - Movies/OVAs/specials in separate collection
+    - Movies/specials in separate collection
     - Extracted tags from episode names
     - Automatic sorting by season/episode numbers
-    - Clean title extraction without German prefixes
+    - Clean title extraction
     """
     try:
         return await anime_service.get_series_detail(source, url)
@@ -375,10 +316,11 @@ async def get_series_detail(
 @router.get(
     "/{source}/series/seasons",
     response_model=SeasonsResponse,
-    summary="Get All Seasons",
-    description="Get list of all seasons for a series.",
+    summary="📺 Get All Seasons",
+    description="**Series Structure**: Get list of all seasons for a series with their episodes, sorted by season number.",
     response_description="List of all seasons with their episodes",
-    tags=["hierarchical-api"],
+    operation_id="get_all_seasons",
+    tags=["media-api"],
 )
 async def get_series_seasons(
     source: str = Path(..., description="Source identifier"),
@@ -402,11 +344,12 @@ async def get_series_seasons(
 @router.get(
     "/{source}/series/seasons/{season_num}",
     response_model=SeasonResponse,
-    summary="Get Specific Season",
-    description="Get details for a specific season including all its episodes.",
+    summary="📺 Get Specific Season",
+    description="**Series Structure**: Get details for a specific season including all its episodes, sorted by episode number.",
     response_description="Season details with all episodes",
+    operation_id="get_season_detail",
     responses={404: {"description": "Season not found"}},
-    tags=["hierarchical-api"],
+    tags=["media-api"],
 )
 async def get_series_season(
     source: str = Path(..., description="Source identifier"),
@@ -437,11 +380,12 @@ async def get_series_season(
 @router.get(
     "/{source}/series/seasons/{season_num}/episodes/{episode_num}",
     response_model=EpisodeResponse,
-    summary="Get Specific Episode",
-    description="Get details for a specific episode within a season.",
+    summary="📺 Get Specific Episode",
+    description="**Series Structure**: Get details for a specific episode within a season, including title, URL, tags, and metadata.",
     response_description="Episode details",
+    operation_id="get_episode_detail",
     responses={404: {"description": "Season or episode not found"}},
-    tags=["hierarchical-api"],
+    tags=["media-api"],
 )
 async def get_series_episode(
     source: str = Path(..., description="Source identifier"),
@@ -480,9 +424,10 @@ async def get_series_episode(
 @router.get(
     "/{source}/series/movies",
     response_model=MoviesResponse,
-    summary="Get All Movies/OVAs",
-    description="Get list of all movies, OVAs, and specials for a series.",
+    summary="📺 Get All Movies/OVAs",
+    description="**Series Structure**: Get list of all movies, OVAs, and specials for a series, sorted by number.",
     response_description="List of movies, OVAs, and specials",
+    operation_id="get_all_movies",
     responses={
         200: {
             "description": "Successfully retrieved movies",
@@ -512,7 +457,7 @@ async def get_series_episode(
             },
         }
     },
-    tags=["hierarchical-api"],
+    tags=["media-api"],
 )
 async def get_series_movies(
     source: str = Path(..., description="Source identifier"),
@@ -537,11 +482,12 @@ async def get_series_movies(
 @router.get(
     "/{source}/series/movies/{movie_num}",
     response_model=MovieResponse,
-    summary="Get Specific Movie/OVA",
-    description="Get details for a specific movie, OVA, or special by number.",
+    summary="📺 Get Specific Movie/OVA",
+    description="**Series Structure**: Get details for a specific movie, OVA, or special by number, including title, kind, URL, and tags.",
     response_description="Movie/OVA/special details",
+    operation_id="get_movie_detail",
     responses={404: {"description": "Movie not found"}},
-    tags=["hierarchical-api"],
+    tags=["media-api"],
 )
 async def get_series_movie(
     source: str = Path(..., description="Source identifier"),
@@ -564,75 +510,6 @@ async def get_series_movie(
     except HTTPException:
         # Re-raise HTTPExceptions (like our 404) without wrapping them
         raise
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-
-
-# ========== BACKWARD COMPATIBILITY ENDPOINTS ==========
-
-
-@router.get(
-    "/{source}/episodes",
-    response_model=DetailResponse,
-    summary="Get Episodes (Flat) - DEPRECATED",
-    description="⚠️ DEPRECATED: Get episodes in flat format for backward compatibility.",
-    response_description="Anime details with flat episodes list",
-    deprecated=True,
-    responses={
-        200: {
-            "description": "Successfully retrieved episodes (flat format)",
-            "headers": {
-                "Deprecation": {
-                    "description": "Indicates this endpoint is deprecated",
-                    "schema": {"type": "string"},
-                },
-                "Link": {
-                    "description": "Link to successor version",
-                    "schema": {"type": "string"},
-                },
-                "Warning": {
-                    "description": "Deprecation warning message",
-                    "schema": {"type": "string"},
-                },
-            },
-        }
-    },
-    tags=["legacy-endpoints"],
-)
-async def get_episodes_flat(
-    source: str = Path(..., description="Source identifier"),
-    url: str = Query(..., description="Anime URL path"),
-    response: Response = None,
-    anime_service: AnimeService = Depends(get_anime_service),
-):
-    """
-    Get episodes in flat format (DEPRECATED).
-
-    **⚠️ DEPRECATED:** This endpoint is maintained for backward compatibility only.
-
-    **Migration Guide:**
-    - Use `GET /sources/{source}/series` for hierarchical structure
-    - Episodes will be organized by seasons with movies/OVAs separate
-    - Better performance and structure for modern applications
-
-    **Deprecation Timeline:**
-    - Will be removed in v2.0.0
-    - Please migrate to the new hierarchical endpoints
-    """
-    # Add deprecation warning headers
-    if response:
-        response.headers["Deprecation"] = "true"
-        response.headers["Link"] = (
-            f'</sources/{source}/series>; rel="successor-version"'
-        )
-        response.headers["Warning"] = (
-            '299 - "This endpoint is deprecated. Use /series for hierarchical structure."'
-        )
-
-    try:
-        return await anime_service.get_detail(source, url)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

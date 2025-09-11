@@ -7,7 +7,6 @@ from lib.models.base import (
     AnimeInfo,
     AnimeSource,
     Episode,
-    LegacyEpisode,
     SearchResult,
     SourcePreference,
     VideoSource,
@@ -39,24 +38,11 @@ class TestBaseModels:
         assert source.api_url == ""  # Default value
         assert source.is_nsfw is False  # Default value
 
-    def test_legacy_episode_creation(self):
-        """Test LegacyEpisode model creation."""
-        episode = LegacyEpisode(name="Test Episode", url="/test/episode")
-        assert episode.name == "Test Episode"
-        assert episode.url == "/test/episode"
-        assert episode.date_upload is None  # Optional field
-
-        # Test with date_upload
-        episode_with_date = LegacyEpisode(
-            name="Test Episode 2", url="/test/episode2", date_upload="1640995200000"
-        )
-        assert episode_with_date.date_upload == "1640995200000"
-
     def test_anime_info_creation(self):
         """Test AnimeInfo model creation."""
         episodes = [
-            LegacyEpisode(name="Episode 1", url="/ep1"),
-            LegacyEpisode(name="Episode 2", url="/ep2"),
+            {"name": "Episode 1", "url": "/ep1", "date_upload": None},
+            {"name": "Episode 2", "url": "/ep2", "date_upload": None},
         ]
 
         anime = AnimeInfo(

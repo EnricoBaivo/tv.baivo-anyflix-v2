@@ -10,7 +10,7 @@ from .m3u8_extractor import m3u8_extractor
 
 
 async def jwplayer_extractor(
-    text: str, headers: Optional[Dict[str, str]] = None
+    text: str, headers: Optional[Dict[str, str]] = None, host: Optional[str] = None
 ) -> List[VideoSource]:
     """
     Extract video sources from JWPlayer setup.
@@ -79,7 +79,7 @@ async def jwplayer_extractor(
 
         if "master.m3u8" in file_url:
             # Extract from M3U8 playlist
-            m3u8_videos = await m3u8_extractor(file_url, headers)
+            m3u8_videos = await m3u8_extractor(file_url, headers, host=host)
             videos.extend(m3u8_videos)
         elif ".mpd" in file_url:
             # DASH manifest - not implemented yet
@@ -88,7 +88,7 @@ async def jwplayer_extractor(
             # Direct video file
             quality = source.get("label", "")
             video_source = VideoSource(
-                url=file_url, original_url=file_url, quality=quality, headers=headers
+                url=file_url, original_url=file_url, quality=quality, headers=headers, host=host
             )
             videos.append(video_source)
 

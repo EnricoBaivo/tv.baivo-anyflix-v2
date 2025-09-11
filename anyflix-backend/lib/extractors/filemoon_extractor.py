@@ -67,7 +67,7 @@ async def filemoon_extractor(
                 print(f"Failed to fetch iframe content: {iframe_response.status_code}")
 
         # Extract video sources using JWPlayer extractor
-        return await jwplayer_extractor(response.body, headers)
+        return await jwplayer_extractor(response.body, headers, host="filemoon")
 
     except Exception as e:
         print(f"Failed to extract video sources: {e}")

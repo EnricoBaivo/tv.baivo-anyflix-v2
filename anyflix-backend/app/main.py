@@ -103,33 +103,46 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app with comprehensive OpenAPI documentation
 app = FastAPI(
-    title="Anime Backend Service",
+    title="Media Streaming Backend Service",
     lifespan=lifespan,
     description="""
-    **Python backend service for anime streaming sources** 🎌
+    **Python backend service for media streaming sources** 🎬
 
-    This API provides access to anime content from multiple German streaming sources 
-    including AniWorld and SerienStream, with both legacy flat and modern hierarchical endpoints.
+    Complete media streaming API providing access to content from multiple streaming sources 
+    with a modern, logically organized structure. Currently supports anime content from German sources
+    including AniWorld and SerienStream, with extensible architecture for other media types.
 
-    ## Features
-    - 🔍 **Search and Discovery**: Find anime across multiple sources
-    - 📺 **Hierarchical Episodes**: Organized by seasons with separate movies/OVAs
-    - 🎬 **Video Sources**: Extract streaming links from various hosts
-    - 🔄 **Backward Compatibility**: Legacy endpoints for existing integrations
-    - ⚙️ **Source Preferences**: Configurable language, quality, and host settings
+    ## 🎬 Media API Structure
 
-    ## API Versions
-    - **🆕 Hierarchical API** (`/sources/{source}/series/*`): Modern structure with seasons & movies
-    - **⚠️ Legacy API** (`/sources/{source}/detail`, `/sources/{source}/episodes`): Flat structure (deprecated)
+    ### 📋 Source Management
+    - List available streaming sources and their configurations
+    - Get source-specific preferences and settings
 
-    ## Migration Guide
-    For new applications, use the hierarchical endpoints under `/sources/{source}/series/`.
-    Legacy endpoints will be removed in v2.0.0.
+    ### 🔍 Content Discovery  
+    - Browse popular content rankings
+    - Get latest updates and new releases
+    - Search content by title with filtering
+
+    ### 📺 Series Structure
+    - Complete hierarchical content organization
+    - Season and episode management
+    - Movies, specials, and additional content
+    - Granular access to specific content items
+
+    ### 🎬 Video Sources
+    - Extract streaming links from 10+ hosting providers
+    - Multiple quality options and language preferences
+    - Built-in proxy support for CORS handling
+
+    ## ⚡ Quick Start
+    1. **Discover**: `/sources/{source}/search?q=content-title`
+    2. **Structure**: `/sources/{source}/series?url=...`  
+    3. **Stream**: `/sources/{source}/videos?url=...`
     """,
     version="1.0.0",
     contact={
-        "name": "Anime Backend API",
-        "url": "https://github.com/your-repo/anime-backend",
+        "name": "Media Streaming Backend API",
+        "url": "https://github.com/your-repo/media-backend",
     },
     license_info={
         "name": "MIT License",
@@ -137,16 +150,16 @@ app = FastAPI(
     },
     openapi_tags=[
         {
-            "name": "anime-sources",
-            "description": "Core source management and discovery endpoints",
+            "name": "media-api",
+            "description": "Complete media streaming API with discovery, content management, and video sources",
         },
         {
-            "name": "hierarchical-api",
-            "description": "🆕 Modern hierarchical endpoints with seasons and movies structure",
+            "name": "proxy",
+            "description": "Video proxy endpoints for CORS handling and streaming",
         },
         {
-            "name": "legacy-endpoints",
-            "description": "⚠️ Deprecated flat structure endpoints (use hierarchical-api instead)",
+            "name": "admin",
+            "description": "Administrative endpoints for service management",
         },
     ],
 )
@@ -186,7 +199,7 @@ app.add_middleware(
             },
         }
     },
-    tags=["anime-sources"],
+    tags=["media-api"],
 )
 async def root():
     """
@@ -197,15 +210,17 @@ async def root():
     """
     anime_service = get_anime_service()
     return {
-        "message": "Anime Backend Service",
+        "message": "Media Streaming Backend Service",
         "version": "1.0.0",
         "available_sources": anime_service.get_available_sources(),
         "api_docs": "/docs",
         "openapi_schema": "/openapi.json",
         "features": {
             "hierarchical_api": "Modern structure with seasons and movies",
-            "legacy_support": "Backward compatibility maintained",
-            "multi_source": "Support for multiple anime sources",
+            "video_proxy": "Built-in video proxy for CORS handling",
+            "multi_source": "Support for multiple streaming sources",
+            "extractors": "Support for 10+ video hosting services",
+            "media_types": "Extensible architecture for various media content",
         },
     }
 

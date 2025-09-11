@@ -47,7 +47,7 @@ async def luluvdo_extractor(
             return []
 
         # Extract video sources using JWPlayer extractor
-        return await jwplayer_extractor(response.body, request_headers)
+        return await jwplayer_extractor(response.body, request_headers, host="luluvdo")
 
     except Exception:
         return []

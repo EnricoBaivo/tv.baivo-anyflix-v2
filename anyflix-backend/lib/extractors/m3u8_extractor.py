@@ -9,7 +9,7 @@ from ..utils.js_utils import abs_url
 
 
 async def m3u8_extractor(
-    url: str, headers: Optional[Dict[str, str]] = None
+    url: str, headers: Optional[Dict[str, str]] = None, host: Optional[str] = None
 ) -> List[VideoSource]:
     """
     Extract video sources from M3U8 playlist.
@@ -140,6 +140,7 @@ async def m3u8_extractor(
             headers=headers,
             subtitles=subs,
             audios=audios_list,
+            host=host,
         )
         streams.append(video_source)
 
@@ -153,6 +154,7 @@ async def m3u8_extractor(
                 headers=headers,
                 subtitles=None,
                 audios=None,
+                host=host,
             )
         ]
 

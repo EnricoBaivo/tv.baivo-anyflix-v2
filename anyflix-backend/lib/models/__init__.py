@@ -1,5 +1,13 @@
 """Models for anime backend service."""
 
+from .anilist import (
+    Media,
+    MediaPageResponse,
+    MediaResponse,
+    MediaSearchVariables,
+    MediaType,
+    PageResponse,
+)
 from .base import Episode, MediaInfo, SearchResult, SourcePreference, VideoSource
 from .responses import (
     LatestResponse,
@@ -9,12 +17,20 @@ from .responses import (
 )
 
 __all__ = [
-    "MediaInfo",
+    # AniList models
+    "Media",
+    "MediaPageResponse",
+    "MediaResponse",
+    "MediaSearchVariables",
+    "MediaType",
+    "PageResponse",
+    # Base models
     "MediaInfo",
     "Episode",
     "VideoSource",
     "SearchResult",
     "SourcePreference",
+    # Response models
     "PopularResponse",
     "LatestResponse",
     "SearchResponse",

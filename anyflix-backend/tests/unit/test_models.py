@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from lib.models.base import (
     Episode,
     MediaInfo,
+    MediaSource,
     SearchResult,
     SourcePreference,
     VideoSource,
@@ -23,8 +24,8 @@ class TestBaseModels:
     """Test cases for base models."""
 
     def test_anime_source_creation(self):
-        """Test MediaInfo model creation."""
-        source = MediaInfo(
+        """Test MediaSource model creation."""
+        source = MediaSource(
             name="Test Source",
             lang="en",
             base_url="https://test.com",

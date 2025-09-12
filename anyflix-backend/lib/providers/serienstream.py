@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from ..models.base import MediaInfo, SearchResult, SourcePreference, VideoSource
+from ..models.base import MediaSource, SearchResult, SourcePreference, VideoSource
 from ..models.responses import (
     DetailResponse,
     LatestResponse,
@@ -21,7 +21,7 @@ class SerienStreamProvider(BaseProvider):
 
     def __init__(self):
         """Initialize SerienStream provider."""
-        source = MediaInfo(
+        source = MediaSource(
             name="SerienStream",
             lang="de",
             base_url="https://serienstream.to",

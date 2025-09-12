@@ -5,7 +5,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 from ..extractors.extract_any import extract_any
-from ..models.base import MediaInfo, SearchResult, SourcePreference
+from ..models.base import MediaSource, SearchResult, SourcePreference
 from ..models.responses import (
     DetailResponse,
     LatestResponse,
@@ -52,7 +52,7 @@ class AniWorldProvider(BaseProvider):
 
     def __init__(self):
         """Initialize AniWorld provider."""
-        source = MediaInfo(
+        source = MediaSource(
             name="AniWorld",
             lang="de",
             base_url="https://aniworld.to",

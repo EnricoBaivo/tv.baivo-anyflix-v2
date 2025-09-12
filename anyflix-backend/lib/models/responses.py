@@ -4,7 +4,15 @@ from typing import List
 
 from pydantic import BaseModel
 
-from .base import AnimeInfo, SearchResult, VideoSource, SeriesDetail, Season, Movie, Episode
+from .base import (
+    Episode,
+    MediaInfo,
+    Movie,
+    SearchResult,
+    Season,
+    SeriesDetail,
+    VideoSource,
+)
 
 
 class PopularResponse(BaseModel):
@@ -29,9 +37,9 @@ class SearchResponse(BaseModel):
 
 
 class DetailResponse(BaseModel):
-    """Response for anime details."""
+    """Response for media details."""
 
-    anime: AnimeInfo
+    media: MediaInfo
 
 
 class VideoListResponse(BaseModel):

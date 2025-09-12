@@ -4,9 +4,8 @@ import pytest
 from pydantic import ValidationError
 
 from lib.models.base import (
-    AnimeInfo,
-    AnimeSource,
     Episode,
+    MediaInfo,
     SearchResult,
     SourcePreference,
     VideoSource,
@@ -24,8 +23,8 @@ class TestBaseModels:
     """Test cases for base models."""
 
     def test_anime_source_creation(self):
-        """Test AnimeSource model creation."""
-        source = AnimeSource(
+        """Test MediaInfo model creation."""
+        source = MediaInfo(
             name="Test Source",
             lang="en",
             base_url="https://test.com",
@@ -39,13 +38,13 @@ class TestBaseModels:
         assert source.is_nsfw is False  # Default value
 
     def test_anime_info_creation(self):
-        """Test AnimeInfo model creation."""
+        """Test MediaInfo model creation."""
         episodes = [
             {"name": "Episode 1", "url": "/ep1", "date_upload": None},
             {"name": "Episode 2", "url": "/ep2", "date_upload": None},
         ]
 
-        anime = AnimeInfo(
+        anime = MediaInfo(
             name="Test Anime",
             image_url="https://test.com/image.jpg",
             description="Test description",
@@ -148,13 +147,13 @@ class TestResponseModels:
 
     def test_detail_response(self):
         """Test DetailResponse model."""
-        anime = AnimeInfo(
+        media = MediaInfo(
             name="Detail Anime",
             image_url="detail.jpg",
             description="Detailed description",
         )
-        response = DetailResponse(anime=anime)
-        assert response.anime.name == "Detail Anime"
+        response = DetailResponse(media=media)
+        assert response.media.name == "Detail Anime"
 
     def test_video_list_response(self):
         """Test VideoListResponse model."""
@@ -174,10 +173,10 @@ class TestModelValidation:
     def test_anime_source_required_fields(self):
         """Test that required fields are validated."""
         with pytest.raises(ValidationError):
-            AnimeSource()  # Missing required fields
+            MediaInfo()  # Missing required fields
 
         with pytest.raises(ValidationError):
-            AnimeSource(name="Test")  # Missing other required fields
+            MediaInfo(name="Test")  # Missing other required fields
 
     def test_episode_creation(self):
         """Test new Episode model creation with required fields."""

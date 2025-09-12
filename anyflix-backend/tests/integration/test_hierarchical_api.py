@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.dependencies import get_anime_service
 from app.main import app
-from lib.models.base import AnimeInfo, Episode, Movie, MovieKind, Season, SeriesDetail
+from lib.models.base import Episode, MediaInfo, Movie, MovieKind, Season, SeriesDetail
 from lib.models.responses import DetailResponse, SeriesDetailResponse
 
 
@@ -26,7 +26,7 @@ def mock_anime_service():
 def sample_detail_response():
     """Sample detail response with flat episodes."""
     return DetailResponse(
-        anime=AnimeInfo(
+        media=MediaInfo(
             name="Attack on Titan",
             image_url="https://example.com/image.jpg",
             description="Test description",
@@ -502,7 +502,7 @@ class TestPerformance:
                 )
 
         large_response = DetailResponse(
-            anime=AnimeInfo(
+            media=MediaInfo(
                 name="Long Series",
                 image_url="https://example.com/image.jpg",
                 description="A very long series",

@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
 from ..models.base import (
-    AnimeInfo,
-    AnimeSource,
+    MediaInfo,
+    MediaSource,
     SearchResult,
     SourcePreference,
     VideoSource,
@@ -24,7 +24,7 @@ from ..utils.helpers import async_pool, clean_html_string
 class BaseProvider(ABC):
     """Base class for anime source providers."""
 
-    def __init__(self, source: AnimeSource):
+    def __init__(self, source: MediaSource):
         """Initialize provider with source configuration.
 
         Args:

@@ -5,7 +5,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 from ..extractors.extract_any import extract_any
-from ..models.base import AnimeInfo, AnimeSource, SearchResult, SourcePreference
+from ..models.base import MediaInfo, SearchResult, SourcePreference
 from ..models.responses import (
     DetailResponse,
     LatestResponse,
@@ -52,7 +52,7 @@ class AniWorldProvider(BaseProvider):
 
     def __init__(self):
         """Initialize AniWorld provider."""
-        source = AnimeSource(
+        source = MediaInfo(
             name="AniWorld",
             lang="de",
             base_url="https://aniworld.to",
@@ -300,7 +300,7 @@ class AniWorldProvider(BaseProvider):
             episodes.extend(ep_array)
         episodes.reverse()
 
-        anime_info = AnimeInfo(
+        anime_info = MediaInfo(
             name=name,
             image_url=image_url,
             description=description,
@@ -310,7 +310,7 @@ class AniWorldProvider(BaseProvider):
             episodes=episodes,
         )
 
-        return DetailResponse(anime=anime_info)
+        return DetailResponse(media=anime_info)
 
     async def parse_episodes_from_series(self, element) -> List[Dict[str, Any]]:
         """Parse episodes from a season.

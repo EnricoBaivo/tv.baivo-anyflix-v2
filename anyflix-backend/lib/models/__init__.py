@@ -1,13 +1,6 @@
 """Models for anime backend service."""
 
-from .base import (
-    AnimeInfo,
-    AnimeSource,
-    Episode,
-    SearchResult,
-    SourcePreference,
-    VideoSource,
-)
+from .base import Episode, MediaInfo, SearchResult, SourcePreference, VideoSource
 from .responses import (
     LatestResponse,
     PopularResponse,
@@ -16,8 +9,8 @@ from .responses import (
 )
 
 __all__ = [
-    "AnimeSource",
-    "AnimeInfo",
+    "MediaInfo",
+    "MediaInfo",
     "Episode",
     "VideoSource",
     "SearchResult",

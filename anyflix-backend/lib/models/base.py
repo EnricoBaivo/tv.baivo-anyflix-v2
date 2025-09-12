@@ -7,8 +7,8 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field, HttpUrl
 
 
-class AnimeSource(BaseModel):
-    """Configuration for an anime source."""
+class MediaSource(BaseModel):
+    """Configuration for a media source."""
 
     name: str
     lang: str
@@ -70,8 +70,8 @@ class SeriesDetail(BaseModel):
     movies: List[Movie] = Field(default_factory=list)
 
 
-class AnimeInfo(BaseModel):
-    """Detailed anime information."""
+class MediaInfo(BaseModel):
+    """Detailed Media information."""
 
     name: str
     image_url: str

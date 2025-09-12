@@ -4,13 +4,7 @@ import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from ..models.base import (
-    AnimeInfo,
-    AnimeSource,
-    SearchResult,
-    SourcePreference,
-    VideoSource,
-)
+from ..models.base import MediaInfo, SearchResult, SourcePreference, VideoSource
 from ..models.responses import (
     DetailResponse,
     LatestResponse,
@@ -27,7 +21,7 @@ class SerienStreamProvider(BaseProvider):
 
     def __init__(self):
         """Initialize SerienStream provider."""
-        source = AnimeSource(
+        source = MediaInfo(
             name="SerienStream",
             lang="de",
             base_url="https://serienstream.to",
@@ -222,7 +216,7 @@ class SerienStreamProvider(BaseProvider):
             episodes.extend(ep_array)
         episodes.reverse()
 
-        anime_info = AnimeInfo(
+        anime_info = MediaInfo(
             name=name,
             image_url=image_url,
             description=description,
@@ -232,7 +226,7 @@ class SerienStreamProvider(BaseProvider):
             episodes=episodes,
         )
 
-        return DetailResponse(anime=anime_info)
+        return DetailResponse(media=anime_info)
 
     async def parse_episodes_from_series(self, element) -> List[Dict[str, Any]]:
         """Parse episodes from a season.

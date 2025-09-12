@@ -88,7 +88,11 @@ async def jwplayer_extractor(
             # Direct video file
             quality = source.get("label", "")
             video_source = VideoSource(
-                url=file_url, original_url=file_url, quality=quality, headers=headers, host=host
+                url=file_url,
+                original_url=file_url,
+                quality=quality,
+                headers=headers,
+                host=host,
             )
             videos.append(video_source)
 

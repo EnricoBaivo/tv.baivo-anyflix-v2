@@ -1,6 +1,6 @@
 """Response models for API endpoints."""
 
-from typing import List
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel
 
@@ -14,28 +14,24 @@ from .base import (
     VideoSource,
 )
 
+# Generic patterns (moved from generic.py)
+T = TypeVar("T")
 
-class PopularResponse(BaseModel):
-    """Response for popular anime list."""
 
-    list: List[SearchResult]
+class PaginatedResponse(BaseModel, Generic[T]):
+    """Generic paginated response model."""
+
+    list: list[T]
     has_next_page: bool = False
 
 
-class LatestResponse(BaseModel):
-    """Response for latest updates."""
-
-    list: List[SearchResult]
-    has_next_page: bool = False
-
-
-class SearchResponse(BaseModel):
-    """Response for search results."""
-
-    list: List[SearchResult]
-    has_next_page: bool = False
+# Type aliases using generics for common patterns
+PopularResponse = PaginatedResponse[SearchResult]
+LatestResponse = PaginatedResponse[SearchResult]
+SearchResponse = PaginatedResponse[SearchResult]
 
 
+# Single item responses
 class DetailResponse(BaseModel):
     """Response for media details."""
 
@@ -45,7 +41,7 @@ class DetailResponse(BaseModel):
 class VideoListResponse(BaseModel):
     """Response for video sources."""
 
-    videos: List[VideoSource]
+    videos: list[VideoSource]
 
 
 class SeriesDetailResponse(BaseModel):
@@ -57,7 +53,7 @@ class SeriesDetailResponse(BaseModel):
 class SeasonsResponse(BaseModel):
     """Response for seasons list."""
 
-    seasons: List[Season]
+    seasons: list[Season]
 
 
 class SeasonResponse(BaseModel):
@@ -75,7 +71,7 @@ class EpisodeResponse(BaseModel):
 class MoviesResponse(BaseModel):
     """Response for movies list."""
 
-    movies: List[Movie]
+    movies: list[Movie]
 
 
 class MovieResponse(BaseModel):

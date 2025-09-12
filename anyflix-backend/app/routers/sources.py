@@ -1,10 +1,16 @@
 """Anime sources API router with comprehensive OpenAPI documentation."""
 
-from typing import List
+from typing import Union
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
+from lib.models.enhanced import (
+    EnhancedLatestResponse,
+    EnhancedPopularResponse,
+    EnhancedSearchResponse,
+    EnhancedSeriesDetailResponse,
+    EnhancedVideoListResponse,
+)
 from lib.models.responses import (
     EpisodeResponse,
     LatestResponse,
@@ -19,7 +25,7 @@ from lib.models.responses import (
 )
 from lib.services.anime_service import AnimeService
 
-from ..dependencies import get_anime_service
+from ..dependencies import get_anime_service, get_enhanced_anime_service
 
 router = APIRouter(
     prefix="/sources",
@@ -48,14 +54,26 @@ router = APIRouter(
         }
     },
 )
-async def get_sources(anime_service: AnimeService = Depends(get_anime_service)):
+async def get_sources(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
     """
-    Get all available anime sources.
+    Get all available anime sources with metadata capabilities.
 
     Returns a list of source identifiers that can be used with other endpoints
-    to access anime content from different streaming platforms.
+    to access anime content from different streaming platforms, with optional
+    AniList metadata enrichment support.
     """
-    return {"sources": anime_service.get_available_sources()}
+    return {
+        "sources": enhanced_service.get_available_sources(),
+        "metadata_support": enhanced_service.enable_metadata,
+        "features": [
+            "Basic streaming source data",
+            "Optional AniList metadata enrichment",
+            "Professional caching system",
+            "Anime-only filtering",
+        ],
+    }
 
 
 @router.get(
@@ -90,7 +108,7 @@ async def get_source_preferences(
     source: str = Path(
         ..., description="Source identifier (e.g., 'aniworld', 'serienstream')"
     ),
-    anime_service: AnimeService = Depends(get_anime_service),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
     Get configuration preferences for a specific anime source.
@@ -98,7 +116,7 @@ async def get_source_preferences(
     Preferences control playback settings like language, quality, and host preferences.
     """
     try:
-        preferences = anime_service.get_source_preferences(source)
+        preferences = enhanced_service.get_source_preferences(source)
         return {"preferences": preferences}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -106,25 +124,54 @@ async def get_source_preferences(
 
 @router.get(
     "/{source}/popular",
-    response_model=PopularResponse,
+    response_model=Union[PopularResponse, EnhancedPopularResponse],
     summary="🔍 Get Popular Content",
-    description="**Content Discovery**: Retrieve a list of popular media content from the specified source, sorted by popularity rankings.",
-    response_description="List of popular content with pagination info",
+    description="**Content Discovery**: Retrieve popular anime with optional AniList metadata enrichment including ratings, genres, characters, and more.",
+    response_description="List of popular content with optional metadata",
     operation_id="get_popular_content",
     responses={
         200: {
             "description": "Successfully retrieved popular anime",
             "content": {
                 "application/json": {
-                    "example": {
-                        "list": [
-                            {
-                                "name": "Attack on Titan",
-                                "image_url": "https://example.com/image.jpg",
-                                "link": "/anime/stream/attack-on-titan",
-                            }
-                        ],
-                        "has_next_page": False,
+                    "examples": {
+                        "basic": {
+                            "summary": "Basic response (include_metadata=false)",
+                            "value": {
+                                "list": [
+                                    {
+                                        "name": "Attack on Titan",
+                                        "image_url": "https://example.com/image.jpg",
+                                        "link": "/anime/stream/attack-on-titan",
+                                    }
+                                ],
+                                "has_next_page": False,
+                            },
+                        },
+                        "enhanced": {
+                            "summary": "Enhanced response (include_metadata=true)",
+                            "value": {
+                                "list": [
+                                    {
+                                        "name": "Attack on Titan",
+                                        "image_url": "https://example.com/image.jpg",
+                                        "link": "/anime/stream/attack-on-titan",
+                                        "anilist_id": 16498,
+                                        "match_confidence": 0.95,
+                                        "anilist_data": {
+                                            "averageScore": 84,
+                                            "genres": ["Action", "Drama", "Fantasy"],
+                                            "trailer": {
+                                                "site": "youtube",
+                                                "id": "abc123",
+                                            },
+                                        },
+                                    }
+                                ],
+                                "has_next_page": False,
+                                "metadata_coverage": 85.5,
+                            },
+                        },
                     }
                 }
             },
@@ -134,53 +181,217 @@ async def get_source_preferences(
 async def get_popular(
     source: str = Path(..., description="Source identifier"),
     page: int = Query(1, ge=1, description="Page number for pagination"),
-    anime_service: AnimeService = Depends(get_anime_service),
+    include_metadata: bool = Query(
+        False,
+        description="Include AniList metadata enrichment (scores, genres, trailers, etc.)",
+    ),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
-    Get popular anime from the specified source.
+    Get popular anime with optional AniList metadata enrichment.
 
-    Returns a paginated list of anime sorted by popularity on the source platform.
+    Returns a paginated list of anime sorted by popularity. When `include_metadata=true`,
+    results are enriched with comprehensive AniList data including ratings, genres,
+    character information, trailers, and more.
+
+    **Enhanced Features** (when include_metadata=true):
+    - AniList ratings and popularity scores
+    - Complete genre classifications
+    - Character and staff information
+    - YouTube trailers
+    - Related anime recommendations
+    - Metadata coverage statistics
     """
     try:
-        return await anime_service.get_popular(source, page)
+        async with enhanced_service:
+            return await enhanced_service.get_popular(source, page, include_metadata)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+# ========== METADATA MANAGEMENT ENDPOINTS ==========
+
+
+@router.get(
+    "/metadata/stats",
+    summary="📊 Get Metadata Statistics",
+    description="**Metadata Analytics**: Get statistics about AniList metadata enrichment performance including match rates and cache efficiency.",
+    operation_id="get_metadata_stats",
+    tags=["metadata"],
+)
+async def get_metadata_statistics(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get metadata enrichment statistics."""
+    stats = enhanced_service.get_metadata_stats()
+    if not stats:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return stats
+
+
+@router.get(
+    "/metadata/cache/info",
+    summary="📊 Get Cache Information",
+    description="**Cache Analytics**: Get detailed information about the metadata cache including size, hit rate, and configuration.",
+    operation_id="get_cache_info",
+    tags=["metadata"],
+)
+async def get_cache_info(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get cache information and statistics."""
+    cache_info = enhanced_service.get_cache_info()
+    if not cache_info:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return cache_info
+
+
+@router.post(
+    "/metadata/cache/clear",
+    summary="🗑️ Clear Metadata Cache",
+    description="**Cache Management**: Clear the AniList metadata cache to force fresh lookups.",
+    operation_id="clear_metadata_cache",
+    tags=["metadata"],
+)
+async def clear_metadata_cache(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Clear the metadata cache."""
+    enhanced_service.clear_metadata_cache()
+    return {"message": "Metadata cache cleared successfully"}
+
+
+@router.post(
+    "/metadata/toggle",
+    summary="⚙️ Toggle Metadata Enrichment",
+    description="**Configuration**: Enable or disable AniList metadata enrichment globally.",
+    operation_id="toggle_metadata_enrichment",
+    tags=["metadata"],
+)
+async def toggle_metadata_enrichment(
+    enabled: bool = Query(..., description="Enable metadata enrichment"),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Toggle metadata enrichment on/off."""
+    enhanced_service.set_metadata_enabled(enabled)
+    return {
+        "message": f"Metadata enrichment {'enabled' if enabled else 'disabled'}",
+        "metadata_enabled": enhanced_service.enable_metadata,
+    }
+
+
 @router.get(
     "/{source}/latest",
-    response_model=LatestResponse,
+    response_model=Union[LatestResponse, EnhancedLatestResponse],
     summary="🔍 Get Latest Updates",
-    description="**Content Discovery**: Retrieve the latest media updates from the specified source with new episodes or content.",
-    response_description="List of recently updated content",
+    description="**Content Discovery**: Retrieve latest anime updates with optional AniList metadata enrichment.",
+    response_description="List of recently updated content with optional metadata",
     operation_id="get_latest_updates",
 )
 async def get_latest_updates(
     source: str = Path(..., description="Source identifier"),
     page: int = Query(1, ge=1, description="Page number for pagination"),
-    anime_service: AnimeService = Depends(get_anime_service),
+    include_metadata: bool = Query(
+        False, description="Include AniList metadata enrichment"
+    ),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
-    Get latest anime updates from the specified source.
+    Get latest anime updates with optional AniList metadata enrichment.
 
-    Returns recently updated anime with new episodes or content.
+    Returns recently updated anime with new episodes or content. When metadata
+    is enabled, includes comprehensive AniList information.
     """
     try:
-        return await anime_service.get_latest_updates(source, page)
+        async with enhanced_service:
+            return await enhanced_service.get_latest_updates(
+                source, page, include_metadata
+            )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+# ========== METADATA MANAGEMENT ENDPOINTS ==========
+
+
+@router.get(
+    "/metadata/stats",
+    summary="📊 Get Metadata Statistics",
+    description="**Metadata Analytics**: Get statistics about AniList metadata enrichment performance including match rates and cache efficiency.",
+    operation_id="get_metadata_stats",
+    tags=["metadata"],
+)
+async def get_metadata_statistics(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get metadata enrichment statistics."""
+    stats = enhanced_service.get_metadata_stats()
+    if not stats:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return stats
+
+
+@router.get(
+    "/metadata/cache/info",
+    summary="📊 Get Cache Information",
+    description="**Cache Analytics**: Get detailed information about the metadata cache including size, hit rate, and configuration.",
+    operation_id="get_cache_info",
+    tags=["metadata"],
+)
+async def get_cache_info(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get cache information and statistics."""
+    cache_info = enhanced_service.get_cache_info()
+    if not cache_info:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return cache_info
+
+
+@router.post(
+    "/metadata/cache/clear",
+    summary="🗑️ Clear Metadata Cache",
+    description="**Cache Management**: Clear the AniList metadata cache to force fresh lookups.",
+    operation_id="clear_metadata_cache",
+    tags=["metadata"],
+)
+async def clear_metadata_cache(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Clear the metadata cache."""
+    enhanced_service.clear_metadata_cache()
+    return {"message": "Metadata cache cleared successfully"}
+
+
+@router.post(
+    "/metadata/toggle",
+    summary="⚙️ Toggle Metadata Enrichment",
+    description="**Configuration**: Enable or disable AniList metadata enrichment globally.",
+    operation_id="toggle_metadata_enrichment",
+    tags=["metadata"],
+)
+async def toggle_metadata_enrichment(
+    enabled: bool = Query(..., description="Enable metadata enrichment"),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Toggle metadata enrichment on/off."""
+    enhanced_service.set_metadata_enabled(enabled)
+    return {
+        "message": f"Metadata enrichment {'enabled' if enabled else 'disabled'}",
+        "metadata_enabled": enhanced_service.enable_metadata,
+    }
+
+
 @router.get(
     "/{source}/search",
-    response_model=SearchResponse,
+    response_model=Union[SearchResponse, EnhancedSearchResponse],
     summary="🔍 Search Content",
-    description="**Content Discovery**: Search for media content by title in the specified source with optional language filtering.",
-    response_description="List of content matching the search query",
+    description="**Content Discovery**: Search for anime with optional AniList metadata enrichment including ratings, trailers, and comprehensive details.",
+    response_description="List of content matching the search query with optional metadata",
     operation_id="search_content",
 )
 async def search_content(
@@ -188,27 +399,115 @@ async def search_content(
     q: str = Query(..., description="Search query (content title)", min_length=1),
     page: int = Query(1, ge=1, description="Page number for pagination"),
     lang: str = Query(None, description="Language filter (de, en, sub, all)"),
-    anime_service: AnimeService = Depends(get_anime_service),
+    include_metadata: bool = Query(
+        False,
+        description="Include AniList metadata enrichment (ratings, genres, trailers, etc.)",
+    ),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
-    Search for anime by title in the specified source.
+    Search for anime with optional AniList metadata enrichment.
 
     Performs a text search across anime titles and returns matching results.
+    When metadata is enabled, includes comprehensive AniList information
+    with intelligent title matching and confidence scoring.
+
+    **Enhanced Features** (when include_metadata=true):
+    - Smart title matching with confidence scores
+    - AniList ratings and popularity
+    - Genre classifications and tags
+    - YouTube trailers and promotional content
+    - Character and staff information
+    - Search result statistics and coverage
     """
     try:
-        return await anime_service.search(source, q, page, lang)
+        async with enhanced_service:
+            return await enhanced_service.search(
+                source, q, page, lang, include_metadata
+            )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+# ========== METADATA MANAGEMENT ENDPOINTS ==========
+
+
+@router.get(
+    "/metadata/stats",
+    summary="📊 Get Metadata Statistics",
+    description="**Metadata Analytics**: Get statistics about AniList metadata enrichment performance including match rates and cache efficiency.",
+    operation_id="get_metadata_stats",
+    tags=["metadata"],
+)
+async def get_metadata_statistics(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get metadata enrichment statistics."""
+    stats = enhanced_service.get_metadata_stats()
+    if not stats:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return stats
+
+
+@router.get(
+    "/metadata/cache/info",
+    summary="📊 Get Cache Information",
+    description="**Cache Analytics**: Get detailed information about the metadata cache including size, hit rate, and configuration.",
+    operation_id="get_cache_info",
+    tags=["metadata"],
+)
+async def get_cache_info(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get cache information and statistics."""
+    cache_info = enhanced_service.get_cache_info()
+    if not cache_info:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return cache_info
+
+
+@router.post(
+    "/metadata/cache/clear",
+    summary="🗑️ Clear Metadata Cache",
+    description="**Cache Management**: Clear the AniList metadata cache to force fresh lookups.",
+    operation_id="clear_metadata_cache",
+    tags=["metadata"],
+)
+async def clear_metadata_cache(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Clear the metadata cache."""
+    enhanced_service.clear_metadata_cache()
+    return {"message": "Metadata cache cleared successfully"}
+
+
+@router.post(
+    "/metadata/toggle",
+    summary="⚙️ Toggle Metadata Enrichment",
+    description="**Configuration**: Enable or disable AniList metadata enrichment globally.",
+    operation_id="toggle_metadata_enrichment",
+    tags=["metadata"],
+)
+async def toggle_metadata_enrichment(
+    enabled: bool = Query(..., description="Enable metadata enrichment"),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Toggle metadata enrichment on/off."""
+    enhanced_service.set_metadata_enabled(enabled)
+    return {
+        "message": f"Metadata enrichment {'enabled' if enabled else 'disabled'}",
+        "metadata_enabled": enhanced_service.enable_metadata,
+    }
+
+
 @router.get(
     "/{source}/videos",
-    response_model=VideoListResponse,
+    response_model=Union[VideoListResponse, EnhancedVideoListResponse],
     summary="🎬 Get Video Streaming Links",
-    description="**Video Sources**: Get available video streams for a specific episode with optional language preference and multiple hosting providers.",
-    response_description="List of video sources with different hosts and qualities",
+    description="**Video Sources**: Get available video streams with optional anime context information for better user experience.",
+    response_description="List of video sources with optional anime context",
     operation_id="get_video_sources",
 )
 async def get_video_sources(
@@ -217,22 +516,98 @@ async def get_video_sources(
     lang: str = Query(
         None, description="Preferred language (e.g., 'Deutscher', 'Englischer')"
     ),
-    anime_service: AnimeService = Depends(get_anime_service),
+    include_context: bool = Query(
+        False, description="Include anime and episode context information"
+    ),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
-    Get video sources for a specific episode with optional language preference.
+    Get video sources with optional anime context information.
 
     Returns available video streams from different hosting providers with various
-    quality options and language/subtitle configurations. If a preferred language
-    is specified and no videos are found in that language, the system will fallback
-    to the first available language.
+    quality options and language/subtitle configurations. When context is enabled,
+    includes anime title and episode information extracted from the URL.
     """
     try:
-        return await anime_service.get_video_list(source, url, lang)
+        async with enhanced_service:
+            return await enhanced_service.get_video_list(
+                source, url, lang, include_context
+            )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+# ========== METADATA MANAGEMENT ENDPOINTS ==========
+
+
+@router.get(
+    "/metadata/stats",
+    summary="📊 Get Metadata Statistics",
+    description="**Metadata Analytics**: Get statistics about AniList metadata enrichment performance including match rates and cache efficiency.",
+    operation_id="get_metadata_stats",
+    tags=["metadata"],
+)
+async def get_metadata_statistics(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get metadata enrichment statistics."""
+    stats = enhanced_service.get_metadata_stats()
+    if not stats:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return stats
+
+
+@router.get(
+    "/metadata/cache/info",
+    summary="📊 Get Cache Information",
+    description="**Cache Analytics**: Get detailed information about the metadata cache including size, hit rate, and configuration.",
+    operation_id="get_cache_info",
+    tags=["metadata"],
+)
+async def get_cache_info(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get cache information and statistics."""
+    cache_info = enhanced_service.get_cache_info()
+    if not cache_info:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return cache_info
+
+
+@router.post(
+    "/metadata/cache/clear",
+    summary="🗑️ Clear Metadata Cache",
+    description="**Cache Management**: Clear the AniList metadata cache to force fresh lookups.",
+    operation_id="clear_metadata_cache",
+    tags=["metadata"],
+)
+async def clear_metadata_cache(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Clear the metadata cache."""
+    enhanced_service.clear_metadata_cache()
+    return {"message": "Metadata cache cleared successfully"}
+
+
+@router.post(
+    "/metadata/toggle",
+    summary="⚙️ Toggle Metadata Enrichment",
+    description="**Configuration**: Enable or disable AniList metadata enrichment globally.",
+    operation_id="toggle_metadata_enrichment",
+    tags=["metadata"],
+)
+async def toggle_metadata_enrichment(
+    enabled: bool = Query(..., description="Enable metadata enrichment"),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Toggle metadata enrichment on/off."""
+    enhanced_service.set_metadata_enabled(enabled)
+    return {
+        "message": f"Metadata enrichment {'enabled' if enabled else 'disabled'}",
+        "metadata_enabled": enhanced_service.enable_metadata,
+    }
 
 
 # ========== SERIES STRUCTURE ENDPOINTS ==========
@@ -240,46 +615,67 @@ async def get_video_sources(
 
 @router.get(
     "/{source}/series",
-    response_model=SeriesDetailResponse,
+    response_model=Union[SeriesDetailResponse, EnhancedSeriesDetailResponse],
     summary="📺 Get Full Series Data",
-    description="**Series Structure**: Get complete media series with episodes organized by seasons and movies/specials separately.",
-    response_description="Hierarchical series structure with seasons and movies",
+    description="**Series Structure**: Get complete anime series with optional AniList metadata including character info, staff details, and related anime.",
+    response_description="Hierarchical series structure with optional comprehensive metadata",
     operation_id="get_series_detail",
     responses={
         200: {
             "description": "Successfully retrieved hierarchical series detail",
             "content": {
                 "application/json": {
-                    "example": {
-                        "series": {
-                            "slug": "attack-on-titan",
-                            "seasons": [
-                                {
-                                    "season": 4,
-                                    "title": "Staffel 4",
-                                    "episodes": [
+                    "examples": {
+                        "basic": {
+                            "summary": "Basic series structure (include_metadata=false)",
+                            "value": {
+                                "series": {
+                                    "slug": "attack-on-titan",
+                                    "seasons": [
                                         {
                                             "season": 4,
-                                            "episode": 30,
-                                            "title": "The Final Chapter Part 2",
-                                            "url": "/anime/stream/attack-on-titan/staffel-4/episode-30",
-                                            "date_upload": None,
-                                            "tags": ["Series Final Episode"],
+                                            "title": "Staffel 4",
+                                            "episodes": [
+                                                {
+                                                    "season": 4,
+                                                    "episode": 30,
+                                                    "title": "The Final Chapter Part 2",
+                                                    "url": "/anime/stream/attack-on-titan/staffel-4/episode-30",
+                                                    "date_upload": None,
+                                                    "tags": ["Series Final Episode"],
+                                                }
+                                            ],
                                         }
                                     ],
+                                    "movies": [],
                                 }
-                            ],
-                            "movies": [
-                                {
-                                    "number": 12,
-                                    "title": "The Last Attack",
-                                    "kind": "movie",
-                                    "url": "/anime/stream/attack-on-titan/filme/film-12",
-                                    "date_upload": None,
-                                    "tags": [],
+                            },
+                        },
+                        "enhanced": {
+                            "summary": "Enhanced series with metadata (include_metadata=true)",
+                            "value": {
+                                "series": {
+                                    "slug": "attack-on-titan",
+                                    "seasons": [
+                                        {
+                                            "season": 4,
+                                            "title": "Staffel 4",
+                                            "episodes": [],
+                                        }
+                                    ],
+                                    "movies": [],
+                                    "anilist_id": 16498,
+                                    "enhanced_title": "Shingeki no Kyojin",
+                                    "score": 84,
+                                    "year": 2013,
+                                    "status_text": "FINISHED",
+                                    "studios": ["Wit Studio"],
+                                    "characters": [
+                                        {"name": "Eren Jaeger", "role": "MAIN"}
+                                    ],
                                 }
-                            ],
-                        }
+                            },
+                        },
                     }
                 }
             },
@@ -290,27 +686,114 @@ async def get_video_sources(
 async def get_series_detail(
     source: str = Path(..., description="Source identifier"),
     url: str = Query(..., description="Anime URL path"),
-    anime_service: AnimeService = Depends(get_anime_service),
+    include_metadata: bool = Query(
+        False,
+        description="Include AniList metadata (characters, staff, relations, etc.)",
+    ),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
-    Get anime series with hierarchical episode organization.
+    Get anime series with hierarchical episode organization and optional AniList metadata.
 
-    **🆕 NEW ENDPOINT:** Returns episodes organized by seasons and movies/specials
-    separately, providing a better structure for frontend applications.
+    Returns episodes organized by seasons and movies/specials separately, providing
+    a better structure for frontend applications. When metadata is enabled, includes
+    comprehensive AniList information.
 
-    **Features:**
+    **Core Features:**
     - Episodes grouped by season number
     - Movies/specials in separate collection
     - Extracted tags from episode names
     - Automatic sorting by season/episode numbers
     - Clean title extraction
+
+    **Enhanced Features** (when include_metadata=true):
+    - Complete AniList anime information
+    - Character and voice actor details
+    - Staff and studio information
+    - Related anime and recommendations
+    - Comprehensive genre and tag data
+    - Ratings and popularity metrics
     """
     try:
-        return await anime_service.get_series_detail(source, url)
+        async with enhanced_service:
+            return await enhanced_service.get_series_detail(
+                source, url, include_metadata
+            )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+# ========== METADATA MANAGEMENT ENDPOINTS ==========
+
+
+@router.get(
+    "/metadata/stats",
+    summary="📊 Get Metadata Statistics",
+    description="**Metadata Analytics**: Get statistics about AniList metadata enrichment performance including match rates and cache efficiency.",
+    operation_id="get_metadata_stats",
+    tags=["metadata"],
+)
+async def get_metadata_statistics(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get metadata enrichment statistics."""
+    stats = enhanced_service.get_metadata_stats()
+    if not stats:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return stats
+
+
+@router.get(
+    "/metadata/cache/info",
+    summary="📊 Get Cache Information",
+    description="**Cache Analytics**: Get detailed information about the metadata cache including size, hit rate, and configuration.",
+    operation_id="get_cache_info",
+    tags=["metadata"],
+)
+async def get_cache_info(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get cache information and statistics."""
+    cache_info = enhanced_service.get_cache_info()
+    if not cache_info:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return cache_info
+
+
+@router.post(
+    "/metadata/cache/clear",
+    summary="🗑️ Clear Metadata Cache",
+    description="**Cache Management**: Clear the AniList metadata cache to force fresh lookups.",
+    operation_id="clear_metadata_cache",
+    tags=["metadata"],
+)
+async def clear_metadata_cache(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Clear the metadata cache."""
+    enhanced_service.clear_metadata_cache()
+    return {"message": "Metadata cache cleared successfully"}
+
+
+@router.post(
+    "/metadata/toggle",
+    summary="⚙️ Toggle Metadata Enrichment",
+    description="**Configuration**: Enable or disable AniList metadata enrichment globally.",
+    operation_id="toggle_metadata_enrichment",
+    tags=["metadata"],
+)
+async def toggle_metadata_enrichment(
+    enabled: bool = Query(..., description="Enable metadata enrichment"),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Toggle metadata enrichment on/off."""
+    enhanced_service.set_metadata_enabled(enabled)
+    return {
+        "message": f"Metadata enrichment {'enabled' if enabled else 'disabled'}",
+        "metadata_enabled": enhanced_service.enable_metadata,
+    }
 
 
 @router.get(
@@ -339,6 +822,77 @@ async def get_series_seasons(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+# ========== METADATA MANAGEMENT ENDPOINTS ==========
+
+
+@router.get(
+    "/metadata/stats",
+    summary="📊 Get Metadata Statistics",
+    description="**Metadata Analytics**: Get statistics about AniList metadata enrichment performance including match rates and cache efficiency.",
+    operation_id="get_metadata_stats",
+    tags=["metadata"],
+)
+async def get_metadata_statistics(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get metadata enrichment statistics."""
+    stats = enhanced_service.get_metadata_stats()
+    if not stats:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return stats
+
+
+@router.get(
+    "/metadata/cache/info",
+    summary="📊 Get Cache Information",
+    description="**Cache Analytics**: Get detailed information about the metadata cache including size, hit rate, and configuration.",
+    operation_id="get_cache_info",
+    tags=["metadata"],
+)
+async def get_cache_info(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get cache information and statistics."""
+    cache_info = enhanced_service.get_cache_info()
+    if not cache_info:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return cache_info
+
+
+@router.post(
+    "/metadata/cache/clear",
+    summary="🗑️ Clear Metadata Cache",
+    description="**Cache Management**: Clear the AniList metadata cache to force fresh lookups.",
+    operation_id="clear_metadata_cache",
+    tags=["metadata"],
+)
+async def clear_metadata_cache(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Clear the metadata cache."""
+    enhanced_service.clear_metadata_cache()
+    return {"message": "Metadata cache cleared successfully"}
+
+
+@router.post(
+    "/metadata/toggle",
+    summary="⚙️ Toggle Metadata Enrichment",
+    description="**Configuration**: Enable or disable AniList metadata enrichment globally.",
+    operation_id="toggle_metadata_enrichment",
+    tags=["metadata"],
+)
+async def toggle_metadata_enrichment(
+    enabled: bool = Query(..., description="Enable metadata enrichment"),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Toggle metadata enrichment on/off."""
+    enhanced_service.set_metadata_enabled(enabled)
+    return {
+        "message": f"Metadata enrichment {'enabled' if enabled else 'disabled'}",
+        "metadata_enabled": enhanced_service.enable_metadata,
+    }
 
 
 @router.get(
@@ -375,6 +929,77 @@ async def get_series_season(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+# ========== METADATA MANAGEMENT ENDPOINTS ==========
+
+
+@router.get(
+    "/metadata/stats",
+    summary="📊 Get Metadata Statistics",
+    description="**Metadata Analytics**: Get statistics about AniList metadata enrichment performance including match rates and cache efficiency.",
+    operation_id="get_metadata_stats",
+    tags=["metadata"],
+)
+async def get_metadata_statistics(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get metadata enrichment statistics."""
+    stats = enhanced_service.get_metadata_stats()
+    if not stats:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return stats
+
+
+@router.get(
+    "/metadata/cache/info",
+    summary="📊 Get Cache Information",
+    description="**Cache Analytics**: Get detailed information about the metadata cache including size, hit rate, and configuration.",
+    operation_id="get_cache_info",
+    tags=["metadata"],
+)
+async def get_cache_info(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get cache information and statistics."""
+    cache_info = enhanced_service.get_cache_info()
+    if not cache_info:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return cache_info
+
+
+@router.post(
+    "/metadata/cache/clear",
+    summary="🗑️ Clear Metadata Cache",
+    description="**Cache Management**: Clear the AniList metadata cache to force fresh lookups.",
+    operation_id="clear_metadata_cache",
+    tags=["metadata"],
+)
+async def clear_metadata_cache(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Clear the metadata cache."""
+    enhanced_service.clear_metadata_cache()
+    return {"message": "Metadata cache cleared successfully"}
+
+
+@router.post(
+    "/metadata/toggle",
+    summary="⚙️ Toggle Metadata Enrichment",
+    description="**Configuration**: Enable or disable AniList metadata enrichment globally.",
+    operation_id="toggle_metadata_enrichment",
+    tags=["metadata"],
+)
+async def toggle_metadata_enrichment(
+    enabled: bool = Query(..., description="Enable metadata enrichment"),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Toggle metadata enrichment on/off."""
+    enhanced_service.set_metadata_enabled(enabled)
+    return {
+        "message": f"Metadata enrichment {'enabled' if enabled else 'disabled'}",
+        "metadata_enabled": enhanced_service.enable_metadata,
+    }
 
 
 @router.get(
@@ -419,6 +1044,77 @@ async def get_series_episode(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+# ========== METADATA MANAGEMENT ENDPOINTS ==========
+
+
+@router.get(
+    "/metadata/stats",
+    summary="📊 Get Metadata Statistics",
+    description="**Metadata Analytics**: Get statistics about AniList metadata enrichment performance including match rates and cache efficiency.",
+    operation_id="get_metadata_stats",
+    tags=["metadata"],
+)
+async def get_metadata_statistics(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get metadata enrichment statistics."""
+    stats = enhanced_service.get_metadata_stats()
+    if not stats:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return stats
+
+
+@router.get(
+    "/metadata/cache/info",
+    summary="📊 Get Cache Information",
+    description="**Cache Analytics**: Get detailed information about the metadata cache including size, hit rate, and configuration.",
+    operation_id="get_cache_info",
+    tags=["metadata"],
+)
+async def get_cache_info(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get cache information and statistics."""
+    cache_info = enhanced_service.get_cache_info()
+    if not cache_info:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return cache_info
+
+
+@router.post(
+    "/metadata/cache/clear",
+    summary="🗑️ Clear Metadata Cache",
+    description="**Cache Management**: Clear the AniList metadata cache to force fresh lookups.",
+    operation_id="clear_metadata_cache",
+    tags=["metadata"],
+)
+async def clear_metadata_cache(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Clear the metadata cache."""
+    enhanced_service.clear_metadata_cache()
+    return {"message": "Metadata cache cleared successfully"}
+
+
+@router.post(
+    "/metadata/toggle",
+    summary="⚙️ Toggle Metadata Enrichment",
+    description="**Configuration**: Enable or disable AniList metadata enrichment globally.",
+    operation_id="toggle_metadata_enrichment",
+    tags=["metadata"],
+)
+async def toggle_metadata_enrichment(
+    enabled: bool = Query(..., description="Enable metadata enrichment"),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Toggle metadata enrichment on/off."""
+    enhanced_service.set_metadata_enabled(enabled)
+    return {
+        "message": f"Metadata enrichment {'enabled' if enabled else 'disabled'}",
+        "metadata_enabled": enhanced_service.enable_metadata,
+    }
 
 
 @router.get(
@@ -479,6 +1175,77 @@ async def get_series_movies(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+# ========== METADATA MANAGEMENT ENDPOINTS ==========
+
+
+@router.get(
+    "/metadata/stats",
+    summary="📊 Get Metadata Statistics",
+    description="**Metadata Analytics**: Get statistics about AniList metadata enrichment performance including match rates and cache efficiency.",
+    operation_id="get_metadata_stats",
+    tags=["metadata"],
+)
+async def get_metadata_statistics(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get metadata enrichment statistics."""
+    stats = enhanced_service.get_metadata_stats()
+    if not stats:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return stats
+
+
+@router.get(
+    "/metadata/cache/info",
+    summary="📊 Get Cache Information",
+    description="**Cache Analytics**: Get detailed information about the metadata cache including size, hit rate, and configuration.",
+    operation_id="get_cache_info",
+    tags=["metadata"],
+)
+async def get_cache_info(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get cache information and statistics."""
+    cache_info = enhanced_service.get_cache_info()
+    if not cache_info:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return cache_info
+
+
+@router.post(
+    "/metadata/cache/clear",
+    summary="🗑️ Clear Metadata Cache",
+    description="**Cache Management**: Clear the AniList metadata cache to force fresh lookups.",
+    operation_id="clear_metadata_cache",
+    tags=["metadata"],
+)
+async def clear_metadata_cache(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Clear the metadata cache."""
+    enhanced_service.clear_metadata_cache()
+    return {"message": "Metadata cache cleared successfully"}
+
+
+@router.post(
+    "/metadata/toggle",
+    summary="⚙️ Toggle Metadata Enrichment",
+    description="**Configuration**: Enable or disable AniList metadata enrichment globally.",
+    operation_id="toggle_metadata_enrichment",
+    tags=["metadata"],
+)
+async def toggle_metadata_enrichment(
+    enabled: bool = Query(..., description="Enable metadata enrichment"),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Toggle metadata enrichment on/off."""
+    enhanced_service.set_metadata_enabled(enabled)
+    return {
+        "message": f"Metadata enrichment {'enabled' if enabled else 'disabled'}",
+        "metadata_enabled": enhanced_service.enable_metadata,
+    }
+
+
 @router.get(
     "/{source}/series/movies/{movie_num}",
     response_model=MovieResponse,
@@ -514,3 +1281,74 @@ async def get_series_movie(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+# ========== METADATA MANAGEMENT ENDPOINTS ==========
+
+
+@router.get(
+    "/metadata/stats",
+    summary="📊 Get Metadata Statistics",
+    description="**Metadata Analytics**: Get statistics about AniList metadata enrichment performance including match rates and cache efficiency.",
+    operation_id="get_metadata_stats",
+    tags=["metadata"],
+)
+async def get_metadata_statistics(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get metadata enrichment statistics."""
+    stats = enhanced_service.get_metadata_stats()
+    if not stats:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return stats
+
+
+@router.get(
+    "/metadata/cache/info",
+    summary="📊 Get Cache Information",
+    description="**Cache Analytics**: Get detailed information about the metadata cache including size, hit rate, and configuration.",
+    operation_id="get_cache_info",
+    tags=["metadata"],
+)
+async def get_cache_info(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Get cache information and statistics."""
+    cache_info = enhanced_service.get_cache_info()
+    if not cache_info:
+        raise HTTPException(status_code=503, detail="Metadata service not available")
+    return cache_info
+
+
+@router.post(
+    "/metadata/cache/clear",
+    summary="🗑️ Clear Metadata Cache",
+    description="**Cache Management**: Clear the AniList metadata cache to force fresh lookups.",
+    operation_id="clear_metadata_cache",
+    tags=["metadata"],
+)
+async def clear_metadata_cache(
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Clear the metadata cache."""
+    enhanced_service.clear_metadata_cache()
+    return {"message": "Metadata cache cleared successfully"}
+
+
+@router.post(
+    "/metadata/toggle",
+    summary="⚙️ Toggle Metadata Enrichment",
+    description="**Configuration**: Enable or disable AniList metadata enrichment globally.",
+    operation_id="toggle_metadata_enrichment",
+    tags=["metadata"],
+)
+async def toggle_metadata_enrichment(
+    enabled: bool = Query(..., description="Enable metadata enrichment"),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+):
+    """Toggle metadata enrichment on/off."""
+    enhanced_service.set_metadata_enabled(enabled)
+    return {
+        "message": f"Metadata enrichment {'enabled' if enabled else 'disabled'}",
+        "metadata_enabled": enhanced_service.enable_metadata,
+    }

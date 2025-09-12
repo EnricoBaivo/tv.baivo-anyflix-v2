@@ -1,7 +1,6 @@
 """AniList API service for GraphQL queries."""
 
 import json
-import logging
 from typing import Any, Dict, List, Optional
 
 import aiohttp
@@ -340,6 +339,10 @@ class AniListService:
             rank
             isMediaSpoiler
             isGeneralSpoiler
+          }
+          trailer {
+            id
+            site
           }
         }
       }

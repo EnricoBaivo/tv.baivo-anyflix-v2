@@ -4,7 +4,13 @@ import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from ..models.base import MediaSource, SearchResult, SourcePreference, VideoSource
+from ..models.base import (
+    MediaInfo,
+    MediaSource,
+    SearchResult,
+    SourcePreference,
+    VideoSource,
+)
 from ..models.responses import (
     DetailResponse,
     LatestResponse,
@@ -17,7 +23,7 @@ from .base import BaseProvider
 
 
 class SerienStreamProvider(BaseProvider):
-    """SerienStream anime source provider."""
+    """SerienStream series source provider."""
 
     def __init__(self):
         """Initialize SerienStream provider."""
@@ -33,7 +39,7 @@ class SerienStreamProvider(BaseProvider):
             version="0.0.9",
             date_format="",
             date_format_locale="",
-            pkg_path="anime/src/de/serienstream.js",
+            pkg_path="anime/src/de/serienstream.js",  # reference to the javascript file from mangayomi
         )
         super().__init__(source)
 
@@ -50,7 +56,7 @@ class SerienStreamProvider(BaseProvider):
         res = await self.client.get(f"{base_url}/beliebte-serien")
         elements = Document(res.body).select("div.seriesListContainer div")
 
-        anime_list = []
+        series_list = []
         for element in elements:
             link_element = element.select_first("a")
             name_element = element.select_first("h3")
@@ -61,11 +67,11 @@ class SerienStreamProvider(BaseProvider):
                 image_url = base_url + img_element.attr("data-src")
                 link = link_element.attr("href")
 
-                anime_list.append(
+                series_list.append(
                     SearchResult(name=name, image_url=image_url, link=link)
                 )
 
-        return PopularResponse(list=anime_list, has_next_page=False)
+        return PopularResponse(list=series_list, has_next_page=False)
 
     async def get_latest_updates(self, page: int = 1) -> LatestResponse:
         """Get latest series updates from SerienStream.
@@ -80,7 +86,7 @@ class SerienStreamProvider(BaseProvider):
         res = await self.client.get(f"{base_url}/neu")
         elements = Document(res.body).select("div.seriesListContainer div")
 
-        anime_list = []
+        series_list = []
         for element in elements:
             link_element = element.select_first("a")
             name_element = element.select_first("h3")
@@ -91,11 +97,11 @@ class SerienStreamProvider(BaseProvider):
                 image_url = base_url + img_element.attr("data-src")
                 link = link_element.attr("href")
 
-                anime_list.append(
+                series_list.append(
                     SearchResult(name=name, image_url=image_url, link=link)
                 )
 
-        return LatestResponse(list=anime_list, has_next_page=False)
+        return LatestResponse(list=series_list, has_next_page=False)
 
     async def search(
         self, query: str, page: int = 1, lang: Optional[str] = None
@@ -127,7 +133,7 @@ class SerienStreamProvider(BaseProvider):
             if query.lower() in title:
                 filtered_elements.append(element)
 
-        anime_list = []
+        series_list = []
         for element in filtered_elements:
             name = element.text
             link = element.attr("href")
@@ -140,14 +146,14 @@ class SerienStreamProvider(BaseProvider):
                 img = img_element.attr("data-src") if img_element._element else ""
                 image_url = base_url + img if img else ""
 
-                anime_list.append(
+                series_list.append(
                     SearchResult(name=name, image_url=image_url, link=link)
                 )
             except Exception:
                 # Skip this entry if we can't get the image
                 continue
 
-        return SearchResponse(list=anime_list, has_next_page=False)
+        return SearchResponse(list=series_list, has_next_page=False)
 
     async def get_detail(self, url: str) -> DetailResponse:
         """Get series details from SerienStream.
@@ -216,7 +222,7 @@ class SerienStreamProvider(BaseProvider):
             episodes.extend(ep_array)
         episodes.reverse()
 
-        anime_info = MediaInfo(
+        series_info = MediaInfo(
             name=name,
             image_url=image_url,
             description=description,
@@ -226,7 +232,7 @@ class SerienStreamProvider(BaseProvider):
             episodes=episodes,
         )
 
-        return DetailResponse(media=anime_info)
+        return DetailResponse(media=series_info)
 
     async def parse_episodes_from_series(self, element) -> List[Dict[str, Any]]:
         """Parse episodes from a season.

@@ -4,8 +4,8 @@ A Python backend service that replicates the functionality of JavaScript anime s
 
 ## Features
 
+### Core Features
 - **Multiple Sources**: Support for AniWorld and SerienStream
-- **AniList Integration**: Comprehensive AniList API support with GraphQL queries
 - **REST API**: FastAPI-based web service with automatic documentation
 - **Search & Discovery**: Popular anime, latest updates, and search functionality
 - **Episode Management**: Detailed anime information with episode lists
@@ -13,6 +13,15 @@ A Python backend service that replicates the functionality of JavaScript anime s
 - **Playlist Support**: M3U8 and JWPlayer playlist parsing
 - **Async Operations**: High-performance async/await implementation
 - **Type Safety**: Full Pydantic models for request/response validation
+
+### 🆕 Enhanced Metadata Features
+- **AniList Integration**: Comprehensive AniList API support with GraphQL queries
+- **Rich Metadata**: Automatic enrichment with AniList data (descriptions, ratings, genres, characters, staff)
+- **Smart Matching**: Intelligent title matching between streaming sources and AniList database
+- **Metadata Coverage**: Track and report metadata enrichment statistics
+- **Flexible Control**: Enable/disable metadata enrichment per request or globally
+- **Caching System**: Efficient caching of AniList lookups for better performance
+- **Enhanced Responses**: All endpoints now available with rich metadata versions
 
 ## Quick Start
 
@@ -43,21 +52,27 @@ The API will be available at:
 
 ## API Endpoints
 
-### Sources
+### 🎬 Media Sources (Unified with Optional Metadata)
 
-- `GET /sources` - List available anime sources
+- `GET /sources` - List available streaming sources with metadata capabilities
 - `GET /sources/{source}/preferences` - Get source preferences
 
-### Content Discovery
+#### Content Discovery
+- `GET /sources/{source}/popular` - Popular anime (add `?include_metadata=true` for AniList data)
+- `GET /sources/{source}/latest` - Latest updates (add `?include_metadata=true` for enrichment)
+- `GET /sources/{source}/search` - Search anime (add `?include_metadata=true` for comprehensive data)
 
-- `GET /sources/{source}/popular` - Get popular anime
-- `GET /sources/{source}/latest` - Get latest updates
-- `GET /sources/{source}/search?q={query}` - Search anime
+#### Anime Details
+- `GET /sources/{source}/videos` - Get video streams (add `?include_context=true` for episode info)
+- `GET /sources/{source}/series` - Complete series structure (add `?include_metadata=true` for AniList data)
 
-### Anime Details
+#### 📊 Metadata Management
+- `GET /sources/metadata/stats` - Get metadata enrichment statistics
+- `POST /sources/metadata/toggle` - Enable/disable metadata enrichment
+- `GET /sources/metadata/cache/info` - Get cache information and hit rates
+- `POST /sources/metadata/cache/clear` - Clear metadata cache
 
-- `GET /sources/{source}/detail?url={anime_url}` - Get anime details
-- `GET /sources/{source}/videos?url={episode_url}` - Get video sources
+**💡 Pro Tip**: Add `?include_metadata=true` to any content endpoint to get rich AniList data including ratings, genres, characters, trailers, and more!
 
 ### Health
 
@@ -168,8 +183,6 @@ app/
 ├── main.py          # FastAPI application
 ├── config.py        # Configuration management
 └── ...
-examples/
-└── anilist_example.py # AniList service usage examples
 tests/
 ├── unit/
 │   ├── test_anime_service.py
@@ -207,6 +220,91 @@ The service includes specialized extractors for various video hosting services:
 - **JWPlayer**: Universal JWPlayer setup parser
 
 Each extractor handles the specific authentication, decoding, or parsing requirements of its target service.
+
+## 🆕 Enhanced Metadata Integration
+
+The service now includes two API tiers:
+
+### Standard API (`/sources/`)
+- Basic anime information from streaming sources
+- Fast responses with essential data
+- Episode lists and video sources
+- Minimal metadata overhead
+
+### Enhanced API (`/enhanced/sources/`)
+- **Rich AniList metadata integration (ANIME only)**
+- Comprehensive anime information including:
+  - Detailed descriptions and synopses
+  - Complete genre classifications
+  - Character information with voice actors
+  - Staff details (directors, writers, studios)
+  - Related anime and recommendations
+  - Official ratings and popularity scores
+  - External links (official sites, streaming platforms)
+  - Release dates and seasonal information
+  - Content tags and themes
+
+### Smart Title Matching
+The enhanced service uses intelligent algorithms to match anime titles between streaming sources and AniList:
+- **Normalized matching**: Handles different title formats and languages
+- **Synonym support**: Recognizes alternative titles and common aliases
+- **Confidence scoring**: Each match includes a confidence score (0.0-1.0)
+- **Fallback handling**: Graceful degradation when no match is found
+
+### Metadata Coverage & Statistics
+- **Coverage reporting**: Track percentage of results with successful metadata matches
+- **Performance metrics**: Monitor cache hit rates and response times  
+- **Match statistics**: View overall success rates and confidence scores
+- **Professional caching**: Uses `cachetools` TTLCache with automatic expiration and LRU eviction
+- **Cache management**: Clear, resize, and configure TTL for optimal performance
+- **Cache analytics**: Detailed cache statistics including hit rates and size information
+
+### Enhanced Response Examples
+
+#### Enhanced Search Response
+```json
+{
+  "list": [
+    {
+      "name": "Attack on Titan",
+      "image_url": "https://example.com/image.jpg",
+      "link": "/anime/stream/attack-on-titan",
+      "anilist_id": 16498,
+      "match_confidence": 0.95,
+      "anilist_data": {
+        "id": 16498,
+        "title": {"userPreferred": "Shingeki no Kyojin"},
+        "averageScore": 84,
+        "genres": ["Action", "Drama", "Fantasy"],
+        "description": "Several hundred years ago, humans were nearly exterminated by Titans...",
+        "episodes": 25,
+        "studios": [{"name": "Wit Studio"}],
+        "characters": [
+          {
+            "name": "Eren Jaeger",
+            "role": "MAIN",
+            "voice_actors": ["Yuki Kaji"]
+          }
+        ]
+      }
+    }
+  ],
+  "has_next_page": false,
+  "metadata_coverage": 85.5
+}
+```
+
+#### Metadata Statistics
+```json
+{
+  "total_requests": 150,
+  "anilist_matches": 128,
+  "match_rate": 85.3,
+  "average_confidence": 0.87,
+  "cache_hits": 45,
+  "cache_misses": 105
+}
+```
 
 ## AniList Service Features
 
@@ -247,10 +345,7 @@ The service includes comprehensive Pydantic models covering:
 
 ### Usage Example
 ```python
-# Run the example script
-uv run python examples/anilist_example.py
-
-# Or use in your code
+# Use in your code
 from lib.services.anilist_service import AniListService
 
 async with AniListService() as anilist:

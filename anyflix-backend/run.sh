@@ -24,7 +24,7 @@ echo ""
 echo "Press Ctrl+C to stop the service"
 echo ""
 
-uv run fastapi dev app/main.py
+uv run fasatapi dev app/main.py
 
 
 

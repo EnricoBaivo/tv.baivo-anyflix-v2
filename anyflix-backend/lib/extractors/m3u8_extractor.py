@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from ..models.base import VideoSource
 from ..utils.client import HTTPClient
-from ..utils.js_utils import abs_url
+from ..utils.helpers import abs_url
 
 
 async def m3u8_extractor(

@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from app.dependencies import get_anime_service
+from app.dependencies import get_anime_service, get_enhanced_anime_service
 from app.main import app
 from lib.models.base import Episode, MediaInfo, Movie, MovieKind, Season, SeriesDetail
 from lib.models.responses import DetailResponse, SeriesDetailResponse
@@ -15,8 +15,9 @@ from lib.models.responses import DetailResponse, SeriesDetailResponse
 def mock_anime_service():
     """Mock anime service for testing."""
     service = AsyncMock()
-    # Override the FastAPI dependency
+    # Override the FastAPI dependency for both services
     app.dependency_overrides[get_anime_service] = lambda: service
+    app.dependency_overrides[get_enhanced_anime_service] = lambda: service
     yield service
     # Clean up
     app.dependency_overrides.clear()

@@ -1,11 +1,10 @@
 """AniWorld provider implementation."""
 
-import logging
 import re
 from typing import Any, Dict, List, Optional
 
 from ..extractors.extract_any import extract_any
-from ..models.base import MediaSource, SearchResult, SourcePreference
+from ..models.base import MediaInfo, MediaSource, SearchResult, SourcePreference
 from ..models.responses import (
     DetailResponse,
     LatestResponse,

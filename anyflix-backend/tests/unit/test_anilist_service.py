@@ -10,6 +10,19 @@ from lib.models.anilist import Media, MediaType, PageResponse
 from lib.services.anilist_service import AniListService
 
 
+class AsyncContextManagerMock:
+    """Helper class for mocking async context managers in aiohttp tests."""
+
+    def __init__(self, return_value):
+        self.return_value = return_value
+
+    async def __aenter__(self):
+        return self.return_value
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        return None
+
+
 @pytest.fixture
 def anilist_service():
     """Create AniListService instance."""
@@ -105,15 +118,19 @@ class TestAniListService:
     @pytest.mark.asyncio
     async def test_make_request_success(self, anilist_service, mock_media_response):
         """Test successful GraphQL request."""
-        mock_response = AsyncMock()
-        mock_response.json.return_value = mock_media_response
-        mock_response.raise_for_status.return_value = None
+        # Create response mock with proper async json() but sync raise_for_status()
+        from unittest.mock import Mock
 
+        mock_response = Mock()
+        mock_response.json = AsyncMock(return_value=mock_media_response)
+        mock_response.raise_for_status = Mock(return_value=None)
+
+        # Create a proper async context manager mock
         mock_session = AsyncMock()
-        mock_context_manager = AsyncMock()
-        mock_context_manager.__aenter__.return_value = mock_response
-        mock_context_manager.__aexit__.return_value = None
-        mock_session.post.return_value = mock_context_manager
+        # Make session.post a regular Mock (not AsyncMock) so it returns the context manager directly
+        from unittest.mock import Mock
+
+        mock_session.post = Mock(return_value=AsyncContextManagerMock(mock_response))
 
         anilist_service.session = mock_session
 
@@ -136,11 +153,12 @@ class TestAniListService:
         mock_response.json.return_value = error_response
         mock_response.raise_for_status.return_value = None
 
+        # Create a proper async context manager mock
         mock_session = AsyncMock()
-        mock_context_manager = AsyncMock()
-        mock_context_manager.__aenter__.return_value = mock_response
-        mock_context_manager.__aexit__.return_value = None
-        mock_session.post.return_value = mock_context_manager
+        # Make session.post a regular Mock (not AsyncMock) so it returns the context manager directly
+        from unittest.mock import Mock
+
+        mock_session.post = Mock(return_value=AsyncContextManagerMock(mock_response))
 
         anilist_service.session = mock_session
 
@@ -369,14 +387,19 @@ class TestAniListService:
     @pytest.mark.asyncio
     async def test_http_error_handling(self, anilist_service):
         """Test HTTP error handling."""
-        mock_response = AsyncMock()
-        mock_response.raise_for_status.side_effect = ClientError("HTTP 500")
+        # Create response mock that raises ClientError on raise_for_status()
+        from unittest.mock import Mock
 
+        mock_response = Mock()
+        mock_response.json = AsyncMock()  # Won't be called due to exception
+        mock_response.raise_for_status = Mock(side_effect=ClientError("HTTP 500"))
+
+        # Create a proper async context manager mock
         mock_session = AsyncMock()
-        mock_context_manager = AsyncMock()
-        mock_context_manager.__aenter__.return_value = mock_response
-        mock_context_manager.__aexit__.return_value = None
-        mock_session.post.return_value = mock_context_manager
+        # Make session.post a regular Mock (not AsyncMock) so it returns the context manager directly
+        from unittest.mock import Mock
+
+        mock_session.post = Mock(return_value=AsyncContextManagerMock(mock_response))
 
         anilist_service.session = mock_session
 

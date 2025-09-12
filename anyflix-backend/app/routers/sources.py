@@ -126,7 +126,7 @@ async def get_source_preferences(
     "/{source}/popular",
     response_model=Union[PopularResponse, EnhancedPopularResponse],
     summary="🔍 Get Popular Content",
-    description="**Content Discovery**: Retrieve popular anime with optional AniList metadata enrichment including ratings, genres, characters, and more.",
+    description="**Content Discovery**: Retrieve popular anime with optional AniList metadata enrichment including ratings, genres, characters, and more. AniWorld responses automatically include metadata.",
     response_description="List of popular content with optional metadata",
     operation_id="get_popular_content",
     responses={
@@ -194,6 +194,8 @@ async def get_popular(
     results are enriched with comprehensive AniList data including ratings, genres,
     character information, trailers, and more.
 
+    **AniWorld sources automatically include metadata regardless of the parameter.**
+
     **Enhanced Features** (when include_metadata=true):
     - AniList ratings and popularity scores
     - Complete genre classifications
@@ -203,6 +205,9 @@ async def get_popular(
     - Metadata coverage statistics
     """
     try:
+        # Auto-enable metadata for AniWorld sources
+        if source.lower() == "aniworld":
+            include_metadata = True
         async with enhanced_service:
             return await enhanced_service.get_popular(source, page, include_metadata)
     except ValueError as e:
@@ -286,7 +291,7 @@ async def toggle_metadata_enrichment(
     "/{source}/latest",
     response_model=Union[LatestResponse, EnhancedLatestResponse],
     summary="🔍 Get Latest Updates",
-    description="**Content Discovery**: Retrieve latest anime updates with optional AniList metadata enrichment.",
+    description="**Content Discovery**: Retrieve latest anime updates with optional AniList metadata enrichment. AniWorld responses automatically include metadata.",
     response_description="List of recently updated content with optional metadata",
     operation_id="get_latest_updates",
 )
@@ -305,6 +310,9 @@ async def get_latest_updates(
     is enabled, includes comprehensive AniList information.
     """
     try:
+        # Auto-enable metadata for AniWorld sources
+        if source.lower() == "aniworld":
+            include_metadata = True
         async with enhanced_service:
             return await enhanced_service.get_latest_updates(
                 source, page, include_metadata
@@ -390,7 +398,7 @@ async def toggle_metadata_enrichment(
     "/{source}/search",
     response_model=Union[SearchResponse, EnhancedSearchResponse],
     summary="🔍 Search Content",
-    description="**Content Discovery**: Search for anime with optional AniList metadata enrichment including ratings, trailers, and comprehensive details.",
+    description="**Content Discovery**: Search for anime with optional AniList metadata enrichment including ratings, trailers, and comprehensive details. AniWorld responses automatically include metadata.",
     response_description="List of content matching the search query with optional metadata",
     operation_id="search_content",
 )
@@ -421,6 +429,9 @@ async def search_content(
     - Search result statistics and coverage
     """
     try:
+        # Auto-enable metadata for AniWorld sources
+        if source.lower() == "aniworld":
+            include_metadata = True
         async with enhanced_service:
             return await enhanced_service.search(
                 source, q, page, lang, include_metadata
@@ -506,7 +517,7 @@ async def toggle_metadata_enrichment(
     "/{source}/videos",
     response_model=Union[VideoListResponse, EnhancedVideoListResponse],
     summary="🎬 Get Video Streaming Links",
-    description="**Video Sources**: Get available video streams with optional anime context information for better user experience.",
+    description="**Video Sources**: Get available video streams with optional anime context information for better user experience. AniWorld responses automatically include context.",
     response_description="List of video sources with optional anime context",
     operation_id="get_video_sources",
 )
@@ -529,6 +540,9 @@ async def get_video_sources(
     includes anime title and episode information extracted from the URL.
     """
     try:
+        # Auto-enable context for AniWorld sources
+        if source.lower() == "aniworld":
+            include_context = True
         async with enhanced_service:
             return await enhanced_service.get_video_list(
                 source, url, lang, include_context
@@ -617,7 +631,7 @@ async def toggle_metadata_enrichment(
     "/{source}/series",
     response_model=Union[SeriesDetailResponse, EnhancedSeriesDetailResponse],
     summary="📺 Get Full Series Data",
-    description="**Series Structure**: Get complete anime series with optional AniList metadata including character info, staff details, and related anime.",
+    description="**Series Structure**: Get complete anime series with optional AniList metadata including character info, staff details, and related anime. AniWorld responses automatically include metadata.",
     response_description="Hierarchical series structure with optional comprehensive metadata",
     operation_id="get_series_detail",
     responses={
@@ -715,6 +729,9 @@ async def get_series_detail(
     - Ratings and popularity metrics
     """
     try:
+        # Auto-enable metadata for AniWorld sources
+        if source.lower() == "aniworld":
+            include_metadata = True
         async with enhanced_service:
             return await enhanced_service.get_series_detail(
                 source, url, include_metadata
@@ -800,7 +817,7 @@ async def toggle_metadata_enrichment(
     "/{source}/series/seasons",
     response_model=SeasonsResponse,
     summary="📺 Get All Seasons",
-    description="**Series Structure**: Get list of all seasons for a series with their episodes, sorted by season number.",
+    description="**Series Structure**: Get list of all seasons for a series with their episodes, sorted by season number. AniWorld responses automatically include AniList metadata.",
     response_description="List of all seasons with their episodes",
     operation_id="get_all_seasons",
     tags=["media-api"],
@@ -808,15 +825,21 @@ async def toggle_metadata_enrichment(
 async def get_series_seasons(
     source: str = Path(..., description="Source identifier"),
     url: str = Query(..., description="Anime URL path"),
-    anime_service: AnimeService = Depends(get_anime_service),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
     Get all seasons for a series.
 
     Returns a complete list of all seasons with their episodes, sorted by season number.
+    For AniWorld sources, automatically includes AniList metadata enrichment.
     """
     try:
-        series_detail = await anime_service.get_series_detail(source, url)
+        # Enable metadata for AniWorld sources
+        include_metadata = source.lower() == "aniworld"
+        async with enhanced_service:
+            series_detail = await enhanced_service.get_series_detail(
+                source, url, include_metadata
+            )
         return SeasonsResponse(seasons=series_detail.series.seasons)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -899,7 +922,7 @@ async def toggle_metadata_enrichment(
     "/{source}/series/seasons/{season_num}",
     response_model=SeasonResponse,
     summary="📺 Get Specific Season",
-    description="**Series Structure**: Get details for a specific season including all its episodes, sorted by episode number.",
+    description="**Series Structure**: Get details for a specific season including all its episodes, sorted by episode number. AniWorld responses automatically include AniList metadata.",
     response_description="Season details with all episodes",
     operation_id="get_season_detail",
     responses={404: {"description": "Season not found"}},
@@ -909,15 +932,21 @@ async def get_series_season(
     source: str = Path(..., description="Source identifier"),
     season_num: int = Path(..., description="Season number", ge=1),
     url: str = Query(..., description="Anime URL path"),
-    anime_service: AnimeService = Depends(get_anime_service),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
     Get details for a specific season.
 
     Returns all episodes for the specified season number, sorted by episode number.
+    For AniWorld sources, automatically includes AniList metadata enrichment.
     """
     try:
-        series_detail = await anime_service.get_series_detail(source, url)
+        # Enable metadata for AniWorld sources
+        include_metadata = source.lower() == "aniworld"
+        async with enhanced_service:
+            series_detail = await enhanced_service.get_series_detail(
+                source, url, include_metadata
+            )
         for season in series_detail.series.seasons:
             if season.season == season_num:
                 return SeasonResponse(season=season)
@@ -1006,7 +1035,7 @@ async def toggle_metadata_enrichment(
     "/{source}/series/seasons/{season_num}/episodes/{episode_num}",
     response_model=EpisodeResponse,
     summary="📺 Get Specific Episode",
-    description="**Series Structure**: Get details for a specific episode within a season, including title, URL, tags, and metadata.",
+    description="**Series Structure**: Get details for a specific episode within a season, including title, URL, tags, and metadata. AniWorld responses automatically include AniList metadata.",
     response_description="Episode details",
     operation_id="get_episode_detail",
     responses={404: {"description": "Season or episode not found"}},
@@ -1017,16 +1046,22 @@ async def get_series_episode(
     season_num: int = Path(..., description="Season number", ge=1),
     episode_num: int = Path(..., description="Episode number", ge=1),
     url: str = Query(..., description="Anime URL path"),
-    anime_service: AnimeService = Depends(get_anime_service),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
     Get details for a specific episode.
 
     Returns detailed information for a specific episode within a season,
     including title, URL, tags, and metadata.
+    For AniWorld sources, automatically includes AniList metadata enrichment.
     """
     try:
-        series_detail = await anime_service.get_series_detail(source, url)
+        # Enable metadata for AniWorld sources
+        include_metadata = source.lower() == "aniworld"
+        async with enhanced_service:
+            series_detail = await enhanced_service.get_series_detail(
+                source, url, include_metadata
+            )
         for season in series_detail.series.seasons:
             if season.season == season_num:
                 for episode in season.episodes:
@@ -1121,7 +1156,7 @@ async def toggle_metadata_enrichment(
     "/{source}/series/movies",
     response_model=MoviesResponse,
     summary="📺 Get All Movies/OVAs",
-    description="**Series Structure**: Get list of all movies, OVAs, and specials for a series, sorted by number.",
+    description="**Series Structure**: Get list of all movies, OVAs, and specials for a series, sorted by number. AniWorld responses automatically include AniList metadata.",
     response_description="List of movies, OVAs, and specials",
     operation_id="get_all_movies",
     responses={
@@ -1158,16 +1193,22 @@ async def toggle_metadata_enrichment(
 async def get_series_movies(
     source: str = Path(..., description="Source identifier"),
     url: str = Query(..., description="Anime URL path"),
-    anime_service: AnimeService = Depends(get_anime_service),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
     Get all movies, OVAs, and specials for a series.
 
     Returns a complete list of all non-episodic content including movies,
     OVAs (Original Video Animations), and special episodes, sorted by number.
+    For AniWorld sources, automatically includes AniList metadata enrichment.
     """
     try:
-        series_detail = await anime_service.get_series_detail(source, url)
+        # Enable metadata for AniWorld sources
+        include_metadata = source.lower() == "aniworld"
+        async with enhanced_service:
+            series_detail = await enhanced_service.get_series_detail(
+                source, url, include_metadata
+            )
         return MoviesResponse(movies=series_detail.series.movies)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -1250,7 +1291,7 @@ async def toggle_metadata_enrichment(
     "/{source}/series/movies/{movie_num}",
     response_model=MovieResponse,
     summary="📺 Get Specific Movie/OVA",
-    description="**Series Structure**: Get details for a specific movie, OVA, or special by number, including title, kind, URL, and tags.",
+    description="**Series Structure**: Get details for a specific movie, OVA, or special by number, including title, kind, URL, and tags. AniWorld responses automatically include AniList metadata.",
     response_description="Movie/OVA/special details",
     operation_id="get_movie_detail",
     responses={404: {"description": "Movie not found"}},
@@ -1260,16 +1301,22 @@ async def get_series_movie(
     source: str = Path(..., description="Source identifier"),
     movie_num: int = Path(..., description="Movie/OVA number", ge=1),
     url: str = Query(..., description="Anime URL path"),
-    anime_service: AnimeService = Depends(get_anime_service),
+    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
 ):
     """
     Get details for a specific movie, OVA, or special.
 
     Returns detailed information for a specific movie/OVA/special by its number,
     including title, kind (movie/ova/special), URL, and tags.
+    For AniWorld sources, automatically includes AniList metadata enrichment.
     """
     try:
-        series_detail = await anime_service.get_series_detail(source, url)
+        # Enable metadata for AniWorld sources
+        include_metadata = source.lower() == "aniworld"
+        async with enhanced_service:
+            series_detail = await enhanced_service.get_series_detail(
+                source, url, include_metadata
+            )
         for movie in series_detail.series.movies:
             if movie.number == movie_num:
                 return MovieResponse(movie=movie)

@@ -9,11 +9,11 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.get("/sources/status")
 async def get_sources_status():
-    """Get status of all available sources."""
-    from lib.services.anime_service import AnimeService
+    """Get status of all available streaming media sources."""
+    from lib.services.media_service import MediaService
 
-    anime_service = AnimeService()
-    sources = anime_service.get_available_sources()
+    media_service = MediaService()
+    sources = media_service.get_available_sources()
 
     return {
         "sources": sources,

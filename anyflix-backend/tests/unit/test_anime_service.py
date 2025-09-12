@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from lib.models.base import SourcePreference
-from lib.services.anime_service import AnimeService
+from lib.services.media_service import MediaService
 
 
 class TestAnimeService:

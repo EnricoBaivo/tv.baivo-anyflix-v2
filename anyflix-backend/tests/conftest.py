@@ -4,13 +4,19 @@ import pytest
 
 from lib.providers.aniworld import AniWorldProvider
 from lib.providers.serienstream import SerienStreamProvider
-from lib.services.anime_service import AnimeService
+from lib.services.media_service import MediaService
 
 
 @pytest.fixture
 def anime_service():
-    """Create an AnimeService instance for testing."""
-    return AnimeService()
+    """Create a MediaService instance for testing (backward compatibility)."""
+    return MediaService()
+
+
+@pytest.fixture
+def media_service():
+    """Create a MediaService instance for testing."""
+    return MediaService()
 
 
 @pytest.fixture

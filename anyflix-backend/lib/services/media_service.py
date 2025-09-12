@@ -40,11 +40,11 @@ except ImportError:
 
 class MediaService:
     """Unified service for managing streaming media providers with optional metadata enrichment.
-
+    
     Manages multiple streaming sources:
     - AniWorld: Anime content with AniList metadata integration
     - SerienStream: TV series and shows
-
+    
     Provides a unified interface for content discovery, search, and metadata enrichment
     across different streaming platforms and content types.
     """
@@ -69,7 +69,7 @@ class MediaService:
         # - aniworld: Anime content with AniList metadata support
         # - serienstream: TV series and shows
         self.providers: Dict[str, BaseProvider] = {
-            "aniworld": AniWorldProvider(),  # Anime provider
+            "aniworld": AniWorldProvider(),      # Anime provider
             "serienstream": SerienStreamProvider(),  # Series provider
         }
 

@@ -23,7 +23,7 @@ from lib.models.responses import (
     SeriesDetailResponse,
     VideoListResponse,
 )
-from lib.services.anime_service import AnimeService
+from lib.services.media_service import MediaService
 
 from ..dependencies import get_anime_service, get_enhanced_anime_service
 
@@ -55,7 +55,7 @@ router = APIRouter(
     },
 )
 async def get_sources(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get all available anime sources with metadata capabilities.
@@ -108,7 +108,7 @@ async def get_source_preferences(
     source: str = Path(
         ..., description="Source identifier (e.g., 'aniworld', 'serienstream')"
     ),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get configuration preferences for a specific anime source.
@@ -185,7 +185,7 @@ async def get_popular(
         False,
         description="Include AniList metadata enrichment (scores, genres, trailers, etc.)",
     ),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get popular anime with optional AniList metadata enrichment.
@@ -227,7 +227,7 @@ async def get_popular(
     tags=["metadata"],
 )
 async def get_metadata_statistics(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get metadata enrichment statistics."""
     stats = enhanced_service.get_metadata_stats()
@@ -244,7 +244,7 @@ async def get_metadata_statistics(
     tags=["metadata"],
 )
 async def get_cache_info(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get cache information and statistics."""
     cache_info = enhanced_service.get_cache_info()
@@ -261,7 +261,7 @@ async def get_cache_info(
     tags=["metadata"],
 )
 async def clear_metadata_cache(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Clear the metadata cache."""
     enhanced_service.clear_metadata_cache()
@@ -277,7 +277,7 @@ async def clear_metadata_cache(
 )
 async def toggle_metadata_enrichment(
     enabled: bool = Query(..., description="Enable metadata enrichment"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Toggle metadata enrichment on/off."""
     enhanced_service.set_metadata_enabled(enabled)
@@ -301,7 +301,7 @@ async def get_latest_updates(
     include_metadata: bool = Query(
         False, description="Include AniList metadata enrichment"
     ),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get latest anime updates with optional AniList metadata enrichment.
@@ -334,7 +334,7 @@ async def get_latest_updates(
     tags=["metadata"],
 )
 async def get_metadata_statistics(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get metadata enrichment statistics."""
     stats = enhanced_service.get_metadata_stats()
@@ -351,7 +351,7 @@ async def get_metadata_statistics(
     tags=["metadata"],
 )
 async def get_cache_info(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get cache information and statistics."""
     cache_info = enhanced_service.get_cache_info()
@@ -368,7 +368,7 @@ async def get_cache_info(
     tags=["metadata"],
 )
 async def clear_metadata_cache(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Clear the metadata cache."""
     enhanced_service.clear_metadata_cache()
@@ -384,7 +384,7 @@ async def clear_metadata_cache(
 )
 async def toggle_metadata_enrichment(
     enabled: bool = Query(..., description="Enable metadata enrichment"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Toggle metadata enrichment on/off."""
     enhanced_service.set_metadata_enabled(enabled)
@@ -411,7 +411,7 @@ async def search_content(
         False,
         description="Include AniList metadata enrichment (ratings, genres, trailers, etc.)",
     ),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Search for anime with optional AniList metadata enrichment.
@@ -453,7 +453,7 @@ async def search_content(
     tags=["metadata"],
 )
 async def get_metadata_statistics(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get metadata enrichment statistics."""
     stats = enhanced_service.get_metadata_stats()
@@ -470,7 +470,7 @@ async def get_metadata_statistics(
     tags=["metadata"],
 )
 async def get_cache_info(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get cache information and statistics."""
     cache_info = enhanced_service.get_cache_info()
@@ -487,7 +487,7 @@ async def get_cache_info(
     tags=["metadata"],
 )
 async def clear_metadata_cache(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Clear the metadata cache."""
     enhanced_service.clear_metadata_cache()
@@ -503,7 +503,7 @@ async def clear_metadata_cache(
 )
 async def toggle_metadata_enrichment(
     enabled: bool = Query(..., description="Enable metadata enrichment"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Toggle metadata enrichment on/off."""
     enhanced_service.set_metadata_enabled(enabled)
@@ -530,7 +530,7 @@ async def get_video_sources(
     include_context: bool = Query(
         False, description="Include anime and episode context information"
     ),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get video sources with optional anime context information.
@@ -564,7 +564,7 @@ async def get_video_sources(
     tags=["metadata"],
 )
 async def get_metadata_statistics(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get metadata enrichment statistics."""
     stats = enhanced_service.get_metadata_stats()
@@ -581,7 +581,7 @@ async def get_metadata_statistics(
     tags=["metadata"],
 )
 async def get_cache_info(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get cache information and statistics."""
     cache_info = enhanced_service.get_cache_info()
@@ -598,7 +598,7 @@ async def get_cache_info(
     tags=["metadata"],
 )
 async def clear_metadata_cache(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Clear the metadata cache."""
     enhanced_service.clear_metadata_cache()
@@ -614,7 +614,7 @@ async def clear_metadata_cache(
 )
 async def toggle_metadata_enrichment(
     enabled: bool = Query(..., description="Enable metadata enrichment"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Toggle metadata enrichment on/off."""
     enhanced_service.set_metadata_enabled(enabled)
@@ -704,7 +704,7 @@ async def get_series_detail(
         False,
         description="Include AniList metadata (characters, staff, relations, etc.)",
     ),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get anime series with hierarchical episode organization and optional AniList metadata.
@@ -753,7 +753,7 @@ async def get_series_detail(
     tags=["metadata"],
 )
 async def get_metadata_statistics(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get metadata enrichment statistics."""
     stats = enhanced_service.get_metadata_stats()
@@ -770,7 +770,7 @@ async def get_metadata_statistics(
     tags=["metadata"],
 )
 async def get_cache_info(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get cache information and statistics."""
     cache_info = enhanced_service.get_cache_info()
@@ -787,7 +787,7 @@ async def get_cache_info(
     tags=["metadata"],
 )
 async def clear_metadata_cache(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Clear the metadata cache."""
     enhanced_service.clear_metadata_cache()
@@ -803,7 +803,7 @@ async def clear_metadata_cache(
 )
 async def toggle_metadata_enrichment(
     enabled: bool = Query(..., description="Enable metadata enrichment"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Toggle metadata enrichment on/off."""
     enhanced_service.set_metadata_enabled(enabled)
@@ -825,7 +825,7 @@ async def toggle_metadata_enrichment(
 async def get_series_seasons(
     source: str = Path(..., description="Source identifier"),
     url: str = Query(..., description="Anime URL path"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get all seasons for a series.
@@ -858,7 +858,7 @@ async def get_series_seasons(
     tags=["metadata"],
 )
 async def get_metadata_statistics(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get metadata enrichment statistics."""
     stats = enhanced_service.get_metadata_stats()
@@ -875,7 +875,7 @@ async def get_metadata_statistics(
     tags=["metadata"],
 )
 async def get_cache_info(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get cache information and statistics."""
     cache_info = enhanced_service.get_cache_info()
@@ -892,7 +892,7 @@ async def get_cache_info(
     tags=["metadata"],
 )
 async def clear_metadata_cache(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Clear the metadata cache."""
     enhanced_service.clear_metadata_cache()
@@ -908,7 +908,7 @@ async def clear_metadata_cache(
 )
 async def toggle_metadata_enrichment(
     enabled: bool = Query(..., description="Enable metadata enrichment"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Toggle metadata enrichment on/off."""
     enhanced_service.set_metadata_enabled(enabled)
@@ -932,7 +932,7 @@ async def get_series_season(
     source: str = Path(..., description="Source identifier"),
     season_num: int = Path(..., description="Season number", ge=1),
     url: str = Query(..., description="Anime URL path"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get details for a specific season.
@@ -971,7 +971,7 @@ async def get_series_season(
     tags=["metadata"],
 )
 async def get_metadata_statistics(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get metadata enrichment statistics."""
     stats = enhanced_service.get_metadata_stats()
@@ -988,7 +988,7 @@ async def get_metadata_statistics(
     tags=["metadata"],
 )
 async def get_cache_info(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get cache information and statistics."""
     cache_info = enhanced_service.get_cache_info()
@@ -1005,7 +1005,7 @@ async def get_cache_info(
     tags=["metadata"],
 )
 async def clear_metadata_cache(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Clear the metadata cache."""
     enhanced_service.clear_metadata_cache()
@@ -1021,7 +1021,7 @@ async def clear_metadata_cache(
 )
 async def toggle_metadata_enrichment(
     enabled: bool = Query(..., description="Enable metadata enrichment"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Toggle metadata enrichment on/off."""
     enhanced_service.set_metadata_enabled(enabled)
@@ -1046,7 +1046,7 @@ async def get_series_episode(
     season_num: int = Path(..., description="Season number", ge=1),
     episode_num: int = Path(..., description="Episode number", ge=1),
     url: str = Query(..., description="Anime URL path"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get details for a specific episode.
@@ -1092,7 +1092,7 @@ async def get_series_episode(
     tags=["metadata"],
 )
 async def get_metadata_statistics(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get metadata enrichment statistics."""
     stats = enhanced_service.get_metadata_stats()
@@ -1109,7 +1109,7 @@ async def get_metadata_statistics(
     tags=["metadata"],
 )
 async def get_cache_info(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get cache information and statistics."""
     cache_info = enhanced_service.get_cache_info()
@@ -1126,7 +1126,7 @@ async def get_cache_info(
     tags=["metadata"],
 )
 async def clear_metadata_cache(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Clear the metadata cache."""
     enhanced_service.clear_metadata_cache()
@@ -1142,7 +1142,7 @@ async def clear_metadata_cache(
 )
 async def toggle_metadata_enrichment(
     enabled: bool = Query(..., description="Enable metadata enrichment"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Toggle metadata enrichment on/off."""
     enhanced_service.set_metadata_enabled(enabled)
@@ -1193,7 +1193,7 @@ async def toggle_metadata_enrichment(
 async def get_series_movies(
     source: str = Path(..., description="Source identifier"),
     url: str = Query(..., description="Anime URL path"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get all movies, OVAs, and specials for a series.
@@ -1227,7 +1227,7 @@ async def get_series_movies(
     tags=["metadata"],
 )
 async def get_metadata_statistics(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get metadata enrichment statistics."""
     stats = enhanced_service.get_metadata_stats()
@@ -1244,7 +1244,7 @@ async def get_metadata_statistics(
     tags=["metadata"],
 )
 async def get_cache_info(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get cache information and statistics."""
     cache_info = enhanced_service.get_cache_info()
@@ -1261,7 +1261,7 @@ async def get_cache_info(
     tags=["metadata"],
 )
 async def clear_metadata_cache(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Clear the metadata cache."""
     enhanced_service.clear_metadata_cache()
@@ -1277,7 +1277,7 @@ async def clear_metadata_cache(
 )
 async def toggle_metadata_enrichment(
     enabled: bool = Query(..., description="Enable metadata enrichment"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Toggle metadata enrichment on/off."""
     enhanced_service.set_metadata_enabled(enabled)
@@ -1301,7 +1301,7 @@ async def get_series_movie(
     source: str = Path(..., description="Source identifier"),
     movie_num: int = Path(..., description="Movie/OVA number", ge=1),
     url: str = Query(..., description="Anime URL path"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """
     Get details for a specific movie, OVA, or special.
@@ -1341,7 +1341,7 @@ async def get_series_movie(
     tags=["metadata"],
 )
 async def get_metadata_statistics(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get metadata enrichment statistics."""
     stats = enhanced_service.get_metadata_stats()
@@ -1358,7 +1358,7 @@ async def get_metadata_statistics(
     tags=["metadata"],
 )
 async def get_cache_info(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Get cache information and statistics."""
     cache_info = enhanced_service.get_cache_info()
@@ -1375,7 +1375,7 @@ async def get_cache_info(
     tags=["metadata"],
 )
 async def clear_metadata_cache(
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Clear the metadata cache."""
     enhanced_service.clear_metadata_cache()
@@ -1391,7 +1391,7 @@ async def clear_metadata_cache(
 )
 async def toggle_metadata_enrichment(
     enabled: bool = Query(..., description="Enable metadata enrichment"),
-    enhanced_service: AnimeService = Depends(get_enhanced_anime_service),
+    enhanced_service: MediaService = Depends(get_enhanced_anime_service),
 ):
     """Toggle metadata enrichment on/off."""
     enhanced_service.set_metadata_enabled(enabled)

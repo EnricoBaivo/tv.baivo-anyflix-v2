@@ -131,29 +131,47 @@ app = FastAPI(
     ## 🎬 Media API Structure
 
     ### 📋 Source Management
-    - List available streaming sources and their configurations
-    - Get source-specific preferences and settings
+    - List available streaming sources: `GET /sources/`
+    - Get source-specific preferences: `GET /sources/{source}/preferences`
 
     ### 🔍 Content Discovery  
-    - Browse popular content rankings
-    - Get latest updates and new releases
-    - Search content by title with filtering
+    - Browse popular content: `GET /sources/{source}/popular?page=1`
+    - Get latest updates: `GET /sources/{source}/latest?page=1`
+    - Search by title: `GET /sources/{source}/search?q=attack&page=1`
 
     ### 📺 Series Structure
-    - Complete hierarchical content organization
-    - Season and episode management
-    - Movies, specials, and additional content
-    - Granular access to specific content items
+    - Complete series data: `GET /sources/{source}/series?url=...`
+    - All seasons: `GET /sources/{source}/series/seasons?url=...`
+    - Specific season: `GET /sources/{source}/series/seasons/{season_num}?url=...`
+    - Specific episode: `GET /sources/{source}/series/seasons/{season}/episodes/{episode}?url=...`
+    - Movies/OVAs: `GET /sources/{source}/series/movies?url=...`
 
-    ### 🎬 Video Sources
-    - Extract streaming links from 10+ hosting providers
-    - Multiple quality options and language preferences
-    - Built-in proxy support for CORS handling
+    ### 🎬 Video & Media
+    - Extract streaming links: `GET /sources/{source}/videos?url=...`
+    - Trailer extraction: `POST /sources/trailer`
 
-    ## ⚡ Quick Start
-    1. **Discover**: `/sources/{source}/search?q=content-title`
-    2. **Structure**: `/sources/{source}/series?url=...`  
-    3. **Stream**: `/sources/{source}/videos?url=...`
+    ## ⚡ Quick Start Examples
+    ```bash
+    # 1. List sources
+    curl http://localhost:8000/sources/
+    
+    # 2. Search content  
+    curl "http://localhost:8000/sources/aniworld/search?q=attack"
+    
+    # 3. Get series details
+    curl "http://localhost:8000/sources/aniworld/series?url=/anime/stream/attack-on-titan"
+    
+    # 4. Get video sources
+    curl "http://localhost:8000/sources/aniworld/videos?url=/episode/url"
+    ```
+
+    ## 📊 Features
+    - **Metadata Enrichment**: Automatic TMDB and AniList data integration
+    - **Hierarchical Structure**: Organized seasons, episodes, and movies
+    - **Multiple Sources**: Support for 2+ streaming sources
+    - **Video Extraction**: 10+ hosting provider support
+    - **Error Handling**: Comprehensive error responses
+    - **Type Safety**: Full OpenAPI schema with examples
     """,
     version="1.0.0",
     contact={

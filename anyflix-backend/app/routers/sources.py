@@ -2,11 +2,12 @@
 
 import logging
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, HTTPException, Path, Query
 
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
+from lib.models.anilist import Media
 from lib.models.base import SearchResult
 from lib.models.responses import (
     EpisodeResponse,
@@ -14,23 +15,24 @@ from lib.models.responses import (
     MovieResponse,
     MoviesResponse,
     PopularResponse,
+    PreferencesResponse,
     SearchResponse,
     SeasonResponse,
     SeasonsResponse,
     SeriesDetailResponse,
+    SourcesResponse,
     TrailerRequest,
     TrailerResponse,
     VideoListResponse,
 )
+from lib.models.tmdb import TMDBMovieDetail, TMDBTVDetail
 from lib.providers.aniworld import AniWorldProvider
 from lib.providers.base import BaseProvider
 from lib.providers.serienstream import SerienStreamProvider
 from lib.services.anilist_service import AniListService
+from lib.services.matching_service import MatchingService
+from lib.services.series_converter import SeriesConverterService
 from lib.services.tmdb_service import TMDBService
-from lib.utils.external_data_converters import (
-    safe_convert_anilist_data,
-    safe_convert_tmdb_data,
-)
 from lib.utils.trailer_utils import extract_trailer_info
 
 logger = logging.getLogger(__name__)
@@ -72,77 +74,96 @@ def get_provider(source: str) -> BaseProvider:
     return providers[source]
 
 
+async def enrich_single_item_metadata(
+    title: str, source_type: str
+) -> tuple[
+    Optional[Union[TMDBMovieDetail, TMDBTVDetail]], Optional[Media], Optional[float]
+]:
+    """Enrich a single item with metadata based on source type.
+
+    Args:
+        title: Title to search for
+        source_type: Source type ('anime' or 'normal')
+
+    Returns:
+        Tuple of (tmdb_data, anilist_data, match_confidence)
+    """
+    tmdb_data = None
+    anilist_data = None
+    match_confidence = None
+
+    if source_type == "anime":
+        # Add AniList metadata for anime
+        try:
+            async with anilist_service:
+                anilist_search_result = await anilist_service.search_anime(title)
+                anilist_data, match_confidence = (
+                    MatchingService.find_best_anilist_match(
+                        title, anilist_search_result
+                    )
+                )
+        except Exception as e:
+            logger.warning(f"Failed to enrich with AniList data: {e}")
+    elif source_type == "normal":
+        # Add TMDB metadata for series (only if API key is available)
+        if tmdb_service._api_available:
+            try:
+                async with tmdb_service:
+                    tmdb_data = await tmdb_service.search_and_match(
+                        title, media_type="tv"
+                    )
+                    match_confidence = (
+                        MatchingService.calculate_tmdb_confidence(title, tmdb_data)
+                        if tmdb_data
+                        else None
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to enrich with TMDB data: {e}")
+        else:
+            logger.info("TMDB API key not configured, skipping metadata enrichment")
+
+    return tmdb_data, anilist_data, match_confidence
+
+
 async def enrich_with_metadata(
-    results: List[SearchResult], type: str
+    results: List[SearchResult], source_type: str
 ) -> List[SearchResult]:
     """Enrich results with metadata based on source type.
 
     Args:
         results: List of SearchResult objects to enrich
-        source: Source name ('aniworld' or 'serienstream')
+        source_type: Source type ('anime' or 'normal')
 
     Returns:
         List[SearchResult]: The enriched results
     """
     for result in results:
-        if type == "anime":
-            # Add AniList metadata for anime
-            try:
-                async with anilist_service:
-                    anilist_data = await anilist_service.search_anime(result.name)
-                    if (
-                        anilist_data
-                        and hasattr(anilist_data, "media")
-                        and anilist_data.media
-                    ):
-                        # Take the first result and convert to structured data
-                        first_result = anilist_data.media[0]
-                        raw_data = (
-                            first_result.model_dump()
-                            if hasattr(first_result, "model_dump")
-                            else first_result.dict()
-                        )
-                        result.anilist_data = safe_convert_anilist_data(raw_data)
-                        result.match_confidence = 1.0
-                    else:
-                        result.anilist_data = None
-            except Exception as e:
-                logger.warning(f"Failed to enrich with AniList data: {e}")
-                result.anilist_data = None
-        elif type == "normal":
-            # Add TMDB metadata for series (only if API key is available)
-            if tmdb_service._api_available:
-                try:
-                    async with tmdb_service:
-                        tmdb_data = await tmdb_service.search_and_match(
-                            result.name, media_type="tv"
-                        )
-                        result.tmdb_data = safe_convert_tmdb_data(tmdb_data)
-                        if tmdb_data:
-                            result.match_confidence = 1.0
-                        else:
-                            result.tmdb_data = None
-                except Exception as e:
-                    logger.warning(f"Failed to enrich with TMDB data: {e}")
-                    result.tmdb_data = None
-            else:
-                result.tmdb_data = None
+        tmdb_data, anilist_data, match_confidence = await enrich_single_item_metadata(
+            result.name, source_type
+        )
+        result.tmdb_data = tmdb_data
+        result.anilist_data = anilist_data
+        result.match_confidence = match_confidence
     return results
 
 
-@router.get("/", summary="📋 List Available Sources")
+@router.get("/", response_model=SourcesResponse, summary="📋 List Available Sources")
 async def get_sources():
     """Get all available media sources."""
-    return {"sources": list(providers.keys())}
+    return SourcesResponse(sources=list(providers.keys()))
 
 
-@router.get("/{source}/preferences", summary="📋 Get Source Configuration")
+@router.get(
+    "/{source}/preferences",
+    response_model=PreferencesResponse,
+    summary="📋 Get Source Configuration",
+)
 async def get_source_preferences(source: str = Path(...)):
     """Get configuration preferences for a specific source."""
     provider = get_provider(source)
     async with provider:
         preferences = provider.get_source_preferences()
-        return {"preferences": preferences}
+        return PreferencesResponse(preferences=preferences)
 
 
 @router.get(
@@ -190,7 +211,6 @@ async def search_content(
     provider = get_provider(source)
     async with provider:
         result = await provider.search(q, page, lang)
-        result.list = await enrich_with_metadata(result.list, provider.type)
         return result
 
 
@@ -223,111 +243,40 @@ async def get_series_detail(
     provider = get_provider(source)
 
     # Get flat detail response
-    async with provider:
-        detail_response = await provider.get_detail(url)
+    try:
+        async with provider:
+            detail_response = await provider.get_detail(url)
+    except Exception as e:
+        logger.error(f"Failed to get detail from provider {source}: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch series data from {source}"
+        )
 
-    # Convert to hierarchical structure (simplified)
-    from lib.models.base import Movie, MovieKind, Season, SeriesDetail
+    # Convert to hierarchical structure using converter service
+    try:
+        slug = url.split("/")[-1] if "/" in url else "unknown"
+        series_detail = SeriesConverterService.convert_to_hierarchical(
+            detail_response, slug=slug
+        )
+    except ValueError as e:
+        logger.error(f"Failed to convert series to hierarchical structure: {e}")
+        raise HTTPException(
+            status_code=500, detail="Failed to process series data structure"
+        )
 
-    slug = url.split("/")[-1] if "/" in url else "unknown"
+    # Add metadata based on source type
+    tmdb_data, anilist_data, match_confidence = await enrich_single_item_metadata(
+        detail_response.media.name, provider.type
+    )
 
-    # Simple conversion - group episodes by season
-    seasons_dict = {}
-    movies = []
-
-    for ep_data in detail_response.media.episodes:
-        if isinstance(ep_data, dict):
-            # Check if this is a movie/film
-            if ep_data.get("kind") == "movie" or "/filme/" in ep_data.get("url", ""):
-                movies.append(
-                    Movie(
-                        number=ep_data.get("number", 1),
-                        title=ep_data.get("title", ""),
-                        kind=MovieKind.MOVIE,  # Default to movie for films
-                        url=ep_data.get("url", ""),
-                        date_upload=ep_data.get("date_upload"),
-                        tags=ep_data.get("tags", []),
-                    )
-                )
-            else:
-                # Handle regular episodes
-                season_num = ep_data.get("season", 1)
-                episode_num = ep_data.get("episode", 1)
-
-                if season_num not in seasons_dict:
-                    seasons_dict[season_num] = Season(
-                        season=season_num, title=f"Staffel {season_num}", episodes=[]
-                    )
-
-                from lib.models.base import Episode
-
-                seasons_dict[season_num].episodes.append(
-                    Episode(
-                        season=season_num,
-                        episode=episode_num,
-                        title=ep_data.get("title", ""),
-                        url=ep_data.get("url", ""),
-                        date_upload=ep_data.get("date_upload"),
-                        tags=ep_data.get("tags", []),
-                    )
-                )
-
-    # Sort seasons and episodes
-    seasons = sorted(seasons_dict.values(), key=lambda s: s.season)
-    for season in seasons:
-        season.episodes.sort(key=lambda e: e.episode)
-
-    series_detail = SeriesDetail(slug=slug, seasons=seasons, movies=movies)
-
-    # Add metadata based on source
-    response_data = {
-        "type": provider.type,
-        "length": len(detail_response.media.episodes),
-        "series": series_detail,
-        "tmdb_data": None,
-        "anilist_data": None,
-        "match_confidence": None,
-    }
-
-    if provider.type == "anime":
-        try:
-            async with anilist_service:
-                anilist_data = await anilist_service.search_anime(
-                    detail_response.media.name
-                )
-                if (
-                    anilist_data
-                    and hasattr(anilist_data, "media")
-                    and anilist_data.media
-                ):
-                    # Take the first result and convert to structured data
-                    first_result = anilist_data.media[0]
-                    raw_data = (
-                        first_result.model_dump()
-                        if hasattr(first_result, "model_dump")
-                        else first_result.dict()
-                    )
-                    response_data["anilist_data"] = safe_convert_anilist_data(raw_data)
-                    response_data["match_confidence"] = 1.0
-        except Exception as e:
-            logger.warning(f"Failed to enrich with AniList data for series: {e}")
-            pass
-    elif provider.type == "normal":
-        if tmdb_service._api_available:
-            try:
-                async with tmdb_service:
-                    tmdb_data = await tmdb_service.search_and_match(
-                        detail_response.media.name, media_type="tv"
-                    )
-                    if tmdb_data:
-                        response_data["tmdb_data"] = safe_convert_tmdb_data(tmdb_data)
-                        response_data["match_confidence"] = 1.0
-            except Exception as e:
-                logger.warning(f"Failed to get TMDB data for series: {e}")
-        else:
-            logger.info("TMDB API key not configured, skipping metadata enrichment")
-
-    return SeriesDetailResponse(**response_data)
+    return SeriesDetailResponse(
+        type=provider.type,
+        series=series_detail,
+        length=len(detail_response.media.episodes),
+        tmdb_data=tmdb_data,
+        anilist_data=anilist_data,
+        match_confidence=match_confidence,
+    )
 
 
 @router.get(
@@ -346,7 +295,7 @@ async def get_series_seasons(
         seasons=series_detail.series.seasons,
         tmdb_data=series_detail.tmdb_data,
         anilist_data=series_detail.anilist_data,
-        match_confidence=getattr(series_detail, "match_confidence", None),
+        match_confidence=series_detail.match_confidence,
     )
 
 
@@ -423,7 +372,7 @@ async def get_series_movies(
         movies=series_detail.series.movies,
         tmdb_data=series_detail.tmdb_data,
         anilist_data=series_detail.anilist_data,
-        match_confidence=getattr(series_detail, "match_confidence", None),
+        match_confidence=series_detail.match_confidence,
     )
 
 
@@ -447,7 +396,7 @@ async def get_series_movie(
                 movie=movie,
                 tmdb_data=series_detail.tmdb_data,
                 anilist_data=series_detail.anilist_data,
-                match_confidence=getattr(series_detail, "match_confidence", None),
+                match_confidence=series_detail.match_confidence,
             )
 
     raise HTTPException(status_code=404, detail=f"Movie {movie_num} not found")

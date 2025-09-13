@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from enum import Enum
 
 # Import external data types for union typing
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field
 
-if TYPE_CHECKING:
-    from .external import AniListData, TMDBData
+from .anilist import Media
+from .tmdb import TMDBMovieDetail, TMDBTVDetail
 
 
 class MediaSource(BaseModel):
@@ -96,7 +95,7 @@ class SearchResult(BaseModel):
     image_url: str
     link: str
     # External metadata fields with improved documentation
-    tmdb_data: Optional[Dict[str, Any]] = Field(
+    tmdb_data: Optional[TMDBMovieDetail | TMDBTVDetail] = Field(
         None,
         description="TMDB metadata (movie or TV show details)",
         example={
@@ -110,7 +109,7 @@ class SearchResult(BaseModel):
             "genres": [{"id": 28, "name": "Action"}],
         },
     )
-    anilist_data: Optional[Dict[str, Any]] = Field(
+    anilist_data: Optional[Media] = Field(
         None,
         description="AniList metadata (anime/manga details)",
         example={

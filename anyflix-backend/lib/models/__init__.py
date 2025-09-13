@@ -13,9 +13,6 @@ from .anilist import (
 # Base models
 from .base import Episode, MediaInfo, SearchResult, SourcePreference, VideoSource
 
-# External data models for API responses
-from .external import AniListData, AniListMediaData, TMDBData, TMDBMovieData, TMDBTVData
-
 # Response models
 from .responses import (
     EpisodeResponse,
@@ -70,10 +67,4 @@ __all__ = [
     "TMDBSearchResponse",
     "TMDBSearchResult",
     "TMDBTVDetail",
-    # External data models
-    "AniListData",
-    "AniListMediaData",
-    "TMDBData",
-    "TMDBMovieData",
-    "TMDBTVData",
 ]

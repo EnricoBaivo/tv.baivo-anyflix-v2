@@ -524,7 +524,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1757860200,
-              "timeUntilAiring": 63600,
+              "timeUntilAiring": 59383,
               "episode": 10
             },
             "airingSchedule": null,
@@ -612,8 +612,8 @@
               "Tuan Misteri"
             ],
             "averageScore": 83,
-            "meanScore": 83,
-            "popularity": 62324,
+            "meanScore": 84,
+            "popularity": 62736,
             "isLocked": null,
             "trending": null,
             "favourites": 2271,
@@ -1277,7 +1277,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758382200,
-              "timeUntilAiring": 585599,
+              "timeUntilAiring": 581382,
               "episode": 12
             },
             "airingSchedule": null,
@@ -1644,7 +1644,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758122400,
-              "timeUntilAiring": 325799,
+              "timeUntilAiring": 321582,
               "episode": 12
             },
             "airingSchedule": null,
@@ -2022,341 +2022,8 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758129360,
-              "timeUntilAiring": 332759,
+              "timeUntilAiring": 328542,
               "episode": 12
-            },
-            "airingSchedule": null,
-            "trends": null,
-            "externalLinks": null,
-            "streamingEpisodes": null,
-            "rankings": null,
-            "mediaListEntry": null,
-            "reviews": null,
-            "reviewPreview": null,
-            "recommendations": null,
-            "stats": null,
-            "siteUrl": null,
-            "autoCreateForumThread": null,
-            "isRecommendationBlocked": null,
-            "isReviewBlocked": null,
-            "modNotes": null
-          },
-          "match_confidence": 1.0
-        },
-        {
-          "name": "The Water Magician",
-          "image_url": "https://aniworld.to/public/img/cover/the-water-magician-stream-cover-snnxtQOvKRToIXLHc4gRmsLpHyUNa5M6_200x300.png",
-          "link": "/anime/stream/the-water-magician",
-          "tmdb_data": null,
-          "anilist_data": {
-            "id": 186052,
-            "idMal": null,
-            "title": {
-              "romaji": "Mizu Zokusei no Mahou Tsukai",
-              "english": "The Water Magician",
-              "native": "\u6c34\u5c5e\u6027\u306e\u9b54\u6cd5\u4f7f\u3044",
-              "userPreferred": "Mizu Zokusei no Mahou Tsukai"
-            },
-            "type": "ANIME",
-            "format": "TV",
-            "status": "RELEASING",
-            "description": "Ryou is delighted to be reincarnated into the fantastical world of Phi, where he thinks he\u2019ll get to live a quiet life learning to use his newfound water magic. Going with the flow here, however, means something very different. Ryou is immediately pitted against the wild lands he winds up in and the slew of deadly monsters that call the remote subcontinent home. You\u2019d think he\u2019d forget about taking it easy when he\u2019s stuck fighting for his life, but lucky for Ryou, he\u2019s naturally optimistic, clever, and blessed with the hidden \u201cEternal Youth\u201d trait. Twenty years pass in the blink of an eye, and each encounter along the way pushes him one step closer to the pinnacle of human magic. Little does he realize that\u2019s only the opening chapter of his tale. A fateful meeting soon thrusts Ryou to the forefront of history, forever changing the course of his life... Thus begins the adventures of the strongest water magician the world has ever seen\u2014who also likes to do things at his own pace!<br>\n<br>\n(Source: J-Novel Club)",
-            "startDate": {
-              "year": 2025,
-              "month": 7,
-              "day": 4
-            },
-            "endDate": {
-              "year": 2025,
-              "month": 9,
-              "day": 19
-            },
-            "season": "SUMMER",
-            "seasonYear": 2025,
-            "seasonInt": null,
-            "episodes": 12,
-            "duration": 24,
-            "chapters": null,
-            "volumes": null,
-            "countryOfOrigin": "JP",
-            "isLicensed": true,
-            "source": "LIGHT_NOVEL",
-            "hashtag": "#\u6c34\u5c5e\u6027",
-            "trailer": {
-              "id": "4E6zDMwB1rw",
-              "site": "youtube",
-              "thumbnail": null
-            },
-            "updatedAt": null,
-            "coverImage": {
-              "extraLarge": null,
-              "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx186052-zq8h0Qo0O0sP.jpg",
-              "medium": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/bx186052-zq8h0Qo0O0sP.jpg",
-              "color": "#50d6e4"
-            },
-            "bannerImage": null,
-            "genres": [
-              "Action",
-              "Adventure",
-              "Fantasy"
-            ],
-            "synonyms": [],
-            "averageScore": 68,
-            "meanScore": 69,
-            "popularity": 47511,
-            "isLocked": null,
-            "trending": null,
-            "favourites": 891,
-            "tags": [
-              {
-                "id": 82,
-                "name": "Male Protagonist",
-                "description": "Main character is male.",
-                "category": null,
-                "rank": 94,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 244,
-                "name": "Isekai",
-                "description": "Features characters being transported into an alternate world setting and having to adapt to their new surroundings.",
-                "category": null,
-                "rank": 92,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 29,
-                "name": "Magic",
-                "description": "Prominently features magical elements or the use of magic.",
-                "category": null,
-                "rank": 87,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 243,
-                "name": "Reincarnation",
-                "description": "Features a character being born again after death, typically as another person or in another world.",
-                "category": null,
-                "rank": 71,
-                "isGeneralSpoiler": true,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 604,
-                "name": "Dungeon",
-                "description": "Prominently features a dungeon environment.",
-                "category": null,
-                "rank": 70,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 143,
-                "name": "Survival",
-                "description": "Centers around the struggle to live in spite of extreme obstacles.",
-                "category": null,
-                "rank": 61,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1310,
-                "name": "Travel",
-                "description": "Centers around character(s) moving between places a significant distance apart.",
-                "category": null,
-                "rank": 60,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1616,
-                "name": "Snowscape",
-                "description": "Prominently or partially set in a snowy environment.",
-                "category": null,
-                "rank": 55,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 598,
-                "name": "Elf",
-                "description": "Prominently features a character who is an elf.",
-                "category": null,
-                "rank": 50,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1537,
-                "name": "Coastal",
-                "description": "Story prominently takes place near the beach or around a coastal area/town. Setting is near the ocean.",
-                "category": null,
-                "rank": 35,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 779,
-                "name": "Kuudere",
-                "description": "Prominently features a character who generally retains a cold, blunt and cynical exterior, but once one gets to know them, they have a very warm and loving interior.",
-                "category": null,
-                "rank": 33,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 224,
-                "name": "Dragons",
-                "description": "Prominently features mythical reptiles which generally have wings and can breathe fire.",
-                "category": null,
-                "rank": 28,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              }
-            ],
-            "relations": null,
-            "characters": null,
-            "characterPreview": null,
-            "staff": null,
-            "staffPreview": null,
-            "studios": {
-              "edges": [
-                {
-                  "id": null,
-                  "isMain": true,
-                  "node": {
-                    "id": 6143,
-                    "name": "TYPHOON GRAPHICS",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": true,
-                  "node": {
-                    "id": 7597,
-                    "name": "Wonderland",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 145,
-                    "name": "TBS",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 6421,
-                    "name": "Crunchyroll",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 6998,
-                    "name": "TO Books",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 7156,
-                    "name": "Universal Music",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 6616,
-                    "name": "BS11",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 6143,
-                    "name": "TYPHOON GRAPHICS",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 460,
-                    "name": "KLOCKWORX",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                }
-              ],
-              "nodes": null
-            },
-            "isFavourite": null,
-            "isFavouriteBlocked": null,
-            "isAdult": false,
-            "nextAiringEpisode": {
-              "airingAt": 1758212880,
-              "timeUntilAiring": 416279,
-              "episode": 11
             },
             "airingSchedule": null,
             "trends": null,
@@ -2712,6 +2379,339 @@
             "isFavouriteBlocked": null,
             "isAdult": false,
             "nextAiringEpisode": null,
+            "airingSchedule": null,
+            "trends": null,
+            "externalLinks": null,
+            "streamingEpisodes": null,
+            "rankings": null,
+            "mediaListEntry": null,
+            "reviews": null,
+            "reviewPreview": null,
+            "recommendations": null,
+            "stats": null,
+            "siteUrl": null,
+            "autoCreateForumThread": null,
+            "isRecommendationBlocked": null,
+            "isReviewBlocked": null,
+            "modNotes": null
+          },
+          "match_confidence": 1.0
+        },
+        {
+          "name": "The Water Magician",
+          "image_url": "https://aniworld.to/public/img/cover/the-water-magician-stream-cover-snnxtQOvKRToIXLHc4gRmsLpHyUNa5M6_200x300.png",
+          "link": "/anime/stream/the-water-magician",
+          "tmdb_data": null,
+          "anilist_data": {
+            "id": 186052,
+            "idMal": null,
+            "title": {
+              "romaji": "Mizu Zokusei no Mahou Tsukai",
+              "english": "The Water Magician",
+              "native": "\u6c34\u5c5e\u6027\u306e\u9b54\u6cd5\u4f7f\u3044",
+              "userPreferred": "Mizu Zokusei no Mahou Tsukai"
+            },
+            "type": "ANIME",
+            "format": "TV",
+            "status": "RELEASING",
+            "description": "Ryou is delighted to be reincarnated into the fantastical world of Phi, where he thinks he\u2019ll get to live a quiet life learning to use his newfound water magic. Going with the flow here, however, means something very different. Ryou is immediately pitted against the wild lands he winds up in and the slew of deadly monsters that call the remote subcontinent home. You\u2019d think he\u2019d forget about taking it easy when he\u2019s stuck fighting for his life, but lucky for Ryou, he\u2019s naturally optimistic, clever, and blessed with the hidden \u201cEternal Youth\u201d trait. Twenty years pass in the blink of an eye, and each encounter along the way pushes him one step closer to the pinnacle of human magic. Little does he realize that\u2019s only the opening chapter of his tale. A fateful meeting soon thrusts Ryou to the forefront of history, forever changing the course of his life... Thus begins the adventures of the strongest water magician the world has ever seen\u2014who also likes to do things at his own pace!<br>\n<br>\n(Source: J-Novel Club)",
+            "startDate": {
+              "year": 2025,
+              "month": 7,
+              "day": 4
+            },
+            "endDate": {
+              "year": 2025,
+              "month": 9,
+              "day": 19
+            },
+            "season": "SUMMER",
+            "seasonYear": 2025,
+            "seasonInt": null,
+            "episodes": 12,
+            "duration": 24,
+            "chapters": null,
+            "volumes": null,
+            "countryOfOrigin": "JP",
+            "isLicensed": true,
+            "source": "LIGHT_NOVEL",
+            "hashtag": "#\u6c34\u5c5e\u6027",
+            "trailer": {
+              "id": "4E6zDMwB1rw",
+              "site": "youtube",
+              "thumbnail": null
+            },
+            "updatedAt": null,
+            "coverImage": {
+              "extraLarge": null,
+              "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx186052-zq8h0Qo0O0sP.jpg",
+              "medium": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/bx186052-zq8h0Qo0O0sP.jpg",
+              "color": "#50d6e4"
+            },
+            "bannerImage": null,
+            "genres": [
+              "Action",
+              "Adventure",
+              "Fantasy"
+            ],
+            "synonyms": [],
+            "averageScore": 68,
+            "meanScore": 69,
+            "popularity": 47511,
+            "isLocked": null,
+            "trending": null,
+            "favourites": 891,
+            "tags": [
+              {
+                "id": 82,
+                "name": "Male Protagonist",
+                "description": "Main character is male.",
+                "category": null,
+                "rank": 94,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 244,
+                "name": "Isekai",
+                "description": "Features characters being transported into an alternate world setting and having to adapt to their new surroundings.",
+                "category": null,
+                "rank": 92,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 29,
+                "name": "Magic",
+                "description": "Prominently features magical elements or the use of magic.",
+                "category": null,
+                "rank": 87,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 243,
+                "name": "Reincarnation",
+                "description": "Features a character being born again after death, typically as another person or in another world.",
+                "category": null,
+                "rank": 71,
+                "isGeneralSpoiler": true,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 604,
+                "name": "Dungeon",
+                "description": "Prominently features a dungeon environment.",
+                "category": null,
+                "rank": 70,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 143,
+                "name": "Survival",
+                "description": "Centers around the struggle to live in spite of extreme obstacles.",
+                "category": null,
+                "rank": 61,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1310,
+                "name": "Travel",
+                "description": "Centers around character(s) moving between places a significant distance apart.",
+                "category": null,
+                "rank": 60,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1616,
+                "name": "Snowscape",
+                "description": "Prominently or partially set in a snowy environment.",
+                "category": null,
+                "rank": 55,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 598,
+                "name": "Elf",
+                "description": "Prominently features a character who is an elf.",
+                "category": null,
+                "rank": 50,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1537,
+                "name": "Coastal",
+                "description": "Story prominently takes place near the beach or around a coastal area/town. Setting is near the ocean.",
+                "category": null,
+                "rank": 35,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 779,
+                "name": "Kuudere",
+                "description": "Prominently features a character who generally retains a cold, blunt and cynical exterior, but once one gets to know them, they have a very warm and loving interior.",
+                "category": null,
+                "rank": 33,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 224,
+                "name": "Dragons",
+                "description": "Prominently features mythical reptiles which generally have wings and can breathe fire.",
+                "category": null,
+                "rank": 28,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              }
+            ],
+            "relations": null,
+            "characters": null,
+            "characterPreview": null,
+            "staff": null,
+            "staffPreview": null,
+            "studios": {
+              "edges": [
+                {
+                  "id": null,
+                  "isMain": true,
+                  "node": {
+                    "id": 6143,
+                    "name": "TYPHOON GRAPHICS",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": true,
+                  "node": {
+                    "id": 7597,
+                    "name": "Wonderland",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 145,
+                    "name": "TBS",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 6421,
+                    "name": "Crunchyroll",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 6998,
+                    "name": "TO Books",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 7156,
+                    "name": "Universal Music",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 6616,
+                    "name": "BS11",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 6143,
+                    "name": "TYPHOON GRAPHICS",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 460,
+                    "name": "KLOCKWORX",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                }
+              ],
+              "nodes": null
+            },
+            "isFavourite": null,
+            "isFavouriteBlocked": null,
+            "isAdult": false,
+            "nextAiringEpisode": {
+              "airingAt": 1758212880,
+              "timeUntilAiring": 412061,
+              "episode": 11
+            },
             "airingSchedule": null,
             "trends": null,
             "externalLinks": null,
@@ -3188,7 +3188,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758114000,
-              "timeUntilAiring": 317398,
+              "timeUntilAiring": 313181,
               "episode": 12
             },
             "airingSchedule": null,
@@ -4371,7 +4371,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1757856600,
-              "timeUntilAiring": 59997,
+              "timeUntilAiring": 55779,
               "episode": 11
             },
             "airingSchedule": null,
@@ -4390,7 +4390,7 @@
             "isReviewBlocked": null,
             "modNotes": null
           },
-          "match_confidence": 1.0
+          "match_confidence": 0.9
         },
         {
           "name": "The New Chronicles of Extraordinary Beings: Preface",
@@ -4506,6 +4506,494 @@
                   "node": {
                     "id": 6389,
                     "name": "bilibili",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                }
+              ],
+              "nodes": null
+            },
+            "isFavourite": null,
+            "isFavouriteBlocked": null,
+            "isAdult": false,
+            "nextAiringEpisode": null,
+            "airingSchedule": null,
+            "trends": null,
+            "externalLinks": null,
+            "streamingEpisodes": null,
+            "rankings": null,
+            "mediaListEntry": null,
+            "reviews": null,
+            "reviewPreview": null,
+            "recommendations": null,
+            "stats": null,
+            "siteUrl": null,
+            "autoCreateForumThread": null,
+            "isRecommendationBlocked": null,
+            "isReviewBlocked": null,
+            "modNotes": null
+          },
+          "match_confidence": 1.0
+        },
+        {
+          "name": "7th Time Loop: The Villainess Enjoys a Carefree Life Married to Her Worst Enemy!",
+          "image_url": "https://aniworld.to/public/img/cover/7th-time-loop-the-villainess-enjoys-a-carefree-life-married-to-her-worst-enemy-stream-cover-uyHGqu73xNwLBvGxgckOPxFCeJpvQZMJ_200x300.jpg",
+          "link": "/anime/stream/7th-time-loop-the-villainess-enjoys-a-carefree-life-married-to-her-worst-enemy",
+          "tmdb_data": null,
+          "anilist_data": {
+            "id": 168374,
+            "idMal": null,
+            "title": {
+              "romaji": "Loop 7-kaime no Akuyaku Reijou wa, Moto Tekikoku de Jiyuu Kimama na Hanayome Seikatsu wo Mankitsu Suru",
+              "english": "7th Time Loop: The Villainess Enjoys a Carefree Life Married to Her Worst Enemy!",
+              "native": "\u30eb\u30fc\u30d77\u56de\u76ee\u306e\u60aa\u5f79\u4ee4\u5b22\u306f\u3001\u5143\u6575\u56fd\u3067\u81ea\u7531\u6c17\u307e\u307e\u306a\u82b1\u5ac1\u751f\u6d3b\u3092\u6e80\u55ab\u3059\u308b",
+              "userPreferred": "Loop 7-kaime no Akuyaku Reijou wa, Moto Tekikoku de Jiyuu Kimama na Hanayome Seikatsu wo Mankitsu Suru"
+            },
+            "type": "ANIME",
+            "format": "TV",
+            "status": "FINISHED",
+            "description": "Rishe Irmgard Weitzner, a duke's daughter, has a secret: she died at the age of 20 and returned to the moment five years prior when her engagement was called off. She has already experienced this time loop six times and lived out those five years a different way each time, as a merchant, a doctor, a maid, a knight, and more. Now, on her seventh go-around, she's determined to live to a ripe old age and spend it relaxing. But the moment she flees the castle with that decision in her heart, she runs into the infamously cruel crown prince of a rival kingdom, Arnold Hein. He happens to be the one who killed her during her life as a knight, but now, he seems to have taken a bizarre liking to her... and begs her to become his wife. Thus, in order to stay alive and prevent a war, Rishe utilizes her previous experiences to kick off her seventh life as the bride of an enemy nation's crown prince.<br>\n<br>\n(Source: Crunchyroll)",
+            "startDate": {
+              "year": 2024,
+              "month": 1,
+              "day": 7
+            },
+            "endDate": {
+              "year": 2024,
+              "month": 3,
+              "day": 24
+            },
+            "season": "WINTER",
+            "seasonYear": 2024,
+            "seasonInt": null,
+            "episodes": 12,
+            "duration": 24,
+            "chapters": null,
+            "volumes": null,
+            "countryOfOrigin": "JP",
+            "isLicensed": true,
+            "source": "LIGHT_NOVEL",
+            "hashtag": "#\u30eb\u30d7\u306a\u306a #7thTimeLoop",
+            "trailer": {
+              "id": "BeyQ4hPDPUI",
+              "site": "youtube",
+              "thumbnail": null
+            },
+            "updatedAt": null,
+            "coverImage": {
+              "extraLarge": null,
+              "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx168374-WAEBeVAegRnw.jpg",
+              "medium": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/bx168374-WAEBeVAegRnw.jpg",
+              "color": "#f1d6ae"
+            },
+            "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/168374-zKGvbSjzRrYa.jpg",
+            "genres": [
+              "Fantasy",
+              "Romance"
+            ],
+            "synonyms": [
+              "\u0e0a\u0e35\u0e27\u0e34\u0e15\u0e25\u0e39\u0e1b\u0e17\u0e35\u0e48 7 \u0e02\u0e2d\u0e07\u0e19\u0e32\u0e07\u0e23\u0e49\u0e32\u0e22 \u0e02\u0e2d\u0e40\u0e1b\u0e47\u0e19\u0e40\u0e08\u0e49\u0e32\u0e2a\u0e32\u0e27\u0e19\u0e2d\u0e19\u0e01\u0e25\u0e34\u0e49\u0e07\u0e2a\u0e1a\u0e32\u0e22\u0e43\u0e19\u0e41\u0e14\u0e19\u0e2d\u0e14\u0e35\u0e15\u0e28\u0e31\u0e15\u0e23\u0e39",
+              "\u0421\u0435\u0434\u044c\u043c\u0430\u044f \u0431\u0435\u0437\u0437\u0430\u0431\u043e\u0442\u043d\u0430\u044f \u0436\u0438\u0437\u043d\u044c \u0437\u043b\u043e\u0434\u0435\u0439\u043a\u0438 \u0432 \u0431\u0440\u0430\u043a\u0435 \u0441\u043e \u0437\u043b\u0435\u0439\u0448\u0438\u043c \u0432\u0440\u0430\u0433\u043e\u043c",
+              "LoopNana",
+              "\u30eb\u30d7\u306a\u306a",
+              "\u8f2a\u8ff4\u4e03\u6b21\u7684\u60e1\u5f79\u5343\u91d1\uff0c\u5728\u524d\u6575\u570b\u4eab\u53d7\u96a8\u5fc3\u6240\u6b32\u7684\u65b0\u5a5a\u751f\u6d3b"
+            ],
+            "averageScore": 75,
+            "meanScore": 75,
+            "popularity": 65225,
+            "isLocked": null,
+            "trending": null,
+            "favourites": 1901,
+            "tags": [
+              {
+                "id": 1045,
+                "name": "Heterosexual",
+                "description": "Prominently features a romance between a man and a woman, not inherently sexual.",
+                "category": null,
+                "rank": 100,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1327,
+                "name": "Royal Affairs",
+                "description": "Features nobility, alliances, arranged marriage, succession disputes, religious orders and other elements of royal politics.",
+                "category": null,
+                "rank": 97,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 198,
+                "name": "Foreign",
+                "description": "Partly or completely set in a country outside the country of origin.",
+                "category": null,
+                "rank": 96,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 109,
+                "name": "Primarily Adult Cast",
+                "description": "Main cast is mostly composed of characters above a high school age.",
+                "category": null,
+                "rank": 94,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1596,
+                "name": "Time Loop",
+                "description": "A character is stuck in a repetitive cycle that they are attempting to break out of. This is distinct from a manipulating time of their own choice.",
+                "category": null,
+                "rank": 93,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 98,
+                "name": "Female Protagonist",
+                "description": "Main character is female.",
+                "category": null,
+                "rank": 92,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 243,
+                "name": "Reincarnation",
+                "description": "Features a character being born again after death, typically as another person or in another world.",
+                "category": null,
+                "rank": 91,
+                "isGeneralSpoiler": true,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 96,
+                "name": "Time Manipulation",
+                "description": "Prominently features time-traveling or other time-warping phenomena.",
+                "category": null,
+                "rank": 91,
+                "isGeneralSpoiler": true,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 53,
+                "name": "Shoujo",
+                "description": "Target demographic is teenage and young adult females.",
+                "category": null,
+                "rank": 83,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 780,
+                "name": "Ojou-sama",
+                "description": "Features a wealthy, high-class, oftentimes stuck up and demanding female character.",
+                "category": null,
+                "rank": 80,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1564,
+                "name": "Estranged Family",
+                "description": "At least one family member of the MC intentionally distances themselves or a family distances themselves from a person related to the MC.",
+                "category": null,
+                "rank": 80,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1433,
+                "name": "Marriage",
+                "description": "Centers around marriage between two or more characters.",
+                "category": null,
+                "rank": 77,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 103,
+                "name": "Politics",
+                "description": "Centers around politics, politicians, or government activities.",
+                "category": null,
+                "rank": 74,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 779,
+                "name": "Kuudere",
+                "description": "Prominently features a character who generally retains a cold, blunt and cynical exterior, but once one gets to know them, they have a very warm and loving interior.",
+                "category": null,
+                "rank": 70,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 248,
+                "name": "Economics",
+                "description": "Centers around the field of economics.",
+                "category": null,
+                "rank": 66,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 931,
+                "name": "Tomboy",
+                "description": "Features a girl who exhibits characteristics or behaviors considered in many cultures to be typical of boys.",
+                "category": null,
+                "rank": 61,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 659,
+                "name": "Medicine",
+                "description": "Centered around the activities of people working in the field of medicine.",
+                "category": null,
+                "rank": 61,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1291,
+                "name": "Alchemy",
+                "description": "Features character(s) who practice alchemy.",
+                "category": null,
+                "rank": 60,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1525,
+                "name": "Horticulture",
+                "description": "The story prominently features plant care and gardening.",
+                "category": null,
+                "rank": 60,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 43,
+                "name": "Swordplay",
+                "description": "Prominently features the use of swords in combat.",
+                "category": null,
+                "rank": 60,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 595,
+                "name": "Urban",
+                "description": "Partly or completely set in a city.",
+                "category": null,
+                "rank": 57,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 857,
+                "name": "Villainess",
+                "description": "Centers around or prominently features a villainous noble lady.",
+                "category": null,
+                "rank": 54,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 249,
+                "name": "Maids",
+                "description": "Prominently features a character who is a maid.",
+                "category": null,
+                "rank": 52,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 111,
+                "name": "War",
+                "description": "Partly or completely set during wartime.",
+                "category": null,
+                "rank": 48,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 909,
+                "name": "Agriculture",
+                "description": "Prominently features agriculture practices.",
+                "category": null,
+                "rank": 38,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 186,
+                "name": "Crossdressing",
+                "description": "Prominently features a character dressing up as the opposite sex.",
+                "category": null,
+                "rank": 36,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+              }
+            ],
+            "relations": null,
+            "characters": null,
+            "characterPreview": null,
+            "staff": null,
+            "staffPreview": null,
+            "studios": {
+              "edges": [
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 7010,
+                    "name": "OVERLAP",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": true,
+                  "node": {
+                    "id": 6360,
+                    "name": "HORNETS",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": true,
+                  "node": {
+                    "id": 6312,
+                    "name": "Studio KAI",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 6421,
+                    "name": "Crunchyroll",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 7151,
+                    "name": "MUSE",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 6679,
+                    "name": "Docomo Anime Store",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 6677,
+                    "name": "MAGNET",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 238,
+                    "name": "AT-X",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                  }
+                },
+                {
+                  "id": null,
+                  "isMain": false,
+                  "node": {
+                    "id": 144,
+                    "name": "Pony Canyon",
                     "isAnimationStudio": null,
                     "siteUrl": null,
                     "isFavourite": null
@@ -5294,494 +5782,6 @@
             "modNotes": null
           },
           "match_confidence": 1.0
-        },
-        {
-          "name": "7th Time Loop: The Villainess Enjoys a Carefree Life Married to Her Worst Enemy!",
-          "image_url": "https://aniworld.to/public/img/cover/7th-time-loop-the-villainess-enjoys-a-carefree-life-married-to-her-worst-enemy-stream-cover-uyHGqu73xNwLBvGxgckOPxFCeJpvQZMJ_200x300.jpg",
-          "link": "/anime/stream/7th-time-loop-the-villainess-enjoys-a-carefree-life-married-to-her-worst-enemy",
-          "tmdb_data": null,
-          "anilist_data": {
-            "id": 168374,
-            "idMal": null,
-            "title": {
-              "romaji": "Loop 7-kaime no Akuyaku Reijou wa, Moto Tekikoku de Jiyuu Kimama na Hanayome Seikatsu wo Mankitsu Suru",
-              "english": "7th Time Loop: The Villainess Enjoys a Carefree Life Married to Her Worst Enemy!",
-              "native": "\u30eb\u30fc\u30d77\u56de\u76ee\u306e\u60aa\u5f79\u4ee4\u5b22\u306f\u3001\u5143\u6575\u56fd\u3067\u81ea\u7531\u6c17\u307e\u307e\u306a\u82b1\u5ac1\u751f\u6d3b\u3092\u6e80\u55ab\u3059\u308b",
-              "userPreferred": "Loop 7-kaime no Akuyaku Reijou wa, Moto Tekikoku de Jiyuu Kimama na Hanayome Seikatsu wo Mankitsu Suru"
-            },
-            "type": "ANIME",
-            "format": "TV",
-            "status": "FINISHED",
-            "description": "Rishe Irmgard Weitzner, a duke's daughter, has a secret: she died at the age of 20 and returned to the moment five years prior when her engagement was called off. She has already experienced this time loop six times and lived out those five years a different way each time, as a merchant, a doctor, a maid, a knight, and more. Now, on her seventh go-around, she's determined to live to a ripe old age and spend it relaxing. But the moment she flees the castle with that decision in her heart, she runs into the infamously cruel crown prince of a rival kingdom, Arnold Hein. He happens to be the one who killed her during her life as a knight, but now, he seems to have taken a bizarre liking to her... and begs her to become his wife. Thus, in order to stay alive and prevent a war, Rishe utilizes her previous experiences to kick off her seventh life as the bride of an enemy nation's crown prince.<br>\n<br>\n(Source: Crunchyroll)",
-            "startDate": {
-              "year": 2024,
-              "month": 1,
-              "day": 7
-            },
-            "endDate": {
-              "year": 2024,
-              "month": 3,
-              "day": 24
-            },
-            "season": "WINTER",
-            "seasonYear": 2024,
-            "seasonInt": null,
-            "episodes": 12,
-            "duration": 24,
-            "chapters": null,
-            "volumes": null,
-            "countryOfOrigin": "JP",
-            "isLicensed": true,
-            "source": "LIGHT_NOVEL",
-            "hashtag": "#\u30eb\u30d7\u306a\u306a #7thTimeLoop",
-            "trailer": {
-              "id": "BeyQ4hPDPUI",
-              "site": "youtube",
-              "thumbnail": null
-            },
-            "updatedAt": null,
-            "coverImage": {
-              "extraLarge": null,
-              "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx168374-WAEBeVAegRnw.jpg",
-              "medium": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/bx168374-WAEBeVAegRnw.jpg",
-              "color": "#f1d6ae"
-            },
-            "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/168374-zKGvbSjzRrYa.jpg",
-            "genres": [
-              "Fantasy",
-              "Romance"
-            ],
-            "synonyms": [
-              "\u0e0a\u0e35\u0e27\u0e34\u0e15\u0e25\u0e39\u0e1b\u0e17\u0e35\u0e48 7 \u0e02\u0e2d\u0e07\u0e19\u0e32\u0e07\u0e23\u0e49\u0e32\u0e22 \u0e02\u0e2d\u0e40\u0e1b\u0e47\u0e19\u0e40\u0e08\u0e49\u0e32\u0e2a\u0e32\u0e27\u0e19\u0e2d\u0e19\u0e01\u0e25\u0e34\u0e49\u0e07\u0e2a\u0e1a\u0e32\u0e22\u0e43\u0e19\u0e41\u0e14\u0e19\u0e2d\u0e14\u0e35\u0e15\u0e28\u0e31\u0e15\u0e23\u0e39",
-              "\u0421\u0435\u0434\u044c\u043c\u0430\u044f \u0431\u0435\u0437\u0437\u0430\u0431\u043e\u0442\u043d\u0430\u044f \u0436\u0438\u0437\u043d\u044c \u0437\u043b\u043e\u0434\u0435\u0439\u043a\u0438 \u0432 \u0431\u0440\u0430\u043a\u0435 \u0441\u043e \u0437\u043b\u0435\u0439\u0448\u0438\u043c \u0432\u0440\u0430\u0433\u043e\u043c",
-              "LoopNana",
-              "\u30eb\u30d7\u306a\u306a",
-              "\u8f2a\u8ff4\u4e03\u6b21\u7684\u60e1\u5f79\u5343\u91d1\uff0c\u5728\u524d\u6575\u570b\u4eab\u53d7\u96a8\u5fc3\u6240\u6b32\u7684\u65b0\u5a5a\u751f\u6d3b"
-            ],
-            "averageScore": 75,
-            "meanScore": 75,
-            "popularity": 65225,
-            "isLocked": null,
-            "trending": null,
-            "favourites": 1901,
-            "tags": [
-              {
-                "id": 1045,
-                "name": "Heterosexual",
-                "description": "Prominently features a romance between a man and a woman, not inherently sexual.",
-                "category": null,
-                "rank": 100,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1327,
-                "name": "Royal Affairs",
-                "description": "Features nobility, alliances, arranged marriage, succession disputes, religious orders and other elements of royal politics.",
-                "category": null,
-                "rank": 97,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 198,
-                "name": "Foreign",
-                "description": "Partly or completely set in a country outside the country of origin.",
-                "category": null,
-                "rank": 96,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 109,
-                "name": "Primarily Adult Cast",
-                "description": "Main cast is mostly composed of characters above a high school age.",
-                "category": null,
-                "rank": 94,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1596,
-                "name": "Time Loop",
-                "description": "A character is stuck in a repetitive cycle that they are attempting to break out of. This is distinct from a manipulating time of their own choice.",
-                "category": null,
-                "rank": 93,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 98,
-                "name": "Female Protagonist",
-                "description": "Main character is female.",
-                "category": null,
-                "rank": 92,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 243,
-                "name": "Reincarnation",
-                "description": "Features a character being born again after death, typically as another person or in another world.",
-                "category": null,
-                "rank": 91,
-                "isGeneralSpoiler": true,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 96,
-                "name": "Time Manipulation",
-                "description": "Prominently features time-traveling or other time-warping phenomena.",
-                "category": null,
-                "rank": 91,
-                "isGeneralSpoiler": true,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 53,
-                "name": "Shoujo",
-                "description": "Target demographic is teenage and young adult females.",
-                "category": null,
-                "rank": 83,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 780,
-                "name": "Ojou-sama",
-                "description": "Features a wealthy, high-class, oftentimes stuck up and demanding female character.",
-                "category": null,
-                "rank": 80,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1564,
-                "name": "Estranged Family",
-                "description": "At least one family member of the MC intentionally distances themselves or a family distances themselves from a person related to the MC.",
-                "category": null,
-                "rank": 80,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": true,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1433,
-                "name": "Marriage",
-                "description": "Centers around marriage between two or more characters.",
-                "category": null,
-                "rank": 77,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 103,
-                "name": "Politics",
-                "description": "Centers around politics, politicians, or government activities.",
-                "category": null,
-                "rank": 74,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 779,
-                "name": "Kuudere",
-                "description": "Prominently features a character who generally retains a cold, blunt and cynical exterior, but once one gets to know them, they have a very warm and loving interior.",
-                "category": null,
-                "rank": 70,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 248,
-                "name": "Economics",
-                "description": "Centers around the field of economics.",
-                "category": null,
-                "rank": 66,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 931,
-                "name": "Tomboy",
-                "description": "Features a girl who exhibits characteristics or behaviors considered in many cultures to be typical of boys.",
-                "category": null,
-                "rank": 61,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 659,
-                "name": "Medicine",
-                "description": "Centered around the activities of people working in the field of medicine.",
-                "category": null,
-                "rank": 61,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1291,
-                "name": "Alchemy",
-                "description": "Features character(s) who practice alchemy.",
-                "category": null,
-                "rank": 60,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": true,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1525,
-                "name": "Horticulture",
-                "description": "The story prominently features plant care and gardening.",
-                "category": null,
-                "rank": 60,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 43,
-                "name": "Swordplay",
-                "description": "Prominently features the use of swords in combat.",
-                "category": null,
-                "rank": 60,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 595,
-                "name": "Urban",
-                "description": "Partly or completely set in a city.",
-                "category": null,
-                "rank": 57,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 857,
-                "name": "Villainess",
-                "description": "Centers around or prominently features a villainous noble lady.",
-                "category": null,
-                "rank": 54,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 249,
-                "name": "Maids",
-                "description": "Prominently features a character who is a maid.",
-                "category": null,
-                "rank": 52,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 111,
-                "name": "War",
-                "description": "Partly or completely set during wartime.",
-                "category": null,
-                "rank": 48,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": true,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 909,
-                "name": "Agriculture",
-                "description": "Prominently features agriculture practices.",
-                "category": null,
-                "rank": 38,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 186,
-                "name": "Crossdressing",
-                "description": "Prominently features a character dressing up as the opposite sex.",
-                "category": null,
-                "rank": 36,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": true,
-                "isAdult": null,
-                "userId": null
-              }
-            ],
-            "relations": null,
-            "characters": null,
-            "characterPreview": null,
-            "staff": null,
-            "staffPreview": null,
-            "studios": {
-              "edges": [
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 7010,
-                    "name": "OVERLAP",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": true,
-                  "node": {
-                    "id": 6360,
-                    "name": "HORNETS",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": true,
-                  "node": {
-                    "id": 6312,
-                    "name": "Studio KAI",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 6421,
-                    "name": "Crunchyroll",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 7151,
-                    "name": "MUSE",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 6679,
-                    "name": "Docomo Anime Store",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 6677,
-                    "name": "MAGNET",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 238,
-                    "name": "AT-X",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 144,
-                    "name": "Pony Canyon",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                }
-              ],
-              "nodes": null
-            },
-            "isFavourite": null,
-            "isFavouriteBlocked": null,
-            "isAdult": false,
-            "nextAiringEpisode": null,
-            "airingSchedule": null,
-            "trends": null,
-            "externalLinks": null,
-            "streamingEpisodes": null,
-            "rankings": null,
-            "mediaListEntry": null,
-            "reviews": null,
-            "reviewPreview": null,
-            "recommendations": null,
-            "stats": null,
-            "siteUrl": null,
-            "autoCreateForumThread": null,
-            "isRecommendationBlocked": null,
-            "isReviewBlocked": null,
-            "modNotes": null
-          },
-          "match_confidence": 1.0
         }
       ],
       "has_next_page": true
@@ -6029,7 +6029,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758373200,
-              "timeUntilAiring": 576596,
+              "timeUntilAiring": 572377,
               "episode": 12
             },
             "airingSchedule": null,
@@ -6274,7 +6274,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758198360,
-              "timeUntilAiring": 401755,
+              "timeUntilAiring": 397537,
               "episode": 10
             },
             "airingSchedule": null,
@@ -6301,281 +6301,117 @@
           "link": "/anime/stream/bulletbullet",
           "tmdb_data": null,
           "anilist_data": {
-            "id": 4898,
+            "id": 111852,
             "idMal": null,
             "title": {
-              "romaji": "Kuroshitsuji",
-              "english": "Black Butler",
-              "native": "\u9ed2\u57f7\u4e8b",
-              "userPreferred": "Kuroshitsuji"
+              "romaji": "Date A Bullet: Dead or Bullet",
+              "english": "Date A Bullet: Dead or Bullet & Nightmare or Queen",
+              "native": "\u30c7\u30fc\u30c8\u30fb\u30a2\u30fb\u30d0\u30ec\u30c3\u30c8 \u30c7\u30c3\u30c9\u30fb\u30aa\u30a2\u30fb\u30d0\u30ec\u30c3\u30c8",
+              "userPreferred": "Date A Bullet: Dead or Bullet"
             },
             "type": "ANIME",
-            "format": "TV",
+            "format": "MOVIE",
             "status": "FINISHED",
-            "description": "In Victorian-era Europe, a young boy loses everything he once held near and dear to a vicious plot. In his moment of death, he strikes a deal with a demon: his soul, in exchange for revenge. Ciel Phantomhive is now the head of the Phantomhive corporation, handling all business affairs as well as the underground work for the Queen of England. His new partner is a demon butler, Sebastian Michaelis, whose powers as a butler is only surpassed by his strength as a demon.<br><br>\nThe story follows the two along with their other servants, as they work to unravel the plot behind Ciel's parents' murder, and the horrendous tragedies that befell Ciel in the month directly after.",
+            "description": "The first part of <i>Date A Bullet</i>.\n<br><br>\nHibiki Higoromo, better known as, Empty, is an amnesiac young girl. She wakes up in the neighboring world, where she encounters Tokisaki Kurumi. In order to kill the mysterious girl, Kurumi leads Empty to a school. When arriving at the school, a number of girls, known as semi-spirits, gather together. Now then, a new battle begins.<br><br>(Source: Wikipedia)",
             "startDate": {
-              "year": 2008,
-              "month": 10,
-              "day": 3
+              "year": 2020,
+              "month": 8,
+              "day": 14
             },
             "endDate": {
-              "year": 2009,
-              "month": 3,
-              "day": 27
+              "year": 2020,
+              "month": 8,
+              "day": 14
             },
-            "season": "FALL",
-            "seasonYear": 2008,
+            "season": "SUMMER",
+            "seasonYear": 2020,
             "seasonInt": null,
-            "episodes": 24,
-            "duration": 24,
+            "episodes": 1,
+            "duration": 25,
             "chapters": null,
             "volumes": null,
             "countryOfOrigin": "JP",
             "isLicensed": true,
-            "source": "MANGA",
-            "hashtag": "#kuroshitsuji",
+            "source": "LIGHT_NOVEL",
+            "hashtag": "#date_a_bullet",
             "trailer": {
-              "id": "EoipHZFNXv0",
+              "id": "WdTagKn0cSM",
               "site": "youtube",
               "thumbnail": null
             },
             "updatedAt": null,
             "coverImage": {
               "extraLarge": null,
-              "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/nx4898-mW4gabZvwmLC.jpg",
-              "medium": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/nx4898-mW4gabZvwmLC.jpg",
-              "color": null
+              "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx111852-W3cRNx9CO7sJ.jpg",
+              "medium": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/bx111852-W3cRNx9CO7sJ.jpg",
+              "color": "#e4a15d"
             },
-            "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/4898-qqGPkf0qkMDh.jpg",
+            "bannerImage": null,
             "genres": [
-              "Action",
-              "Comedy",
-              "Fantasy",
-              "Mystery",
-              "Supernatural"
+              "Sci-Fi"
             ],
             "synonyms": [
-              "Kuro Shitsuji",
-              "Kuroshitsuzi",
-              "\u0e04\u0e19\u0e25\u0e36\u0e01\u0e44\u0e02\u0e1b\u0e23\u0e34\u0e28\u0e19\u0e32\u0e25\u0e31\u0e1a",
-              "H\u1eafc Qu\u1ea3n Gia",
-              "\u9ed1\u6267\u4e8b \u7b2c1\u5b63",
-              "\u9ed1\u57f7\u4e8b \u7b2c1\u5b63",
-              "\ud751\uc9d1\uc0ac 1\uae30",
-              "Di\u00e1cono Negro temporada 1"
+              "\u0e1e\u0e34\u0e0a\u0e34\u0e15\u0e23\u0e31\u0e01 \u0e1e\u0e34\u0e17\u0e31\u0e01\u0e29\u0e4c\u0e42\u0e25\u0e01 \u0e40\u0e14\u0e2d\u0e30\u0e21\u0e39\u0e1f\u0e27\u0e35\u0e48 Date A Bullet",
+              "\u0420\u0430\u043d\u0434\u0435\u0432\u0443 \u0441 \u043f\u0443\u043b\u0435\u0439: \u0421\u043c\u0435\u0440\u0442\u044c \u0438\u043b\u0438 \u043f\u0443\u043b\u044f"
             ],
-            "averageScore": 72,
-            "meanScore": 72,
-            "popularity": 231317,
+            "averageScore": 73,
+            "meanScore": 73,
+            "popularity": 29931,
             "isLocked": null,
             "trending": null,
-            "favourites": 4865,
+            "favourites": 551,
             "tags": [
               {
-                "id": 812,
-                "name": "Butler",
-                "description": "Prominently features a character who is a butler.",
-                "category": null,
-                "rank": 96,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 648,
-                "name": "Crime",
-                "description": "Centers around unlawful activities punishable by the state or other authority.",
-                "category": null,
-                "rank": 96,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 85,
-                "name": "Tragedy",
-                "description": "Centers around tragic events and unhappy endings.",
+                "id": 101,
+                "name": "Battle Royale",
+                "description": "Centers around a fierce group competition, often violent and with only one winner.",
                 "category": null,
                 "rank": 95,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 98,
+                "name": "Female Protagonist",
+                "description": "Main character is female.",
+                "category": null,
+                "rank": 79,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 86,
+                "name": "Primarily Female Cast",
+                "description": "Main cast is mostly composed of female characters.",
+                "category": null,
+                "rank": 79,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 615,
+                "name": "Death Game",
+                "description": "Features characters participating in a game, where failure results in death.",
+                "category": null,
+                "rank": 79,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 96,
+                "name": "Time Manipulation",
+                "description": "Prominently features time-traveling or other time-warping phenomena.",
+                "category": null,
+                "rank": 70,
                 "isGeneralSpoiler": true,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 15,
-                "name": "Demons",
-                "description": "Prominently features malevolent otherworldly creatures.",
-                "category": null,
-                "rank": 94,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 252,
-                "name": "Revenge",
-                "description": "Prominently features a character who aims to exact punishment in a resentful or vindictive manner.",
-                "category": null,
-                "rank": 93,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 25,
-                "name": "Historical",
-                "description": "Partly or completely set during a real period of world history.",
-                "category": null,
-                "rank": 90,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 104,
-                "name": "Anti-Hero",
-                "description": "Features a protagonist who lacks conventional heroic attributes and may be considered a borderline villain.",
-                "category": null,
-                "rank": 90,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 82,
-                "name": "Male Protagonist",
-                "description": "Main character is male.",
-                "category": null,
-                "rank": 86,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 198,
-                "name": "Foreign",
-                "description": "Partly or completely set in a country outside the country of origin.",
-                "category": null,
-                "rank": 84,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 77,
-                "name": "Gender Bending",
-                "description": "Prominently features a character who dresses and behaves in a way characteristic of another gender, or has been transformed into a person of another gender.",
-                "category": null,
-                "rank": 80,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 694,
-                "name": "Detective",
-                "description": "Features a character who investigates and solves crimes.",
-                "category": null,
-                "rank": 79,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 322,
-                "name": "Assassins",
-                "description": "Centers around characters who murder people as a profession.",
-                "category": null,
-                "rank": 79,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 208,
-                "name": "Mythology",
-                "description": "Prominently features mythological elements, especially those from religious or cultural tradition.",
-                "category": null,
-                "rank": 70,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1165,
-                "name": "Transgender",
-                "description": "Features a character whose gender identity differs from the sex they were assigned at birth.",
-                "category": null,
-                "rank": 70,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 142,
-                "name": "Food",
-                "description": "Centers around cooking or food appraisal.",
-                "category": null,
-                "rank": 63,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 779,
-                "name": "Kuudere",
-                "description": "Prominently features a character who generally retains a cold, blunt and cynical exterior, but once one gets to know them, they have a very warm and loving interior.",
-                "category": null,
-                "rank": 60,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 1068,
-                "name": "Angels",
-                "description": "Prominently features spiritual beings usually represented with wings and halos and believed to be attendants of God.",
-                "category": null,
-                "rank": 60,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": true,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 88,
-                "name": "Primarily Male Cast",
-                "description": "Main cast is mostly composed of male characters.",
-                "category": null,
-                "rank": 60,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 193,
-                "name": "Episodic",
-                "description": "Features story arcs that are loosely tied or lack an overarching plot.",
-                "category": null,
-                "rank": 60,
-                "isGeneralSpoiler": false,
                 "isMediaSpoiler": false,
                 "isAdult": null,
                 "userId": null
@@ -6585,86 +6421,20 @@
                 "name": "Urban Fantasy",
                 "description": "Set in a world similar to the real world, but with the existence of magic or other supernatural elements.",
                 "category": null,
-                "rank": 60,
+                "rank": 50,
                 "isGeneralSpoiler": false,
                 "isMediaSpoiler": false,
                 "isAdult": null,
                 "userId": null
               },
               {
-                "id": 56,
-                "name": "Shounen",
-                "description": "Target demographic is teenage and young adult males.",
-                "category": null,
-                "rank": 55,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 334,
-                "name": "Agender",
-                "description": "Prominently features agender characters.",
-                "category": null,
-                "rank": 46,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": true,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 186,
-                "name": "Crossdressing",
-                "description": "Prominently features a character dressing up as the opposite sex.",
-                "category": null,
-                "rank": 42,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 255,
-                "name": "Ninja",
-                "description": "Prominently features Japanese warriors traditionally trained in espionage, sabotage and assasination.",
-                "category": null,
-                "rank": 40,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": true,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 324,
-                "name": "Chibi",
-                "description": "Features \"super deformed\" character designs with smaller, rounder proportions and a cute look.",
-                "category": null,
-                "rank": 35,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 595,
-                "name": "Urban",
-                "description": "Partly or completely set in a city.",
-                "category": null,
-                "rank": 30,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 220,
-                "name": "Ghost",
-                "description": "Prominently features a character who is a ghost.",
+                "id": 244,
+                "name": "Isekai",
+                "description": "Features characters being transported into an alternate world setting and having to adapt to their new surroundings.",
                 "category": null,
                 "rank": 20,
                 "isGeneralSpoiler": false,
-                "isMediaSpoiler": true,
+                "isMediaSpoiler": false,
                 "isAdult": null,
                 "userId": null
               }
@@ -6678,21 +6448,10 @@
               "edges": [
                 {
                   "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 17,
-                    "name": "Aniplex",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
                   "isMain": true,
                   "node": {
-                    "id": 561,
-                    "name": "A-1 Pictures",
+                    "id": 6216,
+                    "name": "GEEKTOYS",
                     "isAnimationStudio": null,
                     "siteUrl": null,
                     "isFavourite": null
@@ -6702,8 +6461,8 @@
                   "id": null,
                   "isMain": false,
                   "node": {
-                    "id": 58,
-                    "name": "Square Enix",
+                    "id": 323,
+                    "name": "Nippon Columbia",
                     "isAnimationStudio": null,
                     "siteUrl": null,
                     "isFavourite": null
@@ -6713,52 +6472,8 @@
                   "id": null,
                   "isMain": false,
                   "node": {
-                    "id": 127,
-                    "name": "Yomiko Advertising",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 143,
-                    "name": "Mainichi Broadcasting System",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 166,
-                    "name": "Movic",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 643,
-                    "name": "Trinity Sound",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 493,
-                    "name": "Aniplex of America",
+                    "id": 7194,
+                    "name": "Hot Game Studio",
                     "isAnimationStudio": null,
                     "siteUrl": null,
                     "isFavourite": null
@@ -6787,7 +6502,7 @@
             "isReviewBlocked": null,
             "modNotes": null
           },
-          "match_confidence": 1.0
+          "match_confidence": 0.8272222222222222
         },
         {
           "name": "Leviathan",
@@ -6795,70 +6510,213 @@
           "link": "/anime/stream/leviathan",
           "tmdb_data": null,
           "anilist_data": {
-            "id": 17681,
+            "id": 177887,
             "idMal": null,
             "title": {
-              "romaji": "Zettai Bouei Leviathan",
-              "english": "Leviathan: The Last Defense",
-              "native": "\u7d76\u5bfe\u9632\u885b\u30ec\u30f4\u30a3\u30a2\u30bf\u30f3",
-              "userPreferred": "Zettai Bouei Leviathan"
+              "romaji": "Leviathan",
+              "english": "Leviathan",
+              "native": "\u30ea\u30f4\u30a1\u30a4\u30a2\u30b5\u30f3",
+              "userPreferred": "Leviathan"
             },
             "type": "ANIME",
-            "format": "TV",
+            "format": "ONA",
             "status": "FINISHED",
-            "description": "The story is set in Aquafall, a fantasy world abound with water and greenery, and populated by dragons and fairies. Meteorites suddenly bring forth evil creatures that threaten all living things on the planet. The fairy Syrup assembles the Aquafall Defense Force, with three girls of the dragon clans as recruits. The story follows Syrup and the dragon girls Leviathan, Bahamut, and J\u00f6rmungandr as they work together to battle enemies and grow up.\n<br><br>\n(Source: Anime News Network)",
+            "description": "Set in a war-torn reimagining of 1914, Leviathan follows Alek, a fugitive prince of the Austro-Hungarian Empire, and Deryn Sharp, a daring young girl disguised as a boy to serve in the British Air Service. When fate throws them together aboard the HMS Leviathan, a massive, living airship made from genetically engineered creatures, they embark on a world-changing adventure that will challenge everything they know about war, loyalty, and identity.\n<br><br>\n(Source: Netflix)",
             "startDate": {
-              "year": 2013,
-              "month": 4,
-              "day": 6
+              "year": 2025,
+              "month": 7,
+              "day": 10
             },
             "endDate": {
-              "year": 2013,
+              "year": 2025,
               "month": 7,
-              "day": 6
+              "day": 10
             },
-            "season": "SPRING",
-            "seasonYear": 2013,
+            "season": "SUMMER",
+            "seasonYear": 2025,
             "seasonInt": null,
-            "episodes": 13,
-            "duration": 20,
+            "episodes": 12,
+            "duration": 25,
             "chapters": null,
             "volumes": null,
             "countryOfOrigin": "JP",
             "isLicensed": true,
-            "source": "VIDEO_GAME",
-            "hashtag": "#levi_anime",
-            "trailer": null,
+            "source": "NOVEL",
+            "hashtag": "#\u30ea\u30f4\u30a1\u30a4\u30a2\u30b5\u30f3",
+            "trailer": {
+              "id": "ZOE7PLkuvJM",
+              "site": "youtube",
+              "thumbnail": null
+            },
             "updatedAt": null,
             "coverImage": {
               "extraLarge": null,
-              "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/17681.jpg",
-              "medium": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/17681.jpg",
-              "color": "#4393e4"
+              "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx177887-CDAgIrZOQvZc.jpg",
+              "medium": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/bx177887-CDAgIrZOQvZc.jpg",
+              "color": "#5da1e4"
             },
-            "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/17681-WK5caGheMQbN.jpg",
+            "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/177887-wGy2HdlQdS9G.jpg",
             "genres": [
-              "Comedy",
-              "Fantasy"
+              "Adventure",
+              "Mecha",
+              "Sci-Fi"
             ],
             "synonyms": [
-              "Zettai Boei Leviatan"
+              "\u0633\u0641\u064a\u0646\u0629 \u0644\u064a\u0641\u0627\u064a\u062b\u0627\u0646",
+              "L\u00e9viathan",
+              "\u039b\u03b5\u03b2\u03b9\u03ac\u03b8\u03b1\u03bd",
+              "\ub9ac\ubc14\uc774\uc5b4\ub358",
+              "Leviat\u00e3",
+              "\u0e40\u0e25\u0e27\u0e35\u0e2d\u0e32\u0e18\u0e32\u0e19 \u0e1b\u0e10\u0e21\u0e1a\u0e17\u0e21\u0e2b\u0e32\u0e2a\u0e07\u0e04\u0e23\u0e32\u0e21",
+              "Lewiatan"
             ],
-            "averageScore": 59,
-            "meanScore": 59,
-            "popularity": 6199,
+            "averageScore": 66,
+            "meanScore": 68,
+            "popularity": 5204,
             "isLocked": null,
             "trending": null,
-            "favourites": 25,
+            "favourites": 56,
             "tags": [
               {
-                "id": 86,
-                "name": "Primarily Female Cast",
-                "description": "Main cast is mostly composed of female characters.",
+                "id": 111,
+                "name": "War",
+                "description": "Partly or completely set during wartime.",
+                "category": null,
+                "rank": 100,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 355,
+                "name": "Aviation",
+                "description": "Regarding the flying or operation of aircraft.",
+                "category": null,
+                "rank": 100,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 95,
+                "name": "Steampunk",
+                "description": "Prominently features technology and designs inspired by 19th-century industrial steam-powered machinery.",
+                "category": null,
+                "rank": 96,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 34,
+                "name": "Military",
+                "description": "Centered around the life and activities of military personnel.",
+                "category": null,
+                "rank": 95,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 160,
+                "name": "Real Robot",
+                "description": "Prominently features mechanical designs loosely influenced by real-world robotics.",
+                "category": null,
+                "rank": 95,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 198,
+                "name": "Foreign",
+                "description": "Partly or completely set in a country outside the country of origin.",
+                "category": null,
+                "rank": 95,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 433,
+                "name": "Animals",
+                "description": "Prominently features animal characters in a leading role.",
+                "category": null,
+                "rank": 92,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 89,
+                "name": "Full CGI",
+                "description": "Almost entirely created with computer-generated imagery.",
+                "category": null,
+                "rank": 90,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 25,
+                "name": "Historical",
+                "description": "Partly or completely set during a real period of world history.",
+                "category": null,
+                "rank": 85,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 186,
+                "name": "Crossdressing",
+                "description": "Prominently features a character dressing up as the opposite sex.",
+                "category": null,
+                "rank": 80,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 77,
+                "name": "Gender Bending",
+                "description": "Prominently features a character who dresses and behaves in a way characteristic of another gender, or has been transformed into a person of another gender.",
                 "category": null,
                 "rank": 79,
                 "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1327,
+                "name": "Royal Affairs",
+                "description": "Features nobility, alliances, arranged marriage, succession disputes, religious orders and other elements of royal politics.",
+                "category": null,
+                "rank": 79,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 931,
+                "name": "Tomboy",
+                "description": "Features a girl who exhibits characteristics or behaviors considered in many cultures to be typical of boys.",
+                "category": null,
+                "rank": 79,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
                 "isAdult": null,
                 "userId": null
               },
@@ -6867,51 +6725,18 @@
                 "name": "Female Protagonist",
                 "description": "Main character is female.",
                 "category": null,
-                "rank": 79,
+                "rank": 73,
                 "isGeneralSpoiler": false,
                 "isMediaSpoiler": false,
                 "isAdult": null,
                 "userId": null
               },
               {
-                "id": 224,
-                "name": "Dragons",
-                "description": "Prominently features mythical reptiles which generally have wings and can breathe fire.",
+                "id": 82,
+                "name": "Male Protagonist",
+                "description": "Main character is male.",
                 "category": null,
-                "rank": 79,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 99,
-                "name": "Henshin",
-                "description": "Prominently features character or costume transformations which often grant special abilities.",
-                "category": null,
-                "rank": 60,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 29,
-                "name": "Magic",
-                "description": "Prominently features magical elements or the use of magic.",
-                "category": null,
-                "rank": 40,
-                "isGeneralSpoiler": false,
-                "isMediaSpoiler": false,
-                "isAdult": null,
-                "userId": null
-              },
-              {
-                "id": 159,
-                "name": "Super Robot",
-                "description": "Prominently features large robots often piloted by hot-blooded protagonists.",
-                "category": null,
-                "rank": 20,
+                "rank": 73,
                 "isGeneralSpoiler": false,
                 "isMediaSpoiler": false,
                 "isAdult": null,
@@ -6922,9 +6747,75 @@
                 "name": "CGI",
                 "description": "Prominently features scenes created with computer-generated imagery.",
                 "category": null,
-                "rank": 20,
+                "rank": 70,
                 "isGeneralSpoiler": false,
                 "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 285,
+                "name": "Terrorism",
+                "description": "Centers around the activities of a terrorist or terrorist organization.",
+                "category": null,
+                "rank": 70,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 1045,
+                "name": "Heterosexual",
+                "description": "Prominently features a romance between a man and a woman, not inherently sexual.",
+                "category": null,
+                "rank": 56,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 157,
+                "name": "Guns",
+                "description": "Prominently features the use of guns in combat.",
+                "category": null,
+                "rank": 53,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 483,
+                "name": "LGBTQ+ Themes",
+                "description": "Prominently features characters or themes associated with the LGBTQ+ community, such as sexuality or gender identity.",
+                "category": null,
+                "rank": 53,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 294,
+                "name": "Bisexual",
+                "description": "Features a character who is romantically or sexually attracted to people of more than one sex or gender.",
+                "category": null,
+                "rank": 46,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+              },
+              {
+                "id": 43,
+                "name": "Swordplay",
+                "description": "Prominently features the use of swords in combat.",
+                "category": null,
+                "rank": 33,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
                 "isAdult": null,
                 "userId": null
               }
@@ -6938,10 +6829,10 @@
               "edges": [
                 {
                   "id": null,
-                  "isMain": false,
+                  "isMain": true,
                   "node": {
-                    "id": 3,
-                    "name": "GONZO",
+                    "id": 6077,
+                    "name": "Orange",
                     "isAnimationStudio": null,
                     "siteUrl": null,
                     "isFavourite": null
@@ -6951,19 +6842,8 @@
                   "id": null,
                   "isMain": false,
                   "node": {
-                    "id": 16,
-                    "name": "TV Tokyo",
-                    "isAnimationStudio": null,
-                    "siteUrl": null,
-                    "isFavourite": null
-                  }
-                },
-                {
-                  "id": null,
-                  "isMain": false,
-                  "node": {
-                    "id": 376,
-                    "name": "Sentai Filmworks",
+                    "id": 6627,
+                    "name": "Qubic Pictures",
                     "isAnimationStudio": null,
                     "siteUrl": null,
                     "isFavourite": null
@@ -7373,7 +7253,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758123000,
-              "timeUntilAiring": 326394,
+              "timeUntilAiring": 322175,
               "episode": 11
             },
             "airingSchedule": null,
@@ -7694,7 +7574,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1757860200,
-              "timeUntilAiring": 63594,
+              "timeUntilAiring": 59375,
               "episode": 11
             },
             "airingSchedule": null,
@@ -7907,7 +7787,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758378600,
-              "timeUntilAiring": 581993,
+              "timeUntilAiring": 577775,
               "episode": 11
             },
             "airingSchedule": null,
@@ -8211,7 +8091,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758288600,
-              "timeUntilAiring": 491993,
+              "timeUntilAiring": 487774,
               "episode": 12
             },
             "airingSchedule": null,
@@ -8523,7 +8403,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1757952000,
-              "timeUntilAiring": 155393,
+              "timeUntilAiring": 151174,
               "episode": 11
             },
             "airingSchedule": null,
@@ -8794,7 +8674,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758118500,
-              "timeUntilAiring": 321892,
+              "timeUntilAiring": 317674,
               "episode": 12
             },
             "airingSchedule": null,
@@ -9170,7 +9050,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758294000,
-              "timeUntilAiring": 497392,
+              "timeUntilAiring": 493173,
               "episode": 11
             },
             "airingSchedule": null,
@@ -9483,7 +9363,7 @@
             "isAdult": false,
             "nextAiringEpisode": {
               "airingAt": 1758376800,
-              "timeUntilAiring": 580192,
+              "timeUntilAiring": 575973,
               "episode": 12
             },
             "airingSchedule": null,
@@ -9924,7 +9804,7 @@
       ],
       "has_next_page": true
     },
-    "response_size": 91393
+    "response_size": 89671
   },
   "GET /sources/aniworld/search": {
     "status_code": 200,
@@ -10006,7 +9886,7 @@
             ],
             "averageScore": 84,
             "meanScore": 84,
-            "popularity": 903381,
+            "popularity": 903670,
             "isLocked": null,
             "trending": null,
             "favourites": 56349,
@@ -10496,12 +10376,12 @@
     "response": {
       "success": true,
       "original_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "streamable_url": "https://rr4---sn-4g5e6nzl.googlevideo.com/videoplayback?expire=1757818213&ei=BdnFaIG8BoDwi9oP87CcoQk&ip=2a02%3A908%3A198%3Af760%3A8d01%3Aafd2%3A2dca%3A2ef9&id=o-AEraIgAqzRAmrjvAaYVOxvxmg9PqzwfjvDr-SeMdsnbv&itag=137&aitags=133%2C134%2C135%2C136%2C137%2C160%2C242%2C243%2C244%2C247%2C248%2C271%2C278%2C313%2C394%2C395%2C396%2C397%2C398%2C399%2C400%2C401&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&met=1757796613%2C&mh=7c&mm=31%2C29&mn=sn-4g5e6nzl%2Csn-4g5ednsl&ms=au%2Crdu&mv=m&mvi=4&pl=44&rms=au%2Cau&initcwndbps=2546250&bui=AY1jyLPOVufEVW8T-FN3__PK-J8NfjxLXK7ecaHsMq7Z33VzMiAKhTK1joeEdEFXi-cAXUcOBWQZsZbp&spc=l3OVKfmS0_UFyfjjLu8YNTeF8borF6ymFsU8X9He1KPAEG6TOp85M-_qsRXXoImL83euqvMk&vprv=1&svpuc=1&mime=video%2Fmp4&ns=arBaP1t-mL_eSTmsLp8HanQQ&rqh=1&gir=yes&clen=80417459&dur=213.040&lmt=1749084015189332&mt=1757796316&fvip=3&keepalive=yes&fexp=51552689%2C51565116%2C51565682%2C51580968&c=TVHTML5_SIMPLY&sefc=1&txp=4532534&n=KhwMw8-s1YVqwg&sparams=expire%2Cei%2Cip%2Cid%2Caitags%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&lsparams=met%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRAIgSTn84G8f-sgVmFDgyhXSFh75hdKFFX7d7tgrkpqmQBYCIFvhoRGyw6tTXPyTnglJKCOwGeNVfI9U4j5W3by0OFpe&sig=AJfQdSswRgIhAOG8kAm7jLUccife4DffN7TE0-W2u1GM7h9sjhVO1njJAiEA5_kjHmZWdD4lduYMrL9t3J-U_Aq-d8zkxLDlAPYPDjU%3D",
+      "streamable_url": "https://rr3---sn-4g5ednsl.googlevideo.com/videoplayback?expire=1757822431&ei=f-nFaNqUBYyIvdIPl7iLoQU&ip=2a02%3A908%3A198%3Af760%3A8d01%3Aafd2%3A2dca%3A2ef9&id=o-APPFNBUuvkdiKV6KBM59aQLGwThoZMkpx7inCypslSMh&itag=137&aitags=133%2C134%2C135%2C136%2C137%2C160%2C242%2C243%2C244%2C247%2C248%2C271%2C278%2C313%2C394%2C395%2C396%2C397%2C398%2C399%2C400%2C401&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&met=1757800831%2C&mh=7c&mm=31%2C29&mn=sn-4g5ednsl%2Csn-4g5e6nzl&ms=au%2Crdu&mv=m&mvi=3&pl=44&rms=au%2Cau&initcwndbps=2582500&bui=ATw7iSWWH6k5RADtWW-rElUm6Be18_NKA2gnFLowX_iUGUQeaH7HP_YKoBHZK9tubSvxPTsoLDid9Mg7&spc=hcYD5f5e_mg3_oE_K2waZYiTiMMTfhO7pV2SzCb51jYHZo0eb2Cg8Tm1CJD-d_UetQiqxbou&vprv=1&svpuc=1&mime=video%2Fmp4&ns=1pkp7av04dbJJZrvXyT0HJEQ&rqh=1&gir=yes&clen=80417459&dur=213.040&lmt=1749084015189332&mt=1757800394&fvip=4&keepalive=yes&fexp=51552689%2C51565116%2C51565681%2C51580968&c=TVHTML5_SIMPLY&sefc=1&txp=4532534&n=7dTpq1ZnyeDN5w&sparams=expire%2Cei%2Cip%2Cid%2Caitags%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&lsparams=met%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRQIhANWxWpaYuogb5EWR_3d2CjzxFzw_ARbbIxZFW2rMJIKoAiAE6DzLWFC5HxcIJsi889dmmLtBS40Fe9csL9DnEfuBEA%3D%3D&sig=AJfQdSswRQIhAK9Oz_FkJg1SAuJ7T_MMmQ1pXV5GfhNe8T2KK-CEfhQSAiAyFa67fkRIDqRdvLCGfg-aGPZRf7sdBgAgxIEPkxBNLA%3D%3D",
       "quality": "137",
       "site": "youtube",
       "error": null
     },
-    "response_size": 1522
+    "response_size": 1532
   },
   "GET /sources/invalid_source/popular (404 Error)": {
     "status_code": 404,

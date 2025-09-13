@@ -1,9 +1,10 @@
 """Response models for API endpoints."""
 
-from typing import Any, Dict, Generic, Optional, TypeVar
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from .anilist import Media
 from .base import (
     Episode,
     MediaInfo,
@@ -13,6 +14,7 @@ from .base import (
     SeriesDetail,
     VideoSource,
 )
+from .tmdb import TMDBMovieDetail, TMDBTVDetail
 
 # Generic patterns (moved from generic.py)
 T = TypeVar("T")
@@ -50,9 +52,10 @@ class SeriesDetailResponse(BaseModel):
     """Response for hierarchical series detail."""
 
     type: str  # "anime" or "normal"
-    tmdb_data: Optional[Dict[str, Any]] = None
-    anilist_data: Optional[Dict[str, Any]] = None
+    tmdb_data: Optional[TMDBMovieDetail | TMDBTVDetail] = None
+    anilist_data: Optional[Media] = None
     match_confidence: Optional[float] = None
+    length: Optional[int] = None
     series: SeriesDetail
 
 
@@ -61,8 +64,8 @@ class SeasonsResponse(BaseModel):
 
     type: str  # "anime" or "normal"
     seasons: list[Season]
-    tmdb_data: Optional[Dict[str, Any]] = None
-    anilist_data: Optional[Dict[str, Any]] = None
+    tmdb_data: Optional[TMDBMovieDetail | TMDBTVDetail] = None
+    anilist_data: Optional[Media] = None
     match_confidence: Optional[float] = None
 
 
@@ -70,8 +73,8 @@ class SeasonResponse(BaseModel):
     """Response for single season."""
 
     type: str  # "anime" or "normal"
-    tmdb_data: Optional[Dict[str, Any]] = None
-    anilist_data: Optional[Dict[str, Any]] = None
+    tmdb_data: Optional[TMDBMovieDetail | TMDBTVDetail] = None
+    anilist_data: Optional[Media] = None
     season: Season
 
 
@@ -79,8 +82,8 @@ class EpisodeResponse(BaseModel):
     """Response for single episode."""
 
     type: str  # "anime" or "normal"
-    tmdb_data: Optional[Dict[str, Any]] = None
-    anilist_data: Optional[Dict[str, Any]] = None
+    tmdb_data: Optional[TMDBMovieDetail | TMDBTVDetail] = None
+    anilist_data: Optional[Media] = None
     episode: Episode
 
 
@@ -89,8 +92,8 @@ class MoviesResponse(BaseModel):
 
     type: str  # "anime" or "normal"
     movies: list[Movie]
-    tmdb_data: Optional[Dict[str, Any]] = None
-    anilist_data: Optional[Dict[str, Any]] = None
+    tmdb_data: Optional[TMDBMovieDetail | TMDBTVDetail] = None
+    anilist_data: Optional[Media] = None
     match_confidence: Optional[float] = None
 
 
@@ -99,8 +102,8 @@ class MovieResponse(BaseModel):
 
     type: str  # "anime" or "normal"
     movie: Movie
-    tmdb_data: Optional[Dict[str, Any]] = None
-    anilist_data: Optional[Dict[str, Any]] = None
+    tmdb_data: Optional[TMDBMovieDetail | TMDBTVDetail] = None
+    anilist_data: Optional[Media] = None
     match_confidence: Optional[float] = None
 
 
@@ -122,3 +125,15 @@ class TrailerResponse(BaseModel):
     quality: Optional[str] = None
     site: Optional[str] = None
     error: Optional[str] = None
+
+
+class SourcesResponse(BaseModel):
+    """Response for available sources list."""
+
+    sources: List[str] = Field(description="List of available source names")
+
+
+class PreferencesResponse(BaseModel):
+    """Response for source preferences/configuration."""
+
+    preferences: Dict[str, Any] = Field(description="Source configuration preferences")

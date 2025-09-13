@@ -257,7 +257,7 @@ class TMDBService:
     @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_search_and_match")
     async def search_and_match(
         self, title: str, year: Optional[int] = None, media_type: Optional[str] = None
-    ) -> Optional[Dict]:
+    ) -> Optional[TMDBMovieDetail | TMDBTVDetail]:
         """Search and find the best match for a title.
 
         Args:
@@ -333,7 +333,7 @@ class TMDBService:
                     best_match.id, append_to_response="videos,images,external_ids"
                 )
 
-            return details.dict() if details else None
+            return details if details else None
 
         except Exception as e:
             logger.error(f"Failed to search and match title '{title}': {e}")

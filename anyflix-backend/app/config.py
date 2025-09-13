@@ -102,7 +102,7 @@ class Settings(BaseSettings):
     tmdb_api_key: str = ""  # TMDB API key for metadata enrichment
 
     # Feature flags
-    enable_caching: bool = True
+    enable_caching: bool = False
     cache_ttl: int = 300  # 5 minutes
 
     # Cache settings

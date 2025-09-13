@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from ..extractors.extract_any import extract_any
 from ..models.base import (
     MediaInfo,
     MediaSource,
@@ -19,8 +20,38 @@ from ..models.responses import (
     VideoListResponse,
 )
 from ..utils.caching import ServiceCacheConfig, cached
+from ..utils.logging_config import get_logger
 from ..utils.parser import Document
+from ..utils.url_utils import normalize_url
 from .base import BaseProvider
+
+
+def _map_language_to_code(lang: str) -> str:
+    """
+    Map language names to standard language codes.
+
+    Args:
+        lang: Language name (e.g., 'Deutsch', 'Englisch') or code (e.g., 'de', 'en')
+
+    Returns:
+        Standard language code (e.g., 'de', 'en', 'sub', 'all')
+    """
+    if not lang:
+        return "all"
+
+    lang_lower = lang.lower()
+
+    # Handle direct language codes
+    if lang_lower in ["de", "en", "sub", "all"]:
+        return lang_lower
+
+    # Handle language names
+    if "deutsch" in lang_lower:
+        return "de"
+    elif "englisch" in lang_lower or "english" in lang_lower:
+        return "en"
+    else:
+        return "sub"  # Default fallback
 
 
 class SerienStreamProvider(BaseProvider):
@@ -43,6 +74,8 @@ class SerienStreamProvider(BaseProvider):
             pkg_path="anime/src/de/serienstream.js",  # reference to the javascript file from mangayomi
         )
         super().__init__(source)
+        self.logger = get_logger(__name__)
+        self.logger.info(f"Initialized SerienStream provider: {source.base_url}")
         self.type = "normal"
 
     async def get_popular(self, page: int = 1) -> PopularResponse:
@@ -366,26 +399,39 @@ class SerienStreamProvider(BaseProvider):
 
         Args:
             url: Episode URL
+            lang_filter: Optional language filter (e.g., 'de', 'en'). If None, returns all sources.
 
         Returns:
             VideoListResponse with video sources
         """
         base_url = self.source.base_url
+        if lang_filter and lang_filter != "all":
+            self.logger.info(
+                f"Getting video list for {url} with language filter: {lang_filter}"
+            )
+        else:
+            lang_filter = None
+            self.logger.info(f"Getting video list for {url}")
+
+        # Use robust URL normalization
+        full_url = normalize_url(base_url, url)
+        referer_url = full_url
+
         headers = {
             "Accept": "*/*",
-            "Referer": base_url + url,
+            "Referer": referer_url,
             "Priority": "u=0, i",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0",
         }
-        res = await self.client.get(base_url + url, headers)
+        self.logger.info(f"Getting video list for {full_url}")
+        res = await self.client.get(full_url, headers)
         document = Document(res.body)
 
-        videos = []
-
-        # This is a simplified version - in the original JS version,
-        # this would handle different video extractors and preferences
         redirects_elements = document.select("ul.row li")
+        self.logger.info(f"Found {len(redirects_elements)} redirect elements")
 
+        # Create tasks for concurrent processing
+        tasks = []
         for element in redirects_elements:
             langkey = element.attr("data-lang-key")
             # Map language keys correctly:
@@ -393,13 +439,13 @@ class SerienStreamProvider(BaseProvider):
             # "2" = English Sub (Englischer Sub)
             # "3" = German Sub (Deutscher Sub)
             if langkey == "1":
-                lang = "Deutscher"
+                lang = "Deutsch"
                 type_str = "Dub"
             elif langkey == "2":
-                lang = "Englischer"
+                lang = "Englisch"
                 type_str = "Sub"
             elif langkey == "3":
-                lang = "Deutscher"
+                lang = "Deutsch"
                 type_str = "Sub"
             else:
                 # Fallback for unknown keys
@@ -408,21 +454,104 @@ class SerienStreamProvider(BaseProvider):
             host_element = element.select_first("a h4")
             host = host_element.text if host_element._element else ""
 
+            # Apply language filter if specified
+            lang_code = _map_language_to_code(lang)
+            if lang_filter and lang_code != lang_filter:
+                self.logger.info(
+                    f"Skipping {lang} {type_str} {host} (filter: {lang_filter})"
+                )
+                continue
+
+            self.logger.info(f"Processing: lang={lang}, type={type_str}, host={host}")
+
             redirect_element = element.select_first("a.watchEpisode")
             if redirect_element._element:
                 redirect = base_url + redirect_element.attr("href")
-
-                # For this simplified version, we'll just return the redirect URL
-                # In a full implementation, this would use various video extractors
-                video_source = VideoSource(
-                    url=redirect,
-                    original_url=redirect,
-                    quality=f"{lang} {type_str} {host}",
-                    headers={"Referer": self.source.base_url},
+                task = self._extract_videos_from_host(
+                    redirect, host, lang, type_str, headers
                 )
-                videos.append(video_source)
+                tasks.append(task)
+
+        # Process all hosts concurrently
+        if tasks:
+            import asyncio
+
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Collect all successful video extractions
+            videos = []
+            for result in results:
+                if isinstance(result, Exception):
+                    self.logger.error(f"Task failed: {result}")
+                elif result:  # result is a list of videos
+                    videos.extend(result)
+        else:
+            videos = []
 
         return VideoListResponse(type=self.response_type, videos=videos)
+
+    async def _extract_videos_from_host(
+        self, redirect: str, host: str, lang: str, type_str: str, headers: dict
+    ) -> List:
+        """Extract videos from a single host asynchronously.
+
+        Args:
+            redirect: Redirect URL for the host
+            host: Host name
+            lang: Language (Deutsch/Englisch)
+            type_str: Type (Dub/Sub)
+            headers: HTTP headers to use
+
+        Returns:
+            List of extracted videos or empty list if failed
+        """
+        try:
+            # Get the redirect URL manually by disabling auto-redirect
+            import httpx
+
+            async with httpx.AsyncClient(
+                follow_redirects=False, timeout=30.0
+            ) as no_redirect_client:
+                redirect_response = await no_redirect_client.get(
+                    redirect, headers=headers
+                )
+
+                # Get the redirect location
+                location = redirect_response.headers.get("location")
+                if not location:
+                    self.logger.warning(
+                        f"No location header for {host}. Status: {redirect_response.status_code}"
+                    )
+                    return []
+
+                self.logger.info(f"Extracting from {host}: {location}")
+
+            # Extract videos using the appropriate extractor
+            extracted_videos = await extract_any(
+                location,
+                host.lower(),
+                headers={"Referer": self.source.base_url},
+            )
+
+            # Set language and type fields on all extracted videos
+            lang_code = _map_language_to_code(lang)
+            for video in extracted_videos:
+                video.language = lang_code
+                video.type = type_str
+                # Update quality label to include language, type, and host info
+                if video.quality:
+                    video.quality = f"{lang} {type_str} {video.quality} {host}"
+                else:
+                    video.quality = f"{lang} {type_str} {host}"
+
+            self.logger.info(f"Extracted {len(extracted_videos)} videos from {host}")
+
+            return extracted_videos if extracted_videos else []
+
+        except Exception as e:
+            # Log the error but don't raise it (handled by gather)
+            self.logger.error(f"Failed to extract from {host}: {e}")
+            return []
 
     def get_source_preferences(self) -> List[SourcePreference]:
         """Get SerienStream source preferences.

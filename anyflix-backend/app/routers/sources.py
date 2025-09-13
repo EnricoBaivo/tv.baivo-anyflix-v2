@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Path, Query
 
+from lib.extractors.ytdlp_extractor import ytdlp_extractor
 from lib.models.base import SearchResult
 from lib.models.responses import (
     EpisodeResponse,
@@ -17,6 +18,8 @@ from lib.models.responses import (
     SeasonResponse,
     SeasonsResponse,
     SeriesDetailResponse,
+    TrailerRequest,
+    TrailerResponse,
     VideoListResponse,
 )
 from lib.providers.aniworld import AniWorldProvider
@@ -24,6 +27,7 @@ from lib.providers.base import BaseProvider
 from lib.providers.serienstream import SerienStreamProvider
 from lib.services.anilist_service import AniListService
 from lib.services.tmdb_service import TMDBService
+from lib.utils.trailer_utils import extract_trailer_info
 
 logger = logging.getLogger(__name__)
 
@@ -441,3 +445,95 @@ async def get_series_movie(
             )
 
     raise HTTPException(status_code=404, detail=f"Movie {movie_num} not found")
+
+
+@router.post(
+    "/trailer",
+    response_model=TrailerResponse,
+    summary="🎬 Extract Streamable Trailer URL",
+)
+async def extract_trailer_url(request: TrailerRequest):
+    """
+    Extract streamable URL from AniList or TMDB trailer data.
+
+    Takes trailer information from AniList or TMDB responses, builds the full YouTube URL,
+    and uses ytdlp_extractor to get the actual streamable URL.
+
+    Args:
+        request: TrailerRequest containing either anilist_trailer or tmdb_trailer data
+
+    Returns:
+        TrailerResponse with streamable URL and metadata
+    """
+    try:
+        youtube_url = None
+        site = None
+        source_type = None
+
+        # Process AniList trailer data
+        if request.anilist_trailer:
+            youtube_url, site = extract_trailer_info(request.anilist_trailer, "anilist")
+            source_type = "anilist"
+            logger.info(f"Processing AniList trailer: {request.anilist_trailer}")
+
+        # Process TMDB trailer data
+        elif request.tmdb_trailer:
+            youtube_url, site = extract_trailer_info(request.tmdb_trailer, "tmdb")
+            source_type = "tmdb"
+            logger.info(f"Processing TMDB trailer: {request.tmdb_trailer}")
+
+        else:
+            return TrailerResponse(
+                success=False,
+                original_url="",
+                error="No trailer data provided. Please provide either anilist_trailer or tmdb_trailer.",
+            )
+
+        if not youtube_url:
+            return TrailerResponse(
+                success=False,
+                original_url="",
+                error=f"Unable to build YouTube URL from {source_type} trailer data",
+            )
+
+        logger.info(f"Built YouTube URL: {youtube_url}")
+
+        # Use ytdlp_extractor to get streamable URL
+        try:
+            video_sources = await ytdlp_extractor(youtube_url)
+
+            if not video_sources:
+                return TrailerResponse(
+                    success=False,
+                    original_url=youtube_url,
+                    site=site,
+                    error="No streamable URLs found for this trailer",
+                )
+
+            # Get the best quality source (first one from ytdlp - now sorted by quality)
+            best_source = video_sources[0]
+
+            return TrailerResponse(
+                success=True,
+                original_url=youtube_url,
+                streamable_url=best_source.url,
+                quality=best_source.quality,
+                site=site,
+            )
+
+        except Exception as extraction_error:
+            logger.error(
+                f"ytdlp extraction failed for {youtube_url}: {extraction_error}"
+            )
+            return TrailerResponse(
+                success=False,
+                original_url=youtube_url,
+                site=site,
+                error=f"Failed to extract streamable URL: {str(extraction_error)}",
+            )
+
+    except Exception as e:
+        logger.error(f"Trailer extraction error: {e}")
+        return TrailerResponse(
+            success=False, original_url="", error=f"Internal error: {str(e)}"
+        )

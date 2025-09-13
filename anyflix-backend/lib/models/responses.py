@@ -102,3 +102,23 @@ class MovieResponse(BaseModel):
     tmdb_data: Optional[Dict[str, Any]] = None
     anilist_data: Optional[Dict[str, Any]] = None
     match_confidence: Optional[float] = None
+
+
+class TrailerRequest(BaseModel):
+    """Request model for trailer extraction."""
+
+    # AniList trailer data
+    anilist_trailer: Optional[Dict[str, Any]] = None
+    # TMDB trailer data
+    tmdb_trailer: Optional[Dict[str, Any]] = None
+
+
+class TrailerResponse(BaseModel):
+    """Response for trailer extraction."""
+
+    success: bool
+    original_url: str
+    streamable_url: Optional[str] = None
+    quality: Optional[str] = None
+    site: Optional[str] = None
+    error: Optional[str] = None

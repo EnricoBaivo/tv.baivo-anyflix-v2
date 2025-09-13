@@ -18,6 +18,7 @@ from ..models.responses import (
     SearchResponse,
     VideoListResponse,
 )
+from ..utils.caching import ServiceCacheConfig, cached
 from ..utils.parser import Document
 from .base import BaseProvider
 
@@ -355,6 +356,9 @@ class SerienStreamProvider(BaseProvider):
             # Return current time if parsing fails
             return str(int(datetime.now().timestamp() * 1000))
 
+    @cached(
+        ttl=ServiceCacheConfig.PROVIDER_VIDEOS_TTL, key_prefix="serienstream_videos"
+    )
     async def get_video_list(
         self, url: str, lang_filter: Optional[str] = None
     ) -> VideoListResponse:

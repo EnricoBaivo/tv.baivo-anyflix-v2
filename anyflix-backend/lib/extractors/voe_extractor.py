@@ -14,8 +14,10 @@ import requests
 from bs4 import BeautifulSoup
 
 from ..models.base import VideoSource
+from ..utils.caching import ServiceCacheConfig, cached
 
 
+@cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="voe_extract")
 async def voe_extractor(
     url: str, headers: Optional[Dict[str, str]] = None
 ) -> List[VideoSource]:

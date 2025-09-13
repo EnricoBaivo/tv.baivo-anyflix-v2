@@ -94,6 +94,23 @@ async def lifespan(app: FastAPI):
     logger.info(f"🔧 Debug extractors: {settings.debug_extractors}")
     logger.info(f"🔧 Debug providers: {settings.debug_providers}")
 
+    # Initialize cache if enabled
+    if settings.enable_caching:
+        try:
+            from lib.utils.caching import initialize_cache
+
+            initialize_cache(
+                redis_host=settings.redis_host,
+                redis_port=settings.redis_port,
+                redis_db=settings.redis_db,
+                redis_password=settings.redis_password,
+            )
+            logger.info("✅ Cache initialized successfully")
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to initialize cache: {e}")
+    else:
+        logger.info("🚫 Caching disabled in configuration")
+
     yield
 
     # Shutdown

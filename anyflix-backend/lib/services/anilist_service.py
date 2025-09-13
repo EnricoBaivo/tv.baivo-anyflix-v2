@@ -15,6 +15,7 @@ from ..models.anilist import (
     MediaType,
     PageResponse,
 )
+from ..utils.caching import ServiceCacheConfig, cached
 from ..utils.logging_config import get_logger, timed_operation
 
 
@@ -450,6 +451,7 @@ class AniListService:
 
             return data.get("data", {})
 
+    @cached(ttl=ServiceCacheConfig.ANILIST_MEDIA_TTL, key_prefix="anilist_media_by_id")
     async def get_media_by_id(
         self,
         media_id: int,
@@ -495,6 +497,9 @@ class AniListService:
                 self.logger.error(f"Failed to get media by ID {media_id}: {e}")
                 raise
 
+    @cached(
+        ttl=ServiceCacheConfig.ANILIST_SEARCH_TTL, key_prefix="anilist_search_media"
+    )
     async def search_media(
         self,
         search: Optional[str] = None,
@@ -542,6 +547,9 @@ class AniListService:
                 self.logger.error(f"Failed to search media: {e}")
                 raise
 
+    @cached(
+        ttl=ServiceCacheConfig.ANILIST_TRENDING_TTL, key_prefix="anilist_trending_anime"
+    )
     async def get_trending_anime(
         self, page: int = 1, per_page: int = 20
     ) -> Optional[PageResponse]:
@@ -561,6 +569,9 @@ class AniListService:
             sort=["TRENDING_DESC", "POPULARITY_DESC"],
         )
 
+    @cached(
+        ttl=ServiceCacheConfig.ANILIST_TRENDING_TTL, key_prefix="anilist_popular_anime"
+    )
     async def get_popular_anime(
         self, page: int = 1, per_page: int = 20
     ) -> Optional[PageResponse]:
@@ -642,6 +653,9 @@ class AniListService:
             sort=["POPULARITY_DESC"],
         )
 
+    @cached(
+        ttl=ServiceCacheConfig.ANILIST_SEARCH_TTL, key_prefix="anilist_search_anime"
+    )
     async def search_anime(
         self, query: str, page: int = 1, per_page: int = 20
     ) -> Optional[PageResponse]:

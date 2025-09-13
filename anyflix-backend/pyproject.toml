@@ -38,6 +38,7 @@ dependencies = [
     "yt-dlp>=2025.9.5",
     "pytest-cov>=6.3.0",
     "cachetools>=5.5.0",
+    "aiocache[memcached,redis]>=0.12.3",
 ]
 
 [project.optional-dependencies]

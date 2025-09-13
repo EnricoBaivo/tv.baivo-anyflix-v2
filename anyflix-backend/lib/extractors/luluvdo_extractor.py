@@ -4,11 +4,13 @@ import re
 from typing import Dict, List, Optional
 
 from ..models.base import VideoSource
+from ..utils.caching import ServiceCacheConfig, cached
 from ..utils.client import HTTPClient
 from .jwplayer_extractor import jwplayer_extractor
 from .ytdlp_extractor import ytdlp_extractor
 
 
+@cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="luluvdo_extract")
 async def luluvdo_extractor(
     url: str, headers: Optional[Dict[str, str]] = None
 ) -> List[VideoSource]:
@@ -16,7 +18,7 @@ async def luluvdo_extractor(
     Extract video sources from Luluvdo.
     Based on the JavaScript luluvdoExtractor function.
     """
-    ytflp_sources = ytdlp_extractor(url)
+    ytflp_sources = await ytdlp_extractor(url)
     if ytflp_sources:
         return ytflp_sources
     client = HTTPClient()

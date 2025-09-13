@@ -13,6 +13,7 @@ from lib.models.tmdb import (
     TMDBSearchResponse,
     TMDBTVDetail,
 )
+from lib.utils.caching import ServiceCacheConfig, cached
 from lib.utils.client import HTTPClient
 
 logger = logging.getLogger(__name__)
@@ -50,6 +51,7 @@ class TMDBService:
             "Content-Type": "application/json",
         }
 
+    @cached(ttl=ServiceCacheConfig.TMDB_CONFIG_TTL, key_prefix="tmdb_configuration")
     async def get_configuration(self) -> TMDBConfiguration:
         """Get TMDB API configuration."""
         if self._configuration:
@@ -98,6 +100,7 @@ class TMDBService:
                 change_keys=[],
             )
 
+    @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_search_multi")
     async def search_multi(self, query: str, page: int = 1) -> TMDBSearchResponse:
         """Search for movies and TV shows.
 
@@ -129,6 +132,7 @@ class TMDBService:
                 page=page, results=[], total_pages=0, total_results=0
             )
 
+    @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_movie_details")
     async def get_movie_details(
         self, movie_id: int, append_to_response: Optional[str] = None
     ) -> Optional[TMDBMovieDetail]:
@@ -158,6 +162,7 @@ class TMDBService:
             logger.error(f"Failed to get movie details for ID {movie_id}: {e}")
             return None
 
+    @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_tv_details")
     async def get_tv_details(
         self, tv_id: int, append_to_response: Optional[str] = None
     ) -> Optional[TMDBTVDetail]:
@@ -187,6 +192,7 @@ class TMDBService:
             logger.error(f"Failed to get TV details for ID {tv_id}: {e}")
             return None
 
+    @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_find_external")
     async def find_by_external_id(
         self, external_id: str, external_source: str
     ) -> TMDBSearchResponse:
@@ -228,6 +234,7 @@ class TMDBService:
                 page=1, results=[], total_pages=0, total_results=0
             )
 
+    @cached(ttl=ServiceCacheConfig.TMDB_CONFIG_TTL, key_prefix="tmdb_image_url")
     async def get_image_url(
         self, path: Optional[str], size: str = "w500"
     ) -> Optional[str]:
@@ -247,6 +254,7 @@ class TMDBService:
         base_url = config.images.get("secure_base_url", "https://image.tmdb.org/t/p/")
         return f"{base_url}{size}{path}"
 
+    @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_search_and_match")
     async def search_and_match(
         self, title: str, year: Optional[int] = None, media_type: Optional[str] = None
     ) -> Optional[Dict]:
@@ -279,7 +287,7 @@ class TMDBService:
                 # Skip person results - we only want movies and TV shows
                 if result.media_type == "person":
                     continue
-                    
+
                 score = 0
 
                 # Title similarity (basic check)

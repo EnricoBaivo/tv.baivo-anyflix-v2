@@ -3,9 +3,11 @@ from typing import List
 import yt_dlp
 
 from ..models.base import VideoSource
+from ..utils.caching import ServiceCacheConfig, cached
 
 
-def ytdlp_extractor(url: str) -> List[VideoSource]:
+@cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="ytdlp_extract")
+async def ytdlp_extractor(url: str) -> List[VideoSource]:
     """Extract video info using yt-dlp Python library."""
     try:
         ydl_opts = {

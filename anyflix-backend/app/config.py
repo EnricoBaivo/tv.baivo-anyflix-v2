@@ -1,5 +1,6 @@
 """Configuration management for anime backend service."""
 
+import os
 from typing import Any, Dict, List
 
 from pydantic import BaseModel
@@ -101,8 +102,27 @@ class Settings(BaseSettings):
     tmdb_api_key: str = ""  # TMDB API key for metadata enrichment
 
     # Feature flags
-    enable_caching: bool = False
+    enable_caching: bool = True
     cache_ttl: int = 300  # 5 minutes
+
+    # Cache settings
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+    redis_password: str = ""
+    cache_default_ttl: int = 3600  # 1 hour
+
+    # Service-specific cache TTLs
+    anilist_search_ttl: int = 1800  # 30 minutes
+    anilist_media_ttl: int = 3600  # 1 hour
+    anilist_trending_ttl: int = 900  # 15 minutes
+    tmdb_search_ttl: int = 1800  # 30 minutes
+    tmdb_details_ttl: int = 7200  # 2 hours
+    tmdb_config_ttl: int = 86400  # 24 hours
+    provider_popular_ttl: int = 900  # 15 minutes
+    provider_latest_ttl: int = 600  # 10 minutes
+    provider_search_ttl: int = 1800  # 30 minutes
+    provider_detail_ttl: int = 3600  # 1 hour
 
     class Config:
         env_file = ".env"

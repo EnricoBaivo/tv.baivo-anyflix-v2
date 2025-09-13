@@ -52,13 +52,18 @@ class SeriesDetailResponse(BaseModel):
     type: str  # "anime" or "normal"
     tmdb_data: Optional[Dict[str, Any]] = None
     anilist_data: Optional[Dict[str, Any]] = None
+    match_confidence: Optional[float] = None
     series: SeriesDetail
 
 
 class SeasonsResponse(BaseModel):
     """Response for seasons list."""
 
+    type: str  # "anime" or "normal"
     seasons: list[Season]
+    tmdb_data: Optional[Dict[str, Any]] = None
+    anilist_data: Optional[Dict[str, Any]] = None
+    match_confidence: Optional[float] = None
 
 
 class SeasonResponse(BaseModel):
@@ -82,10 +87,18 @@ class EpisodeResponse(BaseModel):
 class MoviesResponse(BaseModel):
     """Response for movies list."""
 
+    type: str  # "anime" or "normal"
     movies: list[Movie]
+    tmdb_data: Optional[Dict[str, Any]] = None
+    anilist_data: Optional[Dict[str, Any]] = None
+    match_confidence: Optional[float] = None
 
 
 class MovieResponse(BaseModel):
     """Response for single movie."""
 
+    type: str  # "anime" or "normal"
     movie: Movie
+    tmdb_data: Optional[Dict[str, Any]] = None
+    anilist_data: Optional[Dict[str, Any]] = None
+    match_confidence: Optional[float] = None

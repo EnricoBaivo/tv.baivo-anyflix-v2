@@ -277,15 +277,30 @@ async def get_series_detail(
         "series": series_detail,
         "tmdb_data": None,
         "anilist_data": None,
+        "match_confidence": None,
     }
 
     if provider.type == "anime":
         try:
             async with anilist_service:
-                anilist_data = await anilist_service.search_anime(detail_response)
-                if anilist_data and anilist_data.get("data"):
-                    response_data["anilist_data"] = anilist_data["data"]
-        except Exception:
+                anilist_data = await anilist_service.search_anime(
+                    detail_response.media.name
+                )
+                if (
+                    anilist_data
+                    and hasattr(anilist_data, "media")
+                    and anilist_data.media
+                ):
+                    # Take the first result and convert to dict
+                    first_result = anilist_data.media[0]
+                    response_data["anilist_data"] = (
+                        first_result.model_dump()
+                        if hasattr(first_result, "model_dump")
+                        else first_result.dict()
+                    )
+                    response_data["match_confidence"] = 1.0
+        except Exception as e:
+            logger.warning(f"Failed to enrich with AniList data for series: {e}")
             pass
     elif provider.type == "normal":
         if tmdb_service._api_available:
@@ -294,7 +309,9 @@ async def get_series_detail(
                     tmdb_data = await tmdb_service.search_and_match(
                         detail_response.media.name, media_type="tv"
                     )
-                    response_data["tmdb_data"] = tmdb_data
+                    if tmdb_data:
+                        response_data["tmdb_data"] = tmdb_data
+                        response_data["match_confidence"] = 1.0
             except Exception as e:
                 logger.warning(f"Failed to get TMDB data for series: {e}")
         else:
@@ -314,7 +331,13 @@ async def get_series_seasons(
 ):
     """Get all seasons for a series."""
     series_detail = await get_series_detail(source, url)
-    return SeasonsResponse(seasons=series_detail.series.seasons)
+    return SeasonsResponse(
+        type=series_detail.type,
+        seasons=series_detail.series.seasons,
+        tmdb_data=series_detail.tmdb_data,
+        anilist_data=series_detail.anilist_data,
+        match_confidence=getattr(series_detail, "match_confidence", None),
+    )
 
 
 @router.get(
@@ -385,7 +408,13 @@ async def get_series_movies(
 ):
     """Get all movies, OVAs, and specials for a series."""
     series_detail = await get_series_detail(source, url)
-    return MoviesResponse(movies=series_detail.series.movies)
+    return MoviesResponse(
+        type=series_detail.type,
+        movies=series_detail.series.movies,
+        tmdb_data=series_detail.tmdb_data,
+        anilist_data=series_detail.anilist_data,
+        match_confidence=getattr(series_detail, "match_confidence", None),
+    )
 
 
 @router.get(
@@ -403,6 +432,12 @@ async def get_series_movie(
 
     for movie in series_detail.series.movies:
         if movie.number == movie_num:
-            return MovieResponse(movie=movie)
+            return MovieResponse(
+                type=series_detail.type,
+                movie=movie,
+                tmdb_data=series_detail.tmdb_data,
+                anilist_data=series_detail.anilist_data,
+                match_confidence=getattr(series_detail, "match_confidence", None),
+            )
 
     raise HTTPException(status_code=404, detail=f"Movie {movie_num} not found")

@@ -12,6 +12,7 @@ from ..models.responses import (
     SearchResponse,
     VideoListResponse,
 )
+from ..utils.caching import ServiceCacheConfig, cached
 from ..utils.logging_config import get_logger, timed_operation
 from ..utils.parser import Document
 from ..utils.url_utils import normalize_url
@@ -73,6 +74,7 @@ class AniWorldProvider(BaseProvider):
         self.logger.info(f"Initialized AniWorld provider: {source.base_url}")
         self.type = "anime"
 
+    @cached(ttl=ServiceCacheConfig.PROVIDER_POPULAR_TTL, key_prefix="aniworld_popular")
     async def get_popular(self, page: int = 1) -> PopularResponse:
         """Get popular anime from AniWorld with pagination.
 
@@ -114,6 +116,7 @@ class AniWorldProvider(BaseProvider):
             type=self.response_type, list=paginated_anime, has_next_page=has_next_page
         )
 
+    @cached(ttl=ServiceCacheConfig.PROVIDER_LATEST_TTL, key_prefix="aniworld_latest")
     async def get_latest_updates(self, page: int = 1) -> LatestResponse:
         """Get latest anime updates from AniWorld with pagination.
 
@@ -155,6 +158,7 @@ class AniWorldProvider(BaseProvider):
             type=self.response_type, list=paginated_anime, has_next_page=has_next_page
         )
 
+    @cached(ttl=ServiceCacheConfig.PROVIDER_SEARCH_TTL, key_prefix="aniworld_search")
     async def search(
         self, query: str, page: int = 1, lang: Optional[str] = None
     ) -> SearchResponse:
@@ -264,6 +268,7 @@ class AniWorldProvider(BaseProvider):
             # For any other filter, assume available
             return True
 
+    @cached(ttl=ServiceCacheConfig.PROVIDER_DETAIL_TTL, key_prefix="aniworld_detail")
     async def get_detail(self, url: str) -> DetailResponse:
         """Get anime details from AniWorld.
 
@@ -440,6 +445,7 @@ class AniWorldProvider(BaseProvider):
                     "title": episode_title,
                 }
 
+    @cached(ttl=ServiceCacheConfig.PROVIDER_VIDEOS_TTL, key_prefix="aniworld_videos")
     async def get_video_list(
         self, url: str, lang_filter: Optional[str] = None
     ) -> VideoListResponse:

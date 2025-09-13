@@ -5,11 +5,13 @@ import time
 from typing import Dict, List, Optional
 
 from ..models.base import VideoSource
+from ..utils.caching import ServiceCacheConfig, cached
 from ..utils.client import HTTPClient
 from ..utils.helpers import get_random_string
 from .ytdlp_extractor import ytdlp_extractor
 
 
+@cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="dood_extract")
 async def dood_extractor(
     url: str, headers: Optional[Dict[str, str]] = None
 ) -> List[VideoSource]:
@@ -17,7 +19,7 @@ async def dood_extractor(
     Extract video sources from Doodstream.
     Based on the JavaScript doodExtractor function.
     """
-    ytflp_sources = ytdlp_extractor(url)
+    ytflp_sources = await ytdlp_extractor(url)
     if ytflp_sources:
         return ytflp_sources
     client = HTTPClient()

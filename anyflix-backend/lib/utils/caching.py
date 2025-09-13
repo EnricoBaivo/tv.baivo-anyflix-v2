@@ -84,8 +84,9 @@ class PydanticSerializer:
                 logger.warning(
                     f"Failed to reconstruct Pydantic model {class_path}: {e}"
                 )
-                # Fallback to the raw data
-                return data["_pydantic_data"]
+                # Return None to force cache miss and re-execution
+                logger.info(f"Invalidating cache entry due to deserialization failure")
+                return None
 
         return data
 

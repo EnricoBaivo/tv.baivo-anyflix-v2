@@ -162,8 +162,10 @@ async def get_source_preferences(source: str = Path(...)):
     """Get configuration preferences for a specific source."""
     provider = get_provider(source)
     async with provider:
-        preferences = provider.get_source_preferences()
-        return PreferencesResponse(preferences=preferences)
+        preferences_list = provider.get_source_preferences()
+        # Convert list of SourcePreference to dict format expected by response
+        preferences_dict = {pref.key: pref.model_dump() for pref in preferences_list}
+        return PreferencesResponse(preferences=preferences_dict)
 
 
 @router.get(
@@ -179,6 +181,12 @@ async def get_popular(
     provider = get_provider(source)
     async with provider:
         result = await provider.get_popular(page)
+        # Guard against cache deserialization issues
+        if not hasattr(result, "list") or not hasattr(result, "type"):
+            logger.error(f"Invalid result from get_popular: {type(result)} - {result}")
+            raise HTTPException(
+                status_code=500, detail="Provider returned invalid response format"
+            )
         result.list = await enrich_with_metadata(result.list, provider.type)
         return result
 
@@ -194,6 +202,14 @@ async def get_latest_updates(
     provider = get_provider(source)
     async with provider:
         result = await provider.get_latest_updates(page)
+        # Guard against cache deserialization issues
+        if not hasattr(result, "list") or not hasattr(result, "type"):
+            logger.error(
+                f"Invalid result from get_latest_updates: {type(result)} - {result}"
+            )
+            raise HTTPException(
+                status_code=500, detail="Provider returned invalid response format"
+            )
         result.list = await enrich_with_metadata(result.list, provider.type)
         return result
 
@@ -246,6 +262,14 @@ async def get_series_detail(
     try:
         async with provider:
             detail_response = await provider.get_detail(url)
+            # Guard against cache deserialization issues
+            if not hasattr(detail_response, "media"):
+                logger.error(
+                    f"Invalid detail response from provider {source}: {type(detail_response)} - {detail_response}"
+                )
+                raise HTTPException(
+                    status_code=500, detail="Provider returned invalid response format"
+                )
     except Exception as e:
         logger.error(f"Failed to get detail from provider {source}: {e}")
         raise HTTPException(

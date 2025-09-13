@@ -27,6 +27,10 @@ from lib.providers.base import BaseProvider
 from lib.providers.serienstream import SerienStreamProvider
 from lib.services.anilist_service import AniListService
 from lib.services.tmdb_service import TMDBService
+from lib.utils.external_data_converters import (
+    safe_convert_anilist_data,
+    safe_convert_tmdb_data,
+)
 from lib.utils.trailer_utils import extract_trailer_info
 
 logger = logging.getLogger(__name__)
@@ -91,13 +95,14 @@ async def enrich_with_metadata(
                         and hasattr(anilist_data, "media")
                         and anilist_data.media
                     ):
-                        # Take the first result and convert to dict
+                        # Take the first result and convert to structured data
                         first_result = anilist_data.media[0]
-                        result.anilist_data = (
+                        raw_data = (
                             first_result.model_dump()
                             if hasattr(first_result, "model_dump")
                             else first_result.dict()
                         )
+                        result.anilist_data = safe_convert_anilist_data(raw_data)
                         result.match_confidence = 1.0
                     else:
                         result.anilist_data = None
@@ -112,7 +117,7 @@ async def enrich_with_metadata(
                         tmdb_data = await tmdb_service.search_and_match(
                             result.name, media_type="tv"
                         )
-                        result.tmdb_data = tmdb_data
+                        result.tmdb_data = safe_convert_tmdb_data(tmdb_data)
                         if tmdb_data:
                             result.match_confidence = 1.0
                         else:
@@ -295,13 +300,14 @@ async def get_series_detail(
                     and hasattr(anilist_data, "media")
                     and anilist_data.media
                 ):
-                    # Take the first result and convert to dict
+                    # Take the first result and convert to structured data
                     first_result = anilist_data.media[0]
-                    response_data["anilist_data"] = (
+                    raw_data = (
                         first_result.model_dump()
                         if hasattr(first_result, "model_dump")
                         else first_result.dict()
                     )
+                    response_data["anilist_data"] = safe_convert_anilist_data(raw_data)
                     response_data["match_confidence"] = 1.0
         except Exception as e:
             logger.warning(f"Failed to enrich with AniList data for series: {e}")
@@ -314,7 +320,7 @@ async def get_series_detail(
                         detail_response.media.name, media_type="tv"
                     )
                     if tmdb_data:
-                        response_data["tmdb_data"] = tmdb_data
+                        response_data["tmdb_data"] = safe_convert_tmdb_data(tmdb_data)
                         response_data["match_confidence"] = 1.0
             except Exception as e:
                 logger.warning(f"Failed to get TMDB data for series: {e}")

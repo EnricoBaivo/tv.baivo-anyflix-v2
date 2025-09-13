@@ -1,10 +1,17 @@
 """Base models for anime backend service."""
 
+from __future__ import annotations
+
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+
+# Import external data types for union typing
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, HttpUrl
+
+if TYPE_CHECKING:
+    from .external import AniListData, TMDBData
 
 
 class MediaSource(BaseModel):
@@ -88,10 +95,44 @@ class SearchResult(BaseModel):
     name: str
     image_url: str
     link: str
-    # New MVP fields
-    tmdb_data: Optional[Dict[str, Any]] = None
-    anilist_data: Optional[Dict[str, Any]] = None
-    match_confidence: Optional[float] = None
+    # External metadata fields with improved documentation
+    tmdb_data: Optional[Dict[str, Any]] = Field(
+        None,
+        description="TMDB metadata (movie or TV show details)",
+        example={
+            "media_type": "movie",
+            "id": 12345,
+            "title": "Example Movie",
+            "overview": "An example movie description",
+            "poster_path": "/example.jpg",
+            "release_date": "2023-01-01",
+            "vote_average": 8.5,
+            "genres": [{"id": 28, "name": "Action"}],
+        },
+    )
+    anilist_data: Optional[Dict[str, Any]] = Field(
+        None,
+        description="AniList metadata (anime/manga details)",
+        example={
+            "id": 67890,
+            "title": {
+                "userPreferred": "Example Anime",
+                "romaji": "Example Anime",
+                "english": "Example Anime",
+            },
+            "description": "An example anime description",
+            "coverImage": {"large": "https://example.com/cover.jpg"},
+            "episodes": 24,
+            "averageScore": 85,
+            "genres": ["Action", "Adventure"],
+        },
+    )
+    match_confidence: Optional[float] = Field(
+        None,
+        description="Confidence score of the metadata match (0.0 to 1.0)",
+        ge=0.0,
+        le=1.0,
+    )
 
 
 class VideoSource(BaseModel):

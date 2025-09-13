@@ -97,6 +97,9 @@ class Settings(BaseSettings):
     debug_extractors: bool = False  # Enable detailed extractor debugging
     debug_providers: bool = False  # Enable detailed provider debugging
 
+    # External API keys
+    tmdb_api_key: str = ""  # TMDB API key for metadata enrichment
+
     # Feature flags
     enable_caching: bool = False
     cache_ttl: int = 300  # 5 minutes

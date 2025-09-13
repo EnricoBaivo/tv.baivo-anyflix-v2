@@ -1,6 +1,6 @@
 """Response models for API endpoints."""
 
-from typing import Generic, TypeVar
+from typing import Any, Dict, Generic, Optional, TypeVar
 
 from pydantic import BaseModel
 
@@ -21,6 +21,7 @@ T = TypeVar("T")
 class PaginatedResponse(BaseModel, Generic[T]):
     """Generic paginated response model."""
 
+    type: str  # "anime" or "normal"
     list: list[T]
     has_next_page: bool = False
 
@@ -41,12 +42,16 @@ class DetailResponse(BaseModel):
 class VideoListResponse(BaseModel):
     """Response for video sources."""
 
+    type: str  # "anime" or "normal"
     videos: list[VideoSource]
 
 
 class SeriesDetailResponse(BaseModel):
     """Response for hierarchical series detail."""
 
+    type: str  # "anime" or "normal"
+    tmdb_data: Optional[Dict[str, Any]] = None
+    anilist_data: Optional[Dict[str, Any]] = None
     series: SeriesDetail
 
 
@@ -59,12 +64,18 @@ class SeasonsResponse(BaseModel):
 class SeasonResponse(BaseModel):
     """Response for single season."""
 
+    type: str  # "anime" or "normal"
+    tmdb_data: Optional[Dict[str, Any]] = None
+    anilist_data: Optional[Dict[str, Any]] = None
     season: Season
 
 
 class EpisodeResponse(BaseModel):
     """Response for single episode."""
 
+    type: str  # "anime" or "normal"
+    tmdb_data: Optional[Dict[str, Any]] = None
+    anilist_data: Optional[Dict[str, Any]] = None
     episode: Episode
 
 

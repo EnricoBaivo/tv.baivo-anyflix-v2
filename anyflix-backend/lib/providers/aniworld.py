@@ -49,6 +49,9 @@ def _map_language_to_code(lang: str) -> str:
 class AniWorldProvider(BaseProvider):
     """AniWorld anime source provider."""
 
+    # Maximum items per page for pagination
+    ITEMS_PER_PAGE = 15
+
     def __init__(self):
         """Initialize AniWorld provider."""
         source = MediaSource(
@@ -68,21 +71,23 @@ class AniWorldProvider(BaseProvider):
         super().__init__(source)
         self.logger = get_logger(__name__)
         self.logger.info(f"Initialized AniWorld provider: {source.base_url}")
+        self.type = "anime"
 
     async def get_popular(self, page: int = 1) -> PopularResponse:
-        """Get popular anime from AniWorld.
+        """Get popular anime from AniWorld with pagination.
 
         Args:
-            page: Page number (not used, AniWorld doesn't paginate)
+            page: Page number (1-based)
 
         Returns:
-            PopularResponse with anime list
+            PopularResponse with paginated anime list (max 15 per page)
         """
         base_url = self.source.base_url
         res = await self.client.get(f"{base_url}/beliebte-animes")
         elements = Document(res.body).select("div.seriesListContainer div")
 
-        anime_list = []
+        # Build complete list first
+        all_anime = []
         for element in elements:
             link_element = element.select_first("a")
             name_element = element.select_first("h3")
@@ -93,26 +98,37 @@ class AniWorldProvider(BaseProvider):
                 image_url = base_url + img_element.attr("data-src")
                 link = link_element.attr("href")
 
-                anime_list.append(
+                all_anime.append(
                     SearchResult(name=name, image_url=image_url, link=link)
                 )
 
-        return PopularResponse(list=anime_list, has_next_page=False)
+        # Implement pagination (max 15 items per page)
+        items_per_page = self.ITEMS_PER_PAGE
+        start_index = (page - 1) * items_per_page
+        end_index = start_index + items_per_page
+
+        paginated_anime = all_anime[start_index:end_index]
+        has_next_page = end_index < len(all_anime)
+
+        return PopularResponse(
+            type=self.response_type, list=paginated_anime, has_next_page=has_next_page
+        )
 
     async def get_latest_updates(self, page: int = 1) -> LatestResponse:
-        """Get latest anime updates from AniWorld.
+        """Get latest anime updates from AniWorld with pagination.
 
         Args:
-            page: Page number (not used, AniWorld doesn't paginate)
+            page: Page number (1-based)
 
         Returns:
-            LatestResponse with anime list
+            LatestResponse with paginated anime list (max 15 per page)
         """
         base_url = self.source.base_url
         res = await self.client.get(f"{base_url}/neu")
         elements = Document(res.body).select("div.seriesListContainer div")
 
-        anime_list = []
+        # Build complete list first
+        all_anime = []
         for element in elements:
             link_element = element.select_first("a")
             name_element = element.select_first("h3")
@@ -123,24 +139,34 @@ class AniWorldProvider(BaseProvider):
                 image_url = base_url + img_element.attr("data-src")
                 link = link_element.attr("href")
 
-                anime_list.append(
+                all_anime.append(
                     SearchResult(name=name, image_url=image_url, link=link)
                 )
 
-        return LatestResponse(list=anime_list, has_next_page=False)
+        # Implement pagination (max 15 items per page)
+        items_per_page = self.ITEMS_PER_PAGE
+        start_index = (page - 1) * items_per_page
+        end_index = start_index + items_per_page
+
+        paginated_anime = all_anime[start_index:end_index]
+        has_next_page = end_index < len(all_anime)
+
+        return LatestResponse(
+            type=self.response_type, list=paginated_anime, has_next_page=has_next_page
+        )
 
     async def search(
         self, query: str, page: int = 1, lang: Optional[str] = None
     ) -> SearchResponse:
-        """Search for anime on AniWorld.
+        """Search for anime on AniWorld with pagination.
 
         Args:
             query: Search query
-            page: Page number (not used)
+            page: Page number (1-based)
             lang: Optional language filter (de, en, sub, all)
 
         Returns:
-            SearchResponse with search results
+            SearchResponse with paginated search results (max 15 per page)
         """
         # Log language filter for debugging
         if lang:
@@ -157,8 +183,17 @@ class AniWorldProvider(BaseProvider):
             if query.lower() in title:
                 filtered_elements.append(element)
 
+        # Calculate pagination parameters
+        items_per_page = self.ITEMS_PER_PAGE
+        start_index = (page - 1) * items_per_page
+        end_index = start_index + items_per_page
+
+        # Only process the elements we need for this page
+        page_elements = filtered_elements[start_index:end_index]
+        has_next_page = end_index < len(filtered_elements)
+
         anime_list = []
-        for element in filtered_elements:
+        for element in page_elements:
             name = element.text
             link = element.attr("href")
 
@@ -187,7 +222,9 @@ class AniWorldProvider(BaseProvider):
                 # Skip this entry if we can't get the image
                 continue
 
-        return SearchResponse(list=anime_list, has_next_page=False)
+        return SearchResponse(
+            type=self.response_type, list=anime_list, has_next_page=has_next_page
+        )
 
     def _check_anime_has_language(self, document: Document, lang_filter: str) -> bool:
         """Check if an anime has the specified language available.
@@ -341,7 +378,7 @@ class AniWorldProvider(BaseProvider):
             element: Episode row element
 
         Returns:
-            Episode dictionary
+            Episode dictionary with proper season/episode/title fields
         """
         title_anchor = element.select_first("td.seasonEpisodeTitle a")
         episode_span = title_anchor.select_first("span")
@@ -352,21 +389,56 @@ class AniWorldProvider(BaseProvider):
             self.clean_html_string(episode_span.text) if episode_span._element else ""
         )
 
-        name = ""
-        if "/film" in url:
-            name = f"Film {episode_season_id} : {episode_title}"
+        # Parse season and episode numbers from URL
+        if "/filme/" in url:
+            # Handle movies/films
+            film_match = re.search(r"/filme/film-(\d+)", url)
+            film_num = int(film_match.group(1)) if film_match else 1
+            return {
+                "name": f"Film {film_num} : {episode_title}",
+                "url": url,
+                "date_upload": None,
+                "kind": "movie",
+                "number": film_num,
+                "title": episode_title,
+            }
         else:
-            season_match = re.search(r"staffel-(\d+)/episode", url)
+            # Handle regular episodes
+            season_match = re.search(r"staffel-(\d+)/episode-(\d+)", url)
             if season_match:
-                season_num = season_match.group(1)
-                name = (
-                    f"Staffel {season_num} Folge {episode_season_id} : {episode_title}"
-                )
+                season_num = int(season_match.group(1))
+                episode_num = int(season_match.group(2))
+                name = f"Staffel {season_num} Folge {episode_num} : {episode_title}"
 
-        if name and url:
-            return {"name": name, "url": url, "date_upload": None}
-        else:
-            return {"name": "", "url": "", "date_upload": None}
+                return {
+                    "name": name,
+                    "url": url,
+                    "date_upload": None,
+                    "season": season_num,
+                    "episode": episode_num,
+                    "title": episode_title,
+                }
+            else:
+                # Fallback: try to extract from episode_season_id and URL
+                try:
+                    episode_num = int(episode_season_id) if episode_season_id else 1
+                except (ValueError, TypeError):
+                    episode_num = 1
+
+                # Try to extract season from URL pattern
+                season_match = re.search(r"staffel-(\d+)", url)
+                season_num = int(season_match.group(1)) if season_match else 1
+
+                name = f"Staffel {season_num} Folge {episode_num} : {episode_title}"
+
+                return {
+                    "name": name,
+                    "url": url,
+                    "date_upload": None,
+                    "season": season_num,
+                    "episode": episode_num,
+                    "title": episode_title,
+                }
 
     async def get_video_list(
         self, url: str, lang_filter: Optional[str] = None
@@ -464,7 +536,7 @@ class AniWorldProvider(BaseProvider):
         else:
             videos = []
 
-        return VideoListResponse(videos=videos)
+        return VideoListResponse(type=self.response_type, videos=videos)
 
     async def _extract_videos_from_host(
         self, redirect: str, host: str, lang: str, type_str: str, headers: dict

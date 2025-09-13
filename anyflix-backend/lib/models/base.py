@@ -88,6 +88,10 @@ class SearchResult(BaseModel):
     name: str
     image_url: str
     link: str
+    # New MVP fields
+    tmdb_data: Optional[Dict[str, Any]] = None
+    anilist_data: Optional[Dict[str, Any]] = None
+    match_confidence: Optional[float] = None
 
 
 class VideoSource(BaseModel):

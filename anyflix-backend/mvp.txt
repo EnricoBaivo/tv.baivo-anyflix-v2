@@ -1,0 +1,623 @@
+there should exist one service per api:
+- anilist
+- tmdb 
+
+for models there are 
+- base
+- anilist
+- tmdb
+- mixins
+- responses // for sources endpoints
+
+the providers should return for each function the expected responses
+
+http://localhost:8000/sources/aniworld/popular?page=1&include_metadata=true
+
+expected response:
+{
+     type: "anime",
+
+  "list": [
+    {
+        "tmdb_data":null,
+        "anilist_data": {
+            "id": 178025,
+            "idMal": null,
+            "title": {
+            "romaji": "Gachiakuta",
+            "english": "Gachiakuta",
+            "native": "ガチアクタ",
+            "userPreferred": "Gachiakuta"
+            },
+            "type": "ANIME",
+            "format": "TV",
+            "status": "RELEASING",
+            "description": "A boy lives in a floating town, where the poor scrape by and the rich live a sumptuous life, simply casting their garbage off the side, into the abyss. When he’s falsely accused of murder, though, his wrongful conviction leads to an unimaginable punishment—exile off the edge, with the rest of the trash. Down on the surface, the cast-off waste of humanity has bred vicious monsters, and to travel the path to vengeance against those who cast him into Hell, a boy will have to become a warrior…\n<br><br>\n(Source: Kodansha USA)",
+            "startDate": {
+            "year": 2025,
+            "month": 7,
+            "day": 6
+            },
+            "endDate": {
+            "year": null,
+            "month": null,
+            "day": null
+            },
+            "season": "SUMMER",
+            "seasonYear": 2025,
+            "seasonInt": null,
+            "episodes": 24,
+            "duration": 24,
+            "chapters": null,
+            "volumes": null,
+            "countryOfOrigin": "JP",
+            "isLicensed": true,
+            "source": "MANGA",
+            "hashtag": "#ガチアクタ #GACHIAKUTA",
+            "trailer": {
+            "id": "yeRvDchyo44",
+            "site": "youtube",
+            "thumbnail": null
+            },
+            "updatedAt": null,
+            "coverImage": {
+            "extraLarge": null,
+            "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx178025-cWJKEsZynkil.jpg",
+            "medium": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/bx178025-cWJKEsZynkil.jpg",
+            "color": "#e4a150"
+            },
+            "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/178025-KH3NSrRChfGy.jpg",
+            "genres": [
+            "Action",
+            "Drama",
+            "Fantasy"
+            ],
+            "synonyms": [],
+            "averageScore": 79,
+            "meanScore": 79,
+            "popularity": 112154,
+            "isLocked": null,
+            "trending": null,
+            "favourites": 2776,
+            "tags": [
+            {
+                "id": 1403,
+                "name": "Class Struggle",
+                "description": "Contains conflict born between the different social classes. Generally between an dominant elite and a suffering oppressed group.",
+                "category": null,
+                "rank": 98,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 56,
+                "name": "Shounen",
+                "description": "Target demographic is teenage and young adult males.",
+                "category": null,
+                "rank": 96,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 321,
+                "name": "Urban Fantasy",
+                "description": "Set in a world similar to the real world, but with the existence of magic or other supernatural elements.",
+                "category": null,
+                "rank": 95,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 217,
+                "name": "Dystopian",
+                "description": "Partly or completely set in a society characterized by poverty, squalor or oppression.",
+                "category": null,
+                "rank": 92,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 66,
+                "name": "Super Power",
+                "description": "Prominently features characters with special abilities that allow them to do what would normally be physically or logically impossible.",
+                "category": null,
+                "rank": 90,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 143,
+                "name": "Survival",
+                "description": "Centers around the struggle to live in spite of extreme obstacles.",
+                "category": null,
+                "rank": 86,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 105,
+                "name": "Ensemble Cast",
+                "description": "Features a large cast of characters with (almost) equal screen time and importance to the plot.",
+                "category": null,
+                "rank": 85,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 252,
+                "name": "Revenge",
+                "description": "Prominently features a character who aims to exact punishment in a resentful or vindictive manner.",
+                "category": null,
+                "rank": 83,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 93,
+                "name": "Post-Apocalyptic",
+                "description": "Partly or completely set in a world or civilization after a global disaster.",
+                "category": null,
+                "rank": 82,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 82,
+                "name": "Male Protagonist",
+                "description": "Main character is male.",
+                "category": null,
+                "rank": 80,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 85,
+                "name": "Tragedy",
+                "description": "Centers around tragic events and unhappy endings.",
+                "category": null,
+                "rank": 80,
+                "isGeneralSpoiler": true,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 90,
+                "name": "CGI",
+                "description": "Prominently features scenes created with computer-generated imagery.",
+                "category": null,
+                "rank": 76,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 595,
+                "name": "Urban",
+                "description": "Partly or completely set in a city.",
+                "category": null,
+                "rank": 66,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 1052,
+                "name": "Adoption",
+                "description": "Features a character who has been adopted by someone who is neither of their biological parents.",
+                "category": null,
+                "rank": 40,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 870,
+                "name": "Cannibalism",
+                "description": "Prominently features the act of consuming another member of the same species as food.",
+                "category": null,
+                "rank": 40,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 639,
+                "name": "Body Horror",
+                "description": "Features characters who undergo horrific transformations or disfigurement, often to their own detriment.",
+                "category": null,
+                "rank": 26,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": true,
+                "isAdult": null,
+                "userId": null
+            },
+            {
+                "id": 281,
+                "name": "Surreal Comedy",
+                "description": "Prominently features comedic moments that defy casual reasoning, resulting in illogical events.",
+                "category": null,
+                "rank": 20,
+                "isGeneralSpoiler": false,
+                "isMediaSpoiler": false,
+                "isAdult": null,
+                "userId": null
+            }
+            ],
+            "relations": null,
+            "characters": null,
+            "characterPreview": null,
+            "staff": null,
+            "staffPreview": null,
+            "studios": {
+            "edges": [
+                {
+                "id": null,
+                "isMain": false,
+                "node": {
+                    "id": 4,
+                    "name": "bones",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                }
+                },
+                {
+                "id": null,
+                "isMain": false,
+                "node": {
+                    "id": 6429,
+                    "name": "Avex Pictures",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                }
+                },
+                {
+                "id": null,
+                "isMain": true,
+                "node": {
+                    "id": 7585,
+                    "name": "bones film",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                }
+                },
+                {
+                "id": null,
+                "isMain": false,
+                "node": {
+                    "id": 159,
+                    "name": "Kodansha",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                }
+                },
+                {
+                "id": null,
+                "isMain": false,
+                "node": {
+                    "id": 6815,
+                    "name": "DMM.com",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                }
+                },
+                {
+                "id": null,
+                "isMain": false,
+                "node": {
+                    "id": 6817,
+                    "name": "CBC TV",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                }
+                },
+                {
+                "id": null,
+                "isMain": false,
+                "node": {
+                    "id": 53,
+                    "name": "Dentsu",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                }
+                },
+                {
+                "id": null,
+                "isMain": false,
+                "node": {
+                    "id": 7676,
+                    "name": "Com2uS",
+                    "isAnimationStudio": null,
+                    "siteUrl": null,
+                    "isFavourite": null
+                }
+                }
+            ],
+            "nodes": null
+            },
+            "isFavourite": null,
+            "isFavouriteBlocked": null,
+            "isAdult": false,
+            "nextAiringEpisode": {
+            "airingAt": 1757860200,
+            "timeUntilAiring": 88293,
+            "episode": 10
+            },
+            "airingSchedule": null,
+            "trends": null,
+            "externalLinks": null,
+            "streamingEpisodes": null,
+            "rankings": null,
+            "mediaListEntry": null,
+            "reviews": null,
+            "reviewPreview": null,
+            "recommendations": null,
+            "stats": null,
+            "siteUrl": null,
+            "autoCreateForumThread": null,
+            "isRecommendationBlocked": null,
+            "isReviewBlocked": null,
+            "modNotes": null
+        },
+        "match_confidence": 1,
+        "name": "Gachiakuta",
+        "image_url": "https://aniworld.to/public/img/cover/gachiakuta-stream-cover-EkkJCxCtrRuBGC86bDdZZqg2YkbQQDG0_200x300.png",
+        "link": "/anime/stream/gachiakuta"
+    },
+    ...
+  ]
+}
+
+
+http://localhost:8000/sources/serienstream/popular?page=1&include_metadata=false
+
+expected response:
+{
+     type: "normal",
+  "list": [
+    {
+      "tmdb_data":{...},
+      "anilist_data": null,
+      "name": "Alien: Earth",
+      "image_url": "https://serienstream.to/public/img/cover/alien-earth-stream-cover-ODu4Zz4CJcCQZKjJua2omlIzyDortqsa_200x300.png",
+      "link": "/serie/stream/alien-earth"
+    },
+    ...
+  ]
+}
+
+http://localhost:8000/sources/aniworld/series/seasons/1/episodes/1?url=%2Fanime%2Fstream%2Fsolo-leveling
+expected response:
+{
+     type: "anime",
+  "tmdb_data":null,
+  "anilist_data": {...},
+  "season": {
+    "season": 1,
+    "title": "Staffel 1",
+    "episodes": [
+      {
+        "season": 1,
+        "episode": 1,
+        "title": "I'm Used to It",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-1",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 2,
+        "title": "If I Had One More Chance",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-2",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 3,
+        "title": "It's Like a Game",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-3",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 4,
+        "title": "I've Gotta Get Stronger",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-4",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 5,
+        "title": "A Pretty Good Deal",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-5",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 6,
+        "title": "The Real Hunt Begins",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-6",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 7,
+        "title": "Let's See How Far I Can Go",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-7",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 8,
+        "title": "This Is Frustrating",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-8",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 9,
+        "title": "You've Been Hiding Your Skills",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-9",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 10,
+        "title": "What Is This, a Picnic?",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-10",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 11,
+        "title": "A Knight Who Defends an Empty Throne",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-11",
+        "date_upload": null,
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 12,
+        "title": "Arise",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-12",
+        "date_upload": null,
+        "tags": []
+      }
+    ]
+  }
+}
+
+http://localhost:8000/sources/serienstream/series/seasons/1/episodes/1?url=/serie/stream/alien-earth
+expected response:
+{
+ type: "normal",
+  "tmdb_data":{...},
+  "anilist_data": null,
+ "season": {
+    "season": 1,
+    "title": "Staffel 1",
+    "episodes": [
+      {
+        "season": 1,
+        "episode": 1,
+        "title": "Neverland",
+        "url": "/serie/stream/alien-earth/staffel-1/episode-1",
+        "date_upload": "1755078960000",
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 2,
+        "title": "Mr. October",
+        "url": "/serie/stream/alien-earth/staffel-1/episode-2",
+        "date_upload": "1755078960000",
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 3,
+        "title": "Metamorphosis",
+        "url": "/serie/stream/alien-earth/staffel-1/episode-3",
+        "date_upload": "1755682500000",
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 4,
+        "title": "Observation",
+        "url": "/serie/stream/alien-earth/staffel-1/episode-4",
+        "date_upload": "1756255320000",
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 5,
+        "title": "In Space, No One...",
+        "url": "/serie/stream/alien-earth/staffel-1/episode-5",
+        "date_upload": "1756858140000",
+        "tags": []
+      },
+      {
+        "season": 1,
+        "episode": 6,
+        "title": "The Fly",
+        "url": "/serie/stream/alien-earth/staffel-1/episode-6",
+        "date_upload": "1757463300000",
+        "tags": []
+      }
+    ]
+  }
+}
+
+http://localhost:8000/sources/aniworld/series/seasons/1/episodes/1?url=%2Fanime%2Fstream%2Fsolo-leveling%2Fstaffel-1%2Fepisode-1
+expected response:
+{
+     type: "animal",
+  "tmdb_data":null,
+  "anilist_data": {...},
+  "episode": {
+    "season": 1,
+    "episode": 1,
+    "title": "I'm Used to It",
+    "url": "/anime/stream/solo-leveling/staffel-1/episode-1",
+    "date_upload": null,
+    "tags": []
+  }
+}
+
+http://localhost:8000/sources/serienstream/series/seasons/1/episodes/1?url=/serie/stream/alien-earth/staffel-1/episode-1
+expected response:
+{
+     type: "normal",
+
+  "tmdb_data":{...},
+  "anilist_data": null,
+  "episode": {
+    "season": 1,
+    "episode": 1,
+    "title": "I'm Used to It",
+    "url": "/anime/stream/solo-leveling/staffel-1/episode-1",
+    "date_upload": null,
+    "tags": []
+  }
+}

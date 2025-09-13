@@ -54,13 +54,17 @@ class HTTPClient:
         return self._client
 
     async def get(
-        self, url: str, headers: Optional[Dict[str, str]] = None
+        self,
+        url: str,
+        headers: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, str]] = None,
     ) -> "ClientResponse":
         """Make GET request with Cloudflare bypass if needed.
 
         Args:
             url: URL to request
             headers: Optional headers
+            params: Optional query parameters
 
         Returns:
             ClientResponse object
@@ -76,24 +80,24 @@ class HTTPClient:
 
         # Try normal request first
         try:
-            response = await self.client.get(url, headers=headers)
+            response = await self.client.get(url, headers=headers, params=params)
             client_response = ClientResponse(response)
 
             # Check if we got blocked by Cloudflare
             if self._is_cloudflare_blocked(client_response):
                 if self.use_cloudscraper:
                     # Fallback to cloudscraper
-                    return await self._get_with_cloudscraper(url, headers)
+                    return await self._get_with_cloudscraper(url, headers, params)
                 else:
                     # Try with enhanced headers
-                    return await self._get_with_enhanced_headers(url, headers)
+                    return await self._get_with_enhanced_headers(url, headers, params)
 
             return client_response
 
         except Exception:
             if self.use_cloudscraper:
                 # Try cloudscraper as fallback
-                return await self._get_with_cloudscraper(url, headers)
+                return await self._get_with_cloudscraper(url, headers, params)
             raise
 
     async def post(
@@ -151,13 +155,14 @@ class HTTPClient:
         return any(indicator in content for indicator in cloudflare_indicators)
 
     async def _get_with_cloudscraper(
-        self, url: str, headers: Dict[str, str]
+        self, url: str, headers: Dict[str, str], params: Optional[Dict[str, str]] = None
     ) -> "ClientResponse":
         """Make request using cloudscraper for Cloudflare bypass.
 
         Args:
             url: URL to request
             headers: Request headers
+            params: Optional query parameters
 
         Returns:
             ClientResponse object
@@ -171,7 +176,7 @@ class HTTPClient:
         loop = asyncio.get_event_loop()
 
         def _sync_request():
-            return self._cloudscraper_session.get(url, headers=headers)
+            return self._cloudscraper_session.get(url, headers=headers, params=params)
 
         response = await loop.run_in_executor(None, _sync_request)
 
@@ -179,13 +184,14 @@ class HTTPClient:
         return CloudflareClientResponse(response)
 
     async def _get_with_enhanced_headers(
-        self, url: str, headers: Dict[str, str]
+        self, url: str, headers: Dict[str, str], params: Optional[Dict[str, str]] = None
     ) -> "ClientResponse":
         """Make request with enhanced anti-detection headers.
 
         Args:
             url: URL to request
             headers: Base headers
+            params: Optional query parameters
 
         Returns:
             ClientResponse object
@@ -209,7 +215,7 @@ class HTTPClient:
         # Add small delay to seem more human-like
         await asyncio.sleep(0.5)
 
-        response = await self.client.get(url, headers=enhanced_headers)
+        response = await self.client.get(url, headers=enhanced_headers, params=params)
         return ClientResponse(response)
 
 

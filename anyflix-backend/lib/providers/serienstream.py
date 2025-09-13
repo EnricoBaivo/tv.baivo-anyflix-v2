@@ -42,6 +42,7 @@ class SerienStreamProvider(BaseProvider):
             pkg_path="anime/src/de/serienstream.js",  # reference to the javascript file from mangayomi
         )
         super().__init__(source)
+        self.type = "normal"
 
     async def get_popular(self, page: int = 1) -> PopularResponse:
         """Get popular series from SerienStream.
@@ -71,7 +72,9 @@ class SerienStreamProvider(BaseProvider):
                     SearchResult(name=name, image_url=image_url, link=link)
                 )
 
-        return PopularResponse(list=series_list, has_next_page=False)
+        return PopularResponse(
+            type=self.response_type, list=series_list, has_next_page=False
+        )
 
     async def get_latest_updates(self, page: int = 1) -> LatestResponse:
         """Get latest series updates from SerienStream.
@@ -101,7 +104,9 @@ class SerienStreamProvider(BaseProvider):
                     SearchResult(name=name, image_url=image_url, link=link)
                 )
 
-        return LatestResponse(list=series_list, has_next_page=False)
+        return LatestResponse(
+            type=self.response_type, list=series_list, has_next_page=False
+        )
 
     async def search(
         self, query: str, page: int = 1, lang: Optional[str] = None
@@ -153,7 +158,9 @@ class SerienStreamProvider(BaseProvider):
                 # Skip this entry if we can't get the image
                 continue
 
-        return SearchResponse(list=series_list, has_next_page=False)
+        return SearchResponse(
+            type=self.response_type, list=series_list, has_next_page=False
+        )
 
     async def get_detail(self, url: str) -> DetailResponse:
         """Get series details from SerienStream.
@@ -411,7 +418,7 @@ class SerienStreamProvider(BaseProvider):
                 )
                 videos.append(video_source)
 
-        return VideoListResponse(videos=videos)
+        return VideoListResponse(type=self.response_type, videos=videos)
 
     def get_source_preferences(self) -> List[SourcePreference]:
         """Get SerienStream source preferences.

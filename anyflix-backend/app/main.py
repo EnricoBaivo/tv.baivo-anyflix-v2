@@ -13,9 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from .config import settings
-from .dependencies import get_anime_service
 from .internal import admin
-from .routers import proxy, sources
+from .routers import sources
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -208,11 +207,10 @@ async def root():
     Returns basic information about the API including version,
     available streaming sources, and links to documentation.
     """
-    anime_service = get_anime_service()
     return {
         "message": "Media Streaming Backend Service",
         "version": "1.0.0",
-        "available_sources": anime_service.get_available_sources(),
+        "available_sources": ["aniworld", "serienstream"],
         "api_docs": "/docs",
         "openapi_schema": "/openapi.json",
         "features": {
@@ -233,5 +231,4 @@ async def health_check():
 
 # Include routers
 app.include_router(sources.router)
-app.include_router(proxy.router)
 app.include_router(admin.router)

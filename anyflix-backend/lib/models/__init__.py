@@ -1,4 +1,4 @@
-"""Models for anime backend service."""
+"""Models for media backend service."""
 
 # AniList models
 from .anilist import (
@@ -13,27 +13,27 @@ from .anilist import (
 # Base models
 from .base import Episode, MediaInfo, SearchResult, SourcePreference, VideoSource
 
-# Metadata stats (moved to enhanced.py)
-# Enhanced models (new structure)
-from .enhanced import (
-    EnhancedDetailResponse,
-    EnhancedLatestResponse,
-    EnhancedMediaInfo,
-    EnhancedPopularResponse,
-    EnhancedSearchResponse,
-    EnhancedSearchResult,
-    EnhancedSeriesDetail,
-    EnhancedSeriesDetailResponse,
-    EnhancedVideoListResponse,
-    MetadataStats,
-)
-
 # Response models
 from .responses import (
+    EpisodeResponse,
     LatestResponse,
+    MovieResponse,
+    MoviesResponse,
     PopularResponse,
     SearchResponse,
+    SeasonResponse,
+    SeasonsResponse,
+    SeriesDetailResponse,
     VideoListResponse,
+)
+
+# TMDB models
+from .tmdb import (
+    TMDBConfiguration,
+    TMDBMovieDetail,
+    TMDBSearchResponse,
+    TMDBSearchResult,
+    TMDBTVDetail,
 )
 
 __all__ = [
@@ -50,21 +50,21 @@ __all__ = [
     "VideoSource",
     "SearchResult",
     "SourcePreference",
-    # Enhanced models
-    "EnhancedDetailResponse",
-    "EnhancedLatestResponse",
-    "EnhancedMediaInfo",
-    "EnhancedPopularResponse",
-    "EnhancedSearchResponse",
-    "EnhancedSearchResult",
-    "EnhancedSeriesDetail",
-    "EnhancedSeriesDetailResponse",
-    "EnhancedVideoListResponse",
-    # Generic models
-    "MetadataStats",
     # Response models
-    "PopularResponse",
+    "EpisodeResponse",
     "LatestResponse",
+    "MovieResponse",
+    "MoviesResponse",
+    "PopularResponse",
     "SearchResponse",
+    "SeasonResponse",
+    "SeasonsResponse",
+    "SeriesDetailResponse",
     "VideoListResponse",
+    # TMDB models
+    "TMDBConfiguration",
+    "TMDBMovieDetail",
+    "TMDBSearchResponse",
+    "TMDBSearchResult",
+    "TMDBTVDetail",
 ]

@@ -32,6 +32,11 @@ class BaseProvider(ABC):
         """
         self.source = source
         self.client = HTTPClient()
+        # Determine if this is an anime source
+        self.is_anime_source = (
+            "anime" in source.name.lower() or "aniworld" in source.name.lower()
+        )
+        self.response_type = "anime" if self.is_anime_source else "normal"
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -70,7 +75,7 @@ class BaseProvider(ABC):
     async def search(
         self, query: str, page: int = 1, lang: Optional[str] = None
     ) -> SearchResponse:
-        """Search for anime.
+        """Search for content.
 
         Args:
             query: Search query

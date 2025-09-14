@@ -62,6 +62,7 @@ __all__ = [
     "PageResponse",
     "PopularResponse",
     "SearchResponse",
+    "SearchResult",
     "SeasonResponse",
     "SeasonsResponse",
     "SeriesDetailResponse",

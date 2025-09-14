@@ -2,13 +2,10 @@
 
 import logging
 import os
-from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, HTTPException, Path, Query
 
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
-from lib.models.anilist import Media
-from lib.models.base import SearchResult
 from lib.models.responses import (
     EpisodeResponse,
     LatestResponse,
@@ -25,12 +22,10 @@ from lib.models.responses import (
     TrailerResponse,
     VideoListResponse,
 )
-from lib.models.tmdb import TMDBMovieDetail, TMDBTVDetail
 from lib.providers.aniworld import AniWorldProvider
 from lib.providers.base import BaseProvider
 from lib.providers.serienstream import SerienStreamProvider
 from lib.services.anilist_service import AniListService
-from lib.services.matching_service import MatchingService
 from lib.services.series_converter import SeriesConverterService
 from lib.services.tmdb_service import TMDBService
 from lib.utils.trailer_utils import extract_trailer_info
@@ -47,7 +42,7 @@ router = APIRouter(
 )
 
 # Initialize providers with proper typing
-providers: Dict[str, BaseProvider] = {
+providers: dict[str, BaseProvider] = {
     "aniworld": AniWorldProvider(),
     "serienstream": SerienStreamProvider(),
 }
@@ -72,79 +67,6 @@ def get_provider(source: str) -> BaseProvider:
     if source not in providers:
         raise HTTPException(status_code=404, detail=f"Source '{source}' not found")
     return providers[source]
-
-
-async def enrich_single_item_metadata(
-    title: str, source_type: str
-) -> tuple[
-    Optional[Union[TMDBMovieDetail, TMDBTVDetail]], Optional[Media], Optional[float]
-]:
-    """Enrich a single item with metadata based on source type.
-
-    Args:
-        title: Title to search for
-        source_type: Source type ('anime' or 'normal')
-
-    Returns:
-        Tuple of (tmdb_data, anilist_data, match_confidence)
-    """
-    tmdb_data = None
-    anilist_data = None
-    match_confidence = None
-
-    if source_type == "anime":
-        # Add AniList metadata for anime
-        try:
-            async with anilist_service:
-                anilist_search_result = await anilist_service.search_anime(title)
-                anilist_data, match_confidence = (
-                    MatchingService.find_best_anilist_match(
-                        title, anilist_search_result
-                    )
-                )
-        except Exception as e:
-            logger.warning(f"Failed to enrich with AniList data: {e}")
-    elif source_type == "normal":
-        # Add TMDB metadata for series (only if API key is available)
-        if tmdb_service._api_available:
-            try:
-                async with tmdb_service:
-                    tmdb_data = await tmdb_service.search_and_match(
-                        title, media_type="tv"
-                    )
-                    match_confidence = (
-                        MatchingService.calculate_tmdb_confidence(title, tmdb_data)
-                        if tmdb_data
-                        else None
-                    )
-            except Exception as e:
-                logger.warning(f"Failed to enrich with TMDB data: {e}")
-        else:
-            logger.info("TMDB API key not configured, skipping metadata enrichment")
-
-    return tmdb_data, anilist_data, match_confidence
-
-
-async def enrich_with_metadata(
-    results: List[SearchResult], source_type: str
-) -> List[SearchResult]:
-    """Enrich results with metadata based on source type.
-
-    Args:
-        results: List of SearchResult objects to enrich
-        source_type: Source type ('anime' or 'normal')
-
-    Returns:
-        List[SearchResult]: The enriched results
-    """
-    for result in results:
-        tmdb_data, anilist_data, match_confidence = await enrich_single_item_metadata(
-            result.name, source_type
-        )
-        result.tmdb_data = tmdb_data
-        result.anilist_data = anilist_data
-        result.match_confidence = match_confidence
-    return results
 
 
 @router.get("/", response_model=SourcesResponse, summary="📋 List Available Sources")
@@ -181,13 +103,6 @@ async def get_popular(
     provider = get_provider(source)
     async with provider:
         result = await provider.get_popular(page)
-        # Guard against cache deserialization issues
-        if not hasattr(result, "list") or not hasattr(result, "type"):
-            logger.error(f"Invalid result from get_popular: {type(result)} - {result}")
-            raise HTTPException(
-                status_code=500, detail="Provider returned invalid response format"
-            )
-        result.list = await enrich_with_metadata(result.list, provider.type)
         return result
 
 
@@ -202,15 +117,6 @@ async def get_latest_updates(
     provider = get_provider(source)
     async with provider:
         result = await provider.get_latest_updates(page)
-        # Guard against cache deserialization issues
-        if not hasattr(result, "list") or not hasattr(result, "type"):
-            logger.error(
-                f"Invalid result from get_latest_updates: {type(result)} - {result}"
-            )
-            raise HTTPException(
-                status_code=500, detail="Provider returned invalid response format"
-            )
-        result.list = await enrich_with_metadata(result.list, provider.type)
         return result
 
 
@@ -262,16 +168,8 @@ async def get_series_detail(
     try:
         async with provider:
             detail_response = await provider.get_detail(url)
-            # Guard against cache deserialization issues
-            if not hasattr(detail_response, "media"):
-                logger.error(
-                    f"Invalid detail response from provider {source}: {type(detail_response)} - {detail_response}"
-                )
-                raise HTTPException(
-                    status_code=500, detail="Provider returned invalid response format"
-                )
-    except Exception as e:
-        logger.error(f"Failed to get detail from provider {source}: {e}")
+    except Exception:
+        logger.exception("Failed to get detail from provider %s", source)
         raise HTTPException(
             status_code=500, detail=f"Failed to fetch series data from {source}"
         )
@@ -282,24 +180,16 @@ async def get_series_detail(
         series_detail = SeriesConverterService.convert_to_hierarchical(
             detail_response, slug=slug
         )
-    except ValueError as e:
-        logger.error(f"Failed to convert series to hierarchical structure: {e}")
+    except ValueError:
+        logger.exception("Failed to convert series to hierarchical structure")
         raise HTTPException(
             status_code=500, detail="Failed to process series data structure"
         )
 
-    # Add metadata based on source type
-    tmdb_data, anilist_data, match_confidence = await enrich_single_item_metadata(
-        detail_response.media.name, provider.type
-    )
-
     return SeriesDetailResponse(
         type=provider.type,
         series=series_detail,
-        length=len(detail_response.media.episodes),
-        tmdb_data=tmdb_data,
-        anilist_data=anilist_data,
-        match_confidence=match_confidence,
+        length=len(detail_response.episodes),
     )
 
 
@@ -317,9 +207,6 @@ async def get_series_seasons(
     return SeasonsResponse(
         type=series_detail.type,
         seasons=series_detail.series.seasons,
-        tmdb_data=series_detail.tmdb_data,
-        anilist_data=series_detail.anilist_data,
-        match_confidence=series_detail.match_confidence,
     )
 
 
@@ -370,6 +257,7 @@ async def get_series_episode(
                         type=series_detail.type,
                         tmdb_data=series_detail.tmdb_data,
                         anilist_data=series_detail.anilist_data,
+                        match_confidence=series_detail.match_confidence,
                         episode=episode,
                     )
             raise HTTPException(
@@ -501,18 +389,16 @@ async def extract_trailer_url(request: TrailerRequest):
             )
 
         except Exception as extraction_error:
-            logger.error(
-                f"ytdlp extraction failed for {youtube_url}: {extraction_error}"
-            )
+            logger.exception("ytdlp extraction failed for %s", youtube_url)
             return TrailerResponse(
                 success=False,
                 original_url=youtube_url,
                 site=site,
-                error=f"Failed to extract streamable URL: {str(extraction_error)}",
+                error=f"Failed to extract streamable URL: {extraction_error!s}",
             )
 
     except Exception as e:
-        logger.error(f"Trailer extraction error: {e}")
+        logger.exception("Trailer extraction error")
         return TrailerResponse(
-            success=False, original_url="", error=f"Internal error: {str(e)}"
+            success=False, original_url="", error=f"Internal error: {e!s}"
         )

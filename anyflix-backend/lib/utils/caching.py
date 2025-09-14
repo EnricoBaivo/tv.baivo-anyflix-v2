@@ -1,17 +1,14 @@
 """Caching utilities for API services."""
 
 import hashlib
-import json
 import logging
-import os
 import pickle
 import re
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
-from aiocache import Cache, caches
-from aiocache.serializers import JsonSerializer, PickleSerializer
-from pydantic import BaseModel
+from aiocache import caches
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +82,7 @@ class PydanticSerializer:
                     f"Failed to reconstruct Pydantic model {class_path}: {e}"
                 )
                 # Return None to force cache miss and re-execution
-                logger.info(f"Invalidating cache entry due to deserialization failure")
+                logger.info("Invalidating cache entry due to deserialization failure")
                 return None
 
         return data
@@ -276,11 +273,11 @@ def _make_readable_arg(arg) -> str:
     """
     if arg is None:
         return "none"
-    elif isinstance(arg, bool):
+    if isinstance(arg, bool):
         return "true" if arg else "false"
-    elif isinstance(arg, (int, float)):
+    if isinstance(arg, (int, float)):
         return str(arg)
-    elif isinstance(arg, str):
+    if isinstance(arg, str):
         # Clean and truncate strings
         clean_str = re.sub(
             r"[^\w\s-]", "", arg
@@ -289,49 +286,45 @@ def _make_readable_arg(arg) -> str:
             r"\s+", "_", clean_str.strip()
         )  # Replace spaces with underscores
         return clean_str[:50] if clean_str else "empty"  # Limit length
-    elif isinstance(arg, (list, tuple)):
+    if isinstance(arg, (list, tuple)):
         if len(arg) == 0:
             return "empty_list"
-        elif len(arg) <= 3:
+        if len(arg) <= 3:
             # Show small lists
             readable_items = [_make_readable_arg(item) for item in arg]
             return f"[{','.join(readable_items)}]"
-        else:
-            # Show first few items for large lists
-            readable_items = [_make_readable_arg(item) for item in arg[:2]]
-            return f"[{','.join(readable_items)}_and_{len(arg)-2}_more]"
-    elif isinstance(arg, dict):
+        # Show first few items for large lists
+        readable_items = [_make_readable_arg(item) for item in arg[:2]]
+        return f"[{','.join(readable_items)}_and_{len(arg)-2}_more]"
+    if isinstance(arg, dict):
         if len(arg) == 0:
             return "empty_dict"
-        elif len(arg) <= 2:
+        if len(arg) <= 2:
             # Show small dicts
             items = [f"{k}={_make_readable_arg(v)}" for k, v in sorted(arg.items())]
             return f"{{{','.join(items)}}}"
-        else:
-            # Show first few items for large dicts
-            items = list(sorted(arg.items()))[:2]
-            readable_items = [f"{k}={_make_readable_arg(v)}" for k, v in items]
-            return f"{{{','.join(readable_items)}_and_{len(arg)-2}_more}}"
-    elif hasattr(arg, "__dict__"):
+        # Show first few items for large dicts
+        items = sorted(arg.items())[:2]
+        readable_items = [f"{k}={_make_readable_arg(v)}" for k, v in items]
+        return f"{{{','.join(readable_items)}_and_{len(arg)-2}_more}}"
+    if hasattr(arg, "__dict__"):
         # For objects, use class name and key attributes
         class_name = arg.__class__.__name__
         if hasattr(arg, "name"):
             return f"{class_name}_{_make_readable_arg(arg.name)}"
-        elif hasattr(arg, "id"):
+        if hasattr(arg, "id"):
             return f"{class_name}_{arg.id}"
-        else:
-            return class_name.lower()
-    else:
-        # Fallback to string representation, cleaned
-        str_repr = str(arg)
-        clean_str = re.sub(r"[^\w]", "_", str_repr)
-        return clean_str[:30] if clean_str else "unknown"
+        return class_name.lower()
+    # Fallback to string representation, cleaned
+    str_repr = str(arg)
+    clean_str = re.sub(r"[^\w]", "_", str_repr)
+    return clean_str[:30] if clean_str else "unknown"
 
 
 # Cache decorator
 def cached(
     ttl: int = 3600,  # 1 hour default
-    key_prefix: Optional[str] = None,
+    key_prefix: str | None = None,
     cache_name: str = "default",
     skip_cache_on_error: bool = True,
 ) -> Callable[[F], F]:
@@ -350,6 +343,24 @@ def cached(
     def decorator(func: F) -> F:
         @wraps(func)
         async def wrapper(*args, **kwargs):
+            # Check if caching is enabled globally
+            try:
+                from app.config import settings
+
+                if not settings.enable_caching:
+                    logger.debug(
+                        f"Caching disabled globally, executing function directly: {func.__name__}"
+                    )
+                    return await func(*args, **kwargs)
+                logger.debug(
+                    f"Caching enabled globally, executing function with caching: {func.__name__}"
+                )
+            except ImportError:
+                logger.warning(
+                    f"Failed to import settings: {e}, continuing with caching"
+                )
+                # If we can't import settings, assume caching is enabled (backward compatibility)
+
             # Generate cache key
             prefix = key_prefix or f"{func.__module__}.{func.__name__}"
             cache_key = generate_cache_key(prefix, *args, **kwargs)
@@ -398,8 +409,7 @@ def cached(
                 if skip_cache_on_error:
                     # Execute function without caching on error
                     return await func(*args, **kwargs)
-                else:
-                    raise
+                raise
 
         return wrapper
 
@@ -495,7 +505,7 @@ class CacheManager:
 
         return await self.clear_prefix(f"{namespace}:*")
 
-    async def get_cache_stats(self) -> Dict[str, Any]:
+    async def get_cache_stats(self) -> dict[str, Any]:
         """Get cache statistics.
 
         Returns:
@@ -622,7 +632,6 @@ async def warm_cache_for_popular_content():
     """Warm cache with popular content."""
     logger.info("Starting cache warming for popular content...")
     # This could be implemented to pre-populate cache with popular anime/series
-    pass
 
 
 # Cache will be initialized by the application startup

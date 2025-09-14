@@ -1,7 +1,7 @@
 """HTTP client wrapper similar to the JavaScript Client class."""
 
 import asyncio
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import cloudscraper
 import httpx
@@ -24,7 +24,7 @@ class HTTPClient:
         """
         self.follow_redirects = follow_redirects
         self.use_cloudscraper = use_cloudscraper
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
         self._cloudscraper_session = None
         self._create_session()
 
@@ -56,8 +56,8 @@ class HTTPClient:
     async def get(
         self,
         url: str,
-        headers: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
+        params: dict[str, str] | None = None,
     ) -> "ClientResponse":
         """Make GET request with Cloudflare bypass if needed.
 
@@ -88,9 +88,8 @@ class HTTPClient:
                 if self.use_cloudscraper:
                     # Fallback to cloudscraper
                     return await self._get_with_cloudscraper(url, headers, params)
-                else:
-                    # Try with enhanced headers
-                    return await self._get_with_enhanced_headers(url, headers, params)
+                # Try with enhanced headers
+                return await self._get_with_enhanced_headers(url, headers, params)
 
             return client_response
 
@@ -103,8 +102,8 @@ class HTTPClient:
     async def post(
         self,
         url: str,
-        headers: Optional[Dict[str, str]] = None,
-        data: Optional[Union[Dict[str, Any], str]] = None,
+        headers: dict[str, str] | None = None,
+        data: dict[str, Any] | str | None = None,
     ) -> "ClientResponse":
         """Make POST request.
 
@@ -155,7 +154,7 @@ class HTTPClient:
         return any(indicator in content for indicator in cloudflare_indicators)
 
     async def _get_with_cloudscraper(
-        self, url: str, headers: Dict[str, str], params: Optional[Dict[str, str]] = None
+        self, url: str, headers: dict[str, str], params: dict[str, str] | None = None
     ) -> "ClientResponse":
         """Make request using cloudscraper for Cloudflare bypass.
 
@@ -184,7 +183,7 @@ class HTTPClient:
         return CloudflareClientResponse(response)
 
     async def _get_with_enhanced_headers(
-        self, url: str, headers: Dict[str, str], params: Optional[Dict[str, str]] = None
+        self, url: str, headers: dict[str, str], params: dict[str, str] | None = None
     ) -> "ClientResponse":
         """Make request with enhanced anti-detection headers.
 
@@ -242,7 +241,7 @@ class ClientResponse:
         return self.status_code
 
     @property
-    def headers(self) -> Dict[str, str]:
+    def headers(self) -> dict[str, str]:
         """Get response headers."""
         return dict(self._response.headers)
 
@@ -288,7 +287,7 @@ class CloudflareClientResponse(ClientResponse):
         return self.status_code
 
     @property
-    def headers(self) -> Dict[str, str]:
+    def headers(self) -> dict[str, str]:
         """Get response headers."""
         return dict(self._cs_response.headers)
 

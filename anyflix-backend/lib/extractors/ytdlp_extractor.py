@@ -1,5 +1,3 @@
-from typing import List
-
 import yt_dlp
 
 from ..models.base import VideoSource
@@ -125,7 +123,7 @@ def _get_quality_score_by_id(quality_id: str) -> int:
 
 
 @cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="ytdlp_extract")
-async def ytdlp_extractor(url: str) -> List[VideoSource]:
+async def ytdlp_extractor(url: str) -> list[VideoSource]:
     """Extract video info using yt-dlp Python library."""
     try:
         ydl_opts = {
@@ -139,7 +137,7 @@ async def ytdlp_extractor(url: str) -> List[VideoSource]:
             info = ydl.extract_info(url, download=False)
 
             # Extract video sources from yt-dlp info
-            sources: List[VideoSource] = []
+            sources: list[VideoSource] = []
 
             if info and "url" in info:
                 # Get the main video URL

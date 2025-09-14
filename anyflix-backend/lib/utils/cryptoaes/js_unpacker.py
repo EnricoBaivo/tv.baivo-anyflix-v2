@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Iterator, List, Optional
+from collections.abc import Iterator
 
 
 class JsUnpacker:
@@ -30,7 +30,7 @@ class JsUnpacker:
         return bool(JsUnpacker._PACKED_REGEX.search(script_block))
 
     @staticmethod
-    def detect_multiple(script_blocks: List[str]) -> List[str]:
+    def detect_multiple(script_blocks: list[str]) -> list[str]:
         """
         Filter script blocks to only return those containing packed JavaScript.
 
@@ -43,7 +43,7 @@ class JsUnpacker:
         return [block for block in script_blocks if JsUnpacker.detect(block)]
 
     @staticmethod
-    def unpack(script_block: str) -> List[str]:
+    def unpack(script_block: str) -> list[str]:
         """
         Unpack a script block containing packed JavaScript.
 
@@ -58,7 +58,7 @@ class JsUnpacker:
         return []
 
     @staticmethod
-    def unpack_and_combine(script_block: str) -> Optional[str]:
+    def unpack_and_combine(script_block: str) -> str | None:
         """
         Unpack a script block and combine results into a single string.
 
@@ -120,7 +120,7 @@ class JsUnpacker:
 class Unbaser:
     """Helper class for converting from different number bases."""
 
-    _ALPHABET: Dict[int, str] = {
+    _ALPHABET: dict[int, str] = {
         52: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP",
         54: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQR",
         62: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",

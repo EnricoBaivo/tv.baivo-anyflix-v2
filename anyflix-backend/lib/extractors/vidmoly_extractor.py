@@ -2,19 +2,19 @@
 
 import logging
 import re
-from typing import Dict, List, Optional
 
-from ..models.base import VideoSource
-from ..utils.caching import ServiceCacheConfig, cached
-from ..utils.client import HTTPClient
-from .m3u8_extractor import m3u8_extractor
+from lib.extractors.m3u8_extractor import m3u8_extractor
+from lib.models.base import VideoSource
+from lib.utils.caching import ServiceCacheConfig, cached
+from lib.utils.client import HTTPClient
+
 from .ytdlp_extractor import ytdlp_extractor
 
 
 @cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="vidmoly_extract")
 async def vidmoly_extractor(
-    url: str, headers: Optional[Dict[str, str]] = None
-) -> List[VideoSource]:
+    url: str, headers: dict[str, str] | None = None
+) -> list[VideoSource]:
     """
     Extract video sources from Vidmoly.
     Based on the JavaScript vidmolyExtractor function.
@@ -40,7 +40,7 @@ async def vidmoly_extractor(
         m3u8_match = re.search(r"https://[^\s]*\.m3u8[^\s]*", response.body)
         print(f"M3U8 match: {m3u8_match}")
         if not m3u8_match:
-            print(f"Failed to find M3U8 playlist URL")
+            print("Failed to find M3U8 playlist URL")
             return []
         print(f"Found M3U8 playlist URL: {m3u8_match.group(0)}")
         playlist_url = m3u8_match.group(0)
@@ -62,5 +62,5 @@ async def vidmoly_extractor(
         return video_sources
 
     except Exception as e:
-        logging.error(f"Failed to extract video sources: {e}")
+        logging.exception(f"Failed to extract video sources: {e}")
         return []

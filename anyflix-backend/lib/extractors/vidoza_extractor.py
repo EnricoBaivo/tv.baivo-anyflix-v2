@@ -1,18 +1,17 @@
 """Vidoza extractor."""
 
 import re
-from typing import Dict, List, Optional
 
-from ..models.base import VideoSource
-from ..utils.caching import ServiceCacheConfig, cached
-from ..utils.client import HTTPClient
-from .ytdlp_extractor import ytdlp_extractor
+from lib.extractors.ytdlp_extractor import ytdlp_extractor
+from lib.models.base import VideoSource
+from lib.utils.caching import ServiceCacheConfig, cached
+from lib.utils.client import HTTPClient
 
 
 @cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="vidoza_extract")
 async def vidoza_extractor(
-    url: str, headers: Optional[Dict[str, str]] = None
-) -> List[VideoSource]:
+    url: str, headers: dict[str, str] | None = None
+) -> list[VideoSource]:
     """
     Extract video sources from Vidoza.
     Based on the JavaScript vidozaExtractor function.
@@ -32,7 +31,7 @@ async def vidoza_extractor(
         # Extract direct MP4 video URL from the response
         mp4_match = re.search(r"https://[^\s]*\.mp4", response.body)
         if not mp4_match:
-            print(f"Failed to find MP4 URL")
+            print("Failed to find MP4 URL")
             return []
         print(f"Found MP4 URL: {mp4_match.group(0)}")
         video_url = mp4_match.group(0)

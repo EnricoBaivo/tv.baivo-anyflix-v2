@@ -1,14 +1,12 @@
 """HTML parsing utilities similar to JavaScript Document class."""
 
-from typing import List, Optional, Union
-
 from bs4 import BeautifulSoup, NavigableString, Tag
 
 
 class HTMLElement:
     """Wrapper for BeautifulSoup elements to match JavaScript API."""
 
-    def __init__(self, element: Union[Tag, NavigableString, None]):
+    def __init__(self, element: Tag | NavigableString | None):
         """Initialize with BeautifulSoup element."""
         self._element = element
 
@@ -46,7 +44,7 @@ class HTMLElement:
             return ""
         return self._element.get(name, "")
 
-    def select(self, selector: str) -> List["HTMLElement"]:
+    def select(self, selector: str) -> list["HTMLElement"]:
         """Select elements using CSS selector.
 
         Args:
@@ -98,7 +96,7 @@ class HTMLElement:
         """Alias for get_src to match JS API."""
         return self.get_src
 
-    def filter(self, condition) -> List["HTMLElement"]:
+    def filter(self, condition) -> list["HTMLElement"]:
         """Filter elements based on condition.
 
         Args:
@@ -125,7 +123,7 @@ class HTMLParser:
         """
         self.soup = BeautifulSoup(html, "lxml")
 
-    def select(self, selector: str) -> List[HTMLElement]:
+    def select(self, selector: str) -> list[HTMLElement]:
         """Select elements using CSS selector.
 
         Args:

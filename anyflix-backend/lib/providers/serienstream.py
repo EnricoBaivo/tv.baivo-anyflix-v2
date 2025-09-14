@@ -1,8 +1,9 @@
 """SerienStream provider implementation."""
 
 import re
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
+
+import httpx
 
 from ..extractors.extract_any import extract_any
 from ..models.base import (
@@ -10,10 +11,8 @@ from ..models.base import (
     MediaSource,
     SearchResult,
     SourcePreference,
-    VideoSource,
 )
 from ..models.responses import (
-    DetailResponse,
     LatestResponse,
     PopularResponse,
     SearchResponse,
@@ -48,14 +47,16 @@ def _map_language_to_code(lang: str) -> str:
     # Handle language names
     if "deutsch" in lang_lower:
         return "de"
-    elif "englisch" in lang_lower or "english" in lang_lower:
+    if "englisch" in lang_lower or "english" in lang_lower:
         return "en"
-    else:
-        return "sub"  # Default fallback
+    return "sub"  # Default fallback
 
 
 class SerienStreamProvider(BaseProvider):
     """SerienStream series source provider."""
+
+    # Maximum items per page for pagination
+    ITEMS_PER_PAGE = 15
 
     def __init__(self):
         """Initialize SerienStream provider."""
@@ -78,176 +79,371 @@ class SerienStreamProvider(BaseProvider):
         self.logger.info(f"Initialized SerienStream provider: {source.base_url}")
         self.type = "normal"
 
-    async def get_popular(self, page: int = 1) -> PopularResponse:
-        """Get popular series from SerienStream.
+    def _parse_series_list_elements(self, elements) -> list[SearchResult]:
+        """Parse series list elements into SearchResult objects.
 
         Args:
-            page: Page number (not used, SerienStream doesn't paginate)
+            elements: DOM elements containing series data
 
         Returns:
-            PopularResponse with series list
+            List of SearchResult objects
         """
-        base_url = self.source.base_url
-        res = await self.client.get(f"{base_url}/beliebte-serien")
-        elements = Document(res.body).select("div.seriesListContainer div")
-
         series_list = []
+
         for element in elements:
             link_element = element.select_first("a")
             name_element = element.select_first("h3")
-            img_element = link_element.select_first("img")
-
-            if link_element._element and name_element._element and img_element._element:
-                name = name_element.text
-                image_url = base_url + img_element.attr("data-src")
-                link = link_element.attr("href")
-
-                series_list.append(
-                    SearchResult(name=name, image_url=image_url, link=link)
-                )
-
-        return PopularResponse(
-            type=self.response_type, list=series_list, has_next_page=False
-        )
-
-    async def get_latest_updates(self, page: int = 1) -> LatestResponse:
-        """Get latest series updates from SerienStream.
-
-        Args:
-            page: Page number (not used, SerienStream doesn't paginate)
-
-        Returns:
-            LatestResponse with series list
-        """
-        base_url = self.source.base_url
-        res = await self.client.get(f"{base_url}/neu")
-        elements = Document(res.body).select("div.seriesListContainer div")
-
-        series_list = []
-        for element in elements:
-            link_element = element.select_first("a")
-            name_element = element.select_first("h3")
-            img_element = link_element.select_first("img")
-
-            if link_element._element and name_element._element and img_element._element:
-                name = name_element.text
-                image_url = base_url + img_element.attr("data-src")
-                link = link_element.attr("href")
-
-                series_list.append(
-                    SearchResult(name=name, image_url=image_url, link=link)
-                )
-
-        return LatestResponse(
-            type=self.response_type, list=series_list, has_next_page=False
-        )
-
-    async def search(
-        self, query: str, page: int = 1, lang: Optional[str] = None
-    ) -> SearchResponse:
-        """Search for series on SerienStream.
-
-        Args:
-            query: Search query
-            page: Page number (not used)
-            lang: Optional language filter (de, en, sub, all) - not used in serienstream
-
-        Returns:
-            SearchResponse with search results
-        """
-        # Log language filter for debugging (not implemented for serienstream)
-        if lang:
-            self.logger.info(
-                f"Search with language filter: {lang} (not implemented for serienstream)"
+            img_element = (
+                link_element.select_first("img") if link_element._element else None
             )
 
-        base_url = self.source.base_url
-        res = await self.client.get(f"{base_url}/serien")
-        elements = Document(res.body).select("#seriesContainer > div > ul > li > a")
-
-        # Filter elements by query
-        filtered_elements = []
-        for element in elements:
-            title = element.attr("title").lower()
-            if query.lower() in title:
-                filtered_elements.append(element)
-
-        series_list = []
-        for element in filtered_elements:
-            name = element.text
-            link = element.attr("href")
-
-            # Get image from detail page
-            try:
-                detail_res = await self.client.get(base_url + link)
-                detail_doc = Document(detail_res.body)
-                img_element = detail_doc.select_first("div.seriesCoverBox img")
-                img = img_element.attr("data-src") if img_element._element else ""
-                image_url = base_url + img if img else ""
+            if (
+                link_element._element
+                and name_element._element
+                and img_element
+                and img_element._element
+            ):
+                name = name_element.text
+                image_path = img_element.attr("data-src")
+                image_url = self._build_full_url(image_path)
+                link = link_element.attr("href")
 
                 series_list.append(
                     SearchResult(name=name, image_url=image_url, link=link)
                 )
-            except Exception:
-                # Skip this entry if we can't get the image
-                continue
 
-        return SearchResponse(
-            type=self.response_type, list=series_list, has_next_page=False
+        return series_list
+
+    def _apply_pagination(self, items: list, page: int) -> tuple[list, bool]:
+        """Apply pagination to a list of items.
+
+        Args:
+            items: List of items to paginate
+            page: Page number (1-based)
+
+        Returns:
+            Tuple of (paginated_items, has_next_page)
+        """
+        items_per_page = self.ITEMS_PER_PAGE
+        start_index = (page - 1) * items_per_page
+        end_index = start_index + items_per_page
+
+        paginated_items = items[start_index:end_index]
+        has_next_page = end_index < len(items)
+
+        return paginated_items, has_next_page
+
+    def _build_full_url(self, path: str) -> str:
+        """Build full URL from base URL and path.
+
+        Args:
+            path: URL path (can start with / or not)
+
+        Returns:
+            Full URL
+        """
+        base_url = self.source.base_url
+        if path.startswith("http"):
+            return path
+        if path.startswith("/"):
+            return base_url + path
+        return f"{base_url}/{path}"
+
+    def _safe_extract_text(self, element, default: str = "") -> str:
+        """Safely extract text from an element.
+
+        Args:
+            element: DOM element (can be None)
+            default: Default value if element is None or empty
+
+        Returns:
+            Element text or default value
+        """
+        if element and element._element:
+            return element.text or default
+        return default
+
+    def _safe_extract_attr(self, element, attr_name: str, default: str = "") -> str:
+        """Safely extract attribute from an element.
+
+        Args:
+            element: DOM element (can be None)
+            attr_name: Attribute name to extract
+            default: Default value if element is None or attribute doesn't exist
+
+        Returns:
+            Attribute value or default value
+        """
+        if element and element._element:
+            return element.attr(attr_name) or default
+        return default
+
+    @cached(
+        ttl=ServiceCacheConfig.PROVIDER_POPULAR_TTL, key_prefix="serienstream_popular"
+    )
+    async def get_popular(self, page: int = 1) -> PopularResponse:
+        """Get popular series with pagination."""
+        res = await self.client.get(f"{self.source.base_url}/beliebte-serien")
+        elements = Document(res.body).select("div.seriesListContainer div")
+
+        all_series = self._parse_series_list_elements(elements)
+        paginated_series, has_next_page = self._apply_pagination(all_series, page)
+
+        return PopularResponse(
+            type=self.response_type, list=paginated_series, has_next_page=has_next_page
         )
 
-    async def get_detail(self, url: str) -> DetailResponse:
+    @cached(
+        ttl=ServiceCacheConfig.PROVIDER_LATEST_TTL, key_prefix="serienstream_latest"
+    )
+    async def get_latest_updates(self, page: int = 1) -> LatestResponse:
+        """Get latest series updates from SerienStream with pagination."""
+        res = await self.client.get(f"{self.source.base_url}/neu")
+        elements = Document(res.body).select("div.seriesListContainer div")
+
+        all_series = self._parse_series_list_elements(elements)
+        paginated_series, has_next_page = self._apply_pagination(all_series, page)
+
+        return LatestResponse(
+            type=self.response_type, list=paginated_series, has_next_page=has_next_page
+        )
+
+    @cached(
+        ttl=ServiceCacheConfig.PROVIDER_SEARCH_TTL, key_prefix="serienstream_search"
+    )
+    async def search(
+        self, query: str, page: int = 1, lang: str | None = None
+    ) -> SearchResponse:
+        """Search for series with pagination."""
+
+        res = await self.client.get(f"{self.source.base_url}/serien")
+        elements = Document(res.body).select("#seriesContainer > div > ul > li > a")
+
+        # Filter and build results
+        filtered_results = []
+        for element in elements:
+            if element._element:
+                name = element.text
+                if query.lower() in name.lower():
+                    filtered_results.append(
+                        SearchResult(name=name, image_url="", link=element.attr("href"))
+                    )
+
+        paginated_results, has_next_page = self._apply_pagination(
+            filtered_results, page
+        )
+        return SearchResponse(
+            type=self.response_type, list=paginated_results, has_next_page=has_next_page
+        )
+
+    def _extract_extended_metadata(self, document: Document, base_url: str):
+        """Extract extended metadata from seriesContentBox.
+
+        Args:
+            document: Parsed HTML document
+            base_url: Base URL for resolving relative URLs
+
+        Returns:
+            Dictionary with extracted metadata
+        """
+        metadata = {}
+
+        # Extract basic required fields
+        # Extract name
+        name_element = document.select_first("div.series-title h1 span")
+        if name_element and name_element._element:
+            metadata["name"] = name_element.text.strip()
+        else:
+            metadata["name"] = ""
+
+        # Extract description
+        desc_element = document.select_first("p.seri_des")
+        if desc_element and desc_element._element:
+            metadata["description"] = self.clean_html_string(
+                desc_element.attr("data-full-description") or ""
+            )
+        else:
+            metadata["description"] = ""
+
+        # Extract cover image
+        cover_element = document.select_first("div.seriesCoverBox img")
+        if cover_element and cover_element._element:
+            cover_path = cover_element.attr("data-src") or cover_element.attr("src")
+            if cover_path:
+                metadata["cover_image_url"] = self._build_full_url(cover_path)
+            else:
+                metadata["cover_image_url"] = ""
+        else:
+            metadata["cover_image_url"] = ""
+
+        # Extract alternative titles
+        title_element = document.select_first(
+            "div.series-title h1[data-alternativeTitles]"
+        )
+        if title_element and title_element._element:
+            alt_titles_str = title_element.attr("data-alternativeTitles")
+            if alt_titles_str:
+                # Split by comma and clean up
+                alt_titles = [
+                    title.strip()
+                    for title in alt_titles_str.split(",")
+                    if title.strip()
+                ]
+                metadata["alternative_titles"] = alt_titles
+
+        # Extract years
+        start_year_element = document.select_first('span[itemprop="startDate"] a')
+        if start_year_element and start_year_element._element:
+            try:
+                metadata["start_year"] = int(start_year_element.text)
+            except (ValueError, TypeError):
+                pass
+
+        end_year_element = document.select_first('span[itemprop="endDate"] a')
+        if end_year_element and end_year_element._element:
+            try:
+                end_year_text = end_year_element.text
+                if end_year_text != "Heute":  # "Today" in German
+                    metadata["end_year"] = int(end_year_text)
+            except (ValueError, TypeError):
+                pass
+
+        # Extract FSK rating
+        fsk_element = document.select_first("div[data-fsk]")
+        if fsk_element and fsk_element._element:
+            try:
+                metadata["fsk_rating"] = int(fsk_element.attr("data-fsk"))
+            except (ValueError, TypeError):
+                pass
+
+        # Extract IMDB ID
+        imdb_element = document.select_first("a[data-imdb]")
+        if imdb_element and imdb_element._element:
+            imdb_id = imdb_element.attr("data-imdb")
+            if imdb_id:
+                metadata["imdb_id"] = imdb_id
+
+        # Extract country of origin
+        country_element = document.select_first(
+            'li[data-content-type="country"] span[itemprop="name"]'
+        )
+        if country_element and country_element._element:
+            metadata["country_of_origin"] = country_element.text
+
+        # Extract genres
+        genre_elements = document.select("div.genres ul li")
+        genres = []
+        for elem in genre_elements:
+            if elem._element:
+                genre_name = elem.text.strip()
+                # Filter out "+ X" patterns (e.g., "+ 1", "+ 5", etc.)
+                if genre_name and not re.match(r"^\+\s*\d+$", genre_name):
+                    genres.append(genre_name)
+        if genres:
+            metadata["genre"] = genres
+
+        # Extract main genre
+        main_genre_element = document.select_first("div.genres ul[data-main-genre]")
+        if main_genre_element and main_genre_element._element:
+            main_genre = main_genre_element.attr("data-main-genre")
+            if main_genre:
+                metadata["main_genre"] = main_genre
+
+        # Extract directors
+        director_elements = document.select("li.seriesDirector a span[itemprop='name']")
+        directors = []
+        for elem in director_elements:
+            if elem._element:
+                director_name = elem.text.strip()
+                if director_name and not re.match(
+                    r"^\s*&\s*\d+\s*weitere\s*$", director_name
+                ):
+                    directors.append(director_name)
+        if directors:
+            metadata["directors"] = directors
+
+        # Extract actors
+        actor_elements = document.select(
+            "li .seriesActor ~ ul li span[itemprop='name']"
+        )
+        actors = []
+        for elem in actor_elements:
+            if elem._element:
+                actor_name = elem.text.strip()
+                if actor_name and not re.match(
+                    r"^\s*&\s*\d+\s*weitere\s*$", actor_name
+                ):
+                    actors.append(actor_name)
+        if actors:
+            metadata["actors"] = actors
+
+        # Extract producers
+        producer_elements = document.select(
+            "li .seriesProducer ~ ul li span[itemprop='name']"
+        )
+        producers = []
+        for elem in producer_elements:
+            if elem._element:
+                producer_name = elem.text.strip()
+                if producer_name and not re.match(
+                    r"^\s*&\s*\d+\s*weitere\s*$", producer_name
+                ):
+                    producers.append(producer_name)
+        if producers:
+            metadata["producers"] = producers
+
+        # Extract author/producer for compatibility
+        if producers:
+            metadata["author"] = ", ".join(producers[:3])  # Limit to first 3
+        else:
+            metadata["author"] = ""
+
+        # Set default status
+        metadata["status"] = 5
+
+        # Extract backdrop URL
+        backdrop_element = document.select_first("div.backdrop")
+        if backdrop_element and backdrop_element._element:
+            style = backdrop_element.attr("style")
+            if style:
+                # Extract URL from background-image style
+                match = re.search(r"url\(([^)]+)\)", style)
+                if match:
+                    backdrop_path = match.group(1).strip("'\"")
+                    metadata["backdrop_url"] = self._build_full_url(backdrop_path)
+
+        # Extract series ID
+        series_id_element = document.select_first("div.add-series[data-series-id]")
+        if series_id_element and series_id_element._element:
+            series_id = series_id_element.attr("data-series-id")
+            if series_id:
+                metadata["series_id"] = series_id
+
+        return metadata
+
+    @cached(
+        ttl=ServiceCacheConfig.PROVIDER_DETAIL_TTL, key_prefix="serienstream_detail"
+    )
+    async def get_detail(self, url: str):
         """Get series details from SerienStream.
 
         Args:
             url: Series URL
 
         Returns:
-            DetailResponse with series details
+            MediaInfo with series details
         """
-        base_url = self.source.base_url
-        res = await self.client.get(base_url + url)
+        # Use robust URL normalization
+        full_url = normalize_url(self.source.base_url, url)
+
+        self.logger.debug(f"Fetching series detail from: {full_url}")
+        res = await self.client.get(full_url)
         document = Document(res.body)
 
-        # Extract basic info
-        image_element = document.select_first("div.seriesCoverBox img")
-        image_url = (
-            base_url + image_element.attr("data-src") if image_element._element else ""
+        # Extract extended metadata (includes basic info)
+        extended_metadata = self._extract_extended_metadata(
+            document, self.source.base_url
         )
-
-        name_element = document.select_first("div.series-title h1 span")
-        name = name_element.text if name_element._element else ""
-
-        # Extract genres
-        genre_elements = document.select("div.genres ul li")
-        genre = []
-        for g in genre_elements:
-            genre_text = g.text
-            # Filter out "+X" entries
-            if not re.match(r"^\+\s\d+$", genre_text):
-                genre.append(genre_text)
-
-        # Extract description
-        desc_element = document.select_first("p.seri_des")
-        description = ""
-        if desc_element._element:
-            description = self.clean_html_string(
-                desc_element.attr("data-full-description")
-            )
-
-        # Extract author/producer
-        producer_elements = document.select("div.cast li")
-        author = ""
-        for prod in producer_elements:
-            if "Produzent:" in prod.outer_html:
-                producer_items = prod.select("li")
-                author_parts = []
-                for item in producer_items:
-                    text = item.text
-                    if not re.match(r"^\s\&\s\d+\sweitere$", text):
-                        author_parts.append(text)
-                author = ", ".join(author_parts)
-                break
 
         # Extract episodes
         seasons_elements = document.select("#stream > ul:nth-child(1) > li > a")
@@ -263,19 +459,12 @@ class SerienStreamProvider(BaseProvider):
             episodes.extend(ep_array)
         episodes.reverse()
 
-        series_info = MediaInfo(
-            name=name,
-            image_url=image_url,
-            description=description,
-            author=author,
-            status=5,
-            genre=genre,
-            episodes=episodes,
-        )
+        # Add episodes to the metadata and create MediaInfo
+        extended_metadata["episodes"] = episodes
 
-        return DetailResponse(media=series_info)
+        return MediaInfo(**extended_metadata)
 
-    async def parse_episodes_from_series(self, element) -> List[Dict[str, Any]]:
+    async def parse_episodes_from_series(self, element) -> list[dict[str, Any]]:
         """Parse episodes from a season.
 
         Args:
@@ -285,7 +474,12 @@ class SerienStreamProvider(BaseProvider):
             List of episodes
         """
         season_id = element.get_href
-        res = await self.client.get(self.source.base_url + season_id)
+
+        # Use robust URL normalization
+        season_url = normalize_url(self.source.base_url, season_id)
+
+        self.logger.debug(f"Fetching season episodes from: {season_url}")
+        res = await self.client.get(season_url)
         episode_elements = Document(res.body).select(
             "table.seasonEpisodesList tbody tr"
         )
@@ -293,107 +487,76 @@ class SerienStreamProvider(BaseProvider):
         # Process episodes with concurrency limit
         return await self.async_pool(13, episode_elements, self.episode_from_element)
 
-    async def episode_from_element(self, element) -> Dict[str, Any]:
+    async def episode_from_element(self, element) -> dict[str, Any]:
         """Create episode from table row element.
 
         Args:
             element: Episode row element
 
         Returns:
-            Episode dictionary
+            Episode dictionary with proper season/episode/title fields
         """
         title_anchor = element.select_first("td.seasonEpisodeTitle a")
         episode_span = title_anchor.select_first("span")
         url = title_anchor.attr("href")
-
-        # Get upload date
-        date_upload = await self.get_upload_date_from_episode(url)
-
         episode_season_id = element.attr("data-episode-season-id")
-        episode_title = (
-            self.clean_html_string(episode_span.text) if episode_span._element else ""
-        )
 
-        name = ""
+        episode_title = self.clean_html_string(self._safe_extract_text(episode_span))
+
+        # Parse season and episode numbers from URL
         if "/film" in url:
-            name = f"Film {episode_season_id} : {episode_title}"
-        else:
-            season_match = re.search(r"staffel-(\d+)/episode", url)
-            if season_match:
-                season_num = season_match.group(1)
-                name = (
-                    f"Staffel {season_num} Folge {episode_season_id} : {episode_title}"
-                )
+            # Handle movies/films
+            film_match = re.search(r"/film/film-(\d+)", url)
+            film_num = int(film_match.group(1)) if film_match else 1
+            return {
+                "name": f"Film {film_num} : {episode_title}",
+                "url": url,
+                "date_upload": None,
+                "kind": "movie",
+                "number": film_num,
+                "title": episode_title,
+            }
+        # Handle regular episodes
+        season_match = re.search(r"staffel-(\d+)/episode-(\d+)", url)
+        if season_match:
+            season_num = int(season_match.group(1))
+            episode_num = int(season_match.group(2))
+            name = f"Staffel {season_num} Folge {episode_num} : {episode_title}"
 
-        if name and url:
-            return {"name": name, "url": url, "date_upload": date_upload}
-        else:
-            return {"name": "", "url": "", "date_upload": None}
-
-    async def get_upload_date_from_episode(self, url: str) -> str:
-        """Get upload date from episode page.
-
-        Args:
-            url: Episode URL
-
-        Returns:
-            Date upload as string (milliseconds since epoch)
-        """
+            return {
+                "name": name,
+                "url": url,
+                "date_upload": None,
+                "season": season_num,
+                "episode": episode_num,
+                "title": episode_title,
+            }
+        # Fallback: try to extract from episode_season_id and URL
         try:
-            base_url = self.source.base_url
-            res = await self.client.get(base_url + url)
-            document = Document(res.body)
+            episode_num = int(episode_season_id) if episode_season_id else 1
+        except (ValueError, TypeError):
+            episode_num = 1
 
-            date_element = document.select_first('strong[style="color: white;"]')
-            if not date_element._element:
-                return str(int(datetime.now().timestamp() * 1000))
+        # Try to extract season from URL pattern
+        season_match = re.search(r"staffel-(\d+)", url)
+        season_num = int(season_match.group(1)) if season_match else 1
 
-            date_string = date_element.text
-            if ", " not in date_string:
-                return str(int(datetime.now().timestamp() * 1000))
+        name = f"Staffel {season_num} Folge {episode_num} : {episode_title}"
 
-            date_time_part = date_string.split(", ")[1]
-            if " " not in date_time_part:
-                return str(int(datetime.now().timestamp() * 1000))
-
-            date_part, time_part = date_time_part.split(" ")
-
-            # Parse date (DD.MM.YYYY)
-            day, month, year = map(int, date_part.split("."))
-
-            # Parse time (HH:MM)
-            hours, minutes = map(int, time_part.split(":"))
-
-            # Create datetime object
-            dt = datetime(year, month, day, hours, minutes)
-
-            # Handle DST (simplified - just check if date is in summer months)
-            # This is a simplified version of the complex DST calculation in the JS code
-            is_dst = (
-                3 <= month <= 10
-            )  # Rough approximation for Central European Summer Time
-
-            # Adjust for timezone (CET/CEST)
-            if is_dst:
-                # CEST is UTC+2
-                dt = dt.replace(tzinfo=None)  # Remove timezone info for now
-            else:
-                # CET is UTC+1
-                dt = dt.replace(tzinfo=None)  # Remove timezone info for now
-
-            # Convert to milliseconds since epoch
-            timestamp_ms = int(dt.timestamp() * 1000)
-            return str(timestamp_ms)
-
-        except Exception:
-            # Return current time if parsing fails
-            return str(int(datetime.now().timestamp() * 1000))
+        return {
+            "name": name,
+            "url": url,
+            "date_upload": None,
+            "season": season_num,
+            "episode": episode_num,
+            "title": episode_title,
+        }
 
     @cached(
         ttl=ServiceCacheConfig.PROVIDER_VIDEOS_TTL, key_prefix="serienstream_videos"
     )
     async def get_video_list(
-        self, url: str, lang_filter: Optional[str] = None
+        self, url: str, lang_filter: str | None = None
     ) -> VideoListResponse:
         """Get video sources for episode from SerienStream.
 
@@ -452,7 +615,7 @@ class SerienStreamProvider(BaseProvider):
                 lang = "Unknown"
                 type_str = "Unknown"
             host_element = element.select_first("a h4")
-            host = host_element.text if host_element._element else ""
+            host = self._safe_extract_text(host_element)
 
             # Apply language filter if specified
             lang_code = _map_language_to_code(lang)
@@ -466,7 +629,7 @@ class SerienStreamProvider(BaseProvider):
 
             redirect_element = element.select_first("a.watchEpisode")
             if redirect_element._element:
-                redirect = base_url + redirect_element.attr("href")
+                redirect = self._build_full_url(redirect_element.attr("href"))
                 task = self._extract_videos_from_host(
                     redirect, host, lang, type_str, headers
                 )
@@ -492,7 +655,7 @@ class SerienStreamProvider(BaseProvider):
 
     async def _extract_videos_from_host(
         self, redirect: str, host: str, lang: str, type_str: str, headers: dict
-    ) -> List:
+    ) -> list:
         """Extract videos from a single host asynchronously.
 
         Args:
@@ -507,7 +670,6 @@ class SerienStreamProvider(BaseProvider):
         """
         try:
             # Get the redirect URL manually by disabling auto-redirect
-            import httpx
 
             async with httpx.AsyncClient(
                 follow_redirects=False, timeout=30.0
@@ -553,7 +715,7 @@ class SerienStreamProvider(BaseProvider):
             self.logger.error(f"Failed to extract from {host}: {e}")
             return []
 
-    def get_source_preferences(self) -> List[SourcePreference]:
+    def get_source_preferences(self) -> list[SourcePreference]:
         """Get SerienStream source preferences.
 
         Returns:

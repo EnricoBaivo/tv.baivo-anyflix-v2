@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import Enum
 
 # Import external data types for union typing
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -45,16 +45,16 @@ class Episode(BaseModel):
     episode: int
     title: str
     url: str
-    date_upload: Optional[str] = None
-    tags: List[str] = Field(default_factory=list)
+    date_upload: str | None = None
+    tags: list[str] = Field(default_factory=list)
 
 
 class Season(BaseModel):
     """Season information."""
 
     season: int
-    title: Optional[str] = None
-    episodes: List[Episode] = Field(default_factory=list)
+    title: str | None = None
+    episodes: list[Episode] = Field(default_factory=list)
 
 
 class Movie(BaseModel):
@@ -64,28 +64,49 @@ class Movie(BaseModel):
     title: str
     kind: MovieKind
     url: str
-    date_upload: Optional[str] = None
-    tags: List[str] = Field(default_factory=list)
+    date_upload: str | None = None
+    tags: list[str] = Field(default_factory=list)
 
 
 class SeriesDetail(BaseModel):
     """Hierarchical series detail with seasons and movies."""
 
     slug: str
-    seasons: List[Season] = Field(default_factory=list)
-    movies: List[Movie] = Field(default_factory=list)
+    seasons: list[Season] = Field(default_factory=list)
+    movies: list[Movie] = Field(default_factory=list)
 
 
 class MediaInfo(BaseModel):
     """Detailed Media information."""
 
     name: str
-    image_url: str
+    cover_image_url: str
     description: str
     author: str = ""
-    status: int = 5
-    genre: List[str] = Field(default_factory=list)
-    episodes: List[Dict[str, Any]] = Field(default_factory=list)  # Internal use only
+    genres: list[str] = Field(default_factory=list)
+    episodes: list[dict[str, Any]] = Field(default_factory=list)  # Internal use only
+
+    # Extended metadata fields from seriesContentBox
+    alternative_titles: list[str] = Field(
+        default_factory=list, description="Alternative titles in different languages"
+    )
+    start_year: int | None = Field(None, description="Start year of the series")
+    end_year: int | None = Field(None, description="End year of the series")
+    fsk_rating: int | None = Field(
+        None, description="FSK age rating (German rating system)"
+    )
+    imdb_id: str | None = Field(None, description="IMDB ID (e.g., 'tt36469298')")
+    country_of_origin: str | None = Field(None, description="Country of origin")
+    main_genre: str | None = Field(None, description="Primary genre classification")
+    directors: list[str] = Field(default_factory=list, description="List of directors")
+    actors: list[str] = Field(default_factory=list, description="List of main actors")
+    producers: list[str] = Field(
+        default_factory=list, description="List of production companies"
+    )
+    backdrop_url: str | None = Field(None, description="Backdrop/banner image URL")
+    series_id: str | None = Field(
+        None, description="Internal series ID from the provider"
+    )
 
 
 class SearchResult(BaseModel):
@@ -94,8 +115,14 @@ class SearchResult(BaseModel):
     name: str
     image_url: str
     link: str
+
+    # Basic metadata from provider (lightweight for search results)
+    year: int | None = Field(None, description="Release/start year")
+    main_genre: str | None = Field(None, description="Primary genre")
+    country_of_origin: str | None = Field(None, description="Country of origin")
+
     # External metadata fields with improved documentation
-    tmdb_data: Optional[TMDBMovieDetail | TMDBTVDetail] = Field(
+    tmdb_data: TMDBMovieDetail | TMDBTVDetail | None = Field(
         None,
         description="TMDB metadata (movie or TV show details)",
         example={
@@ -109,7 +136,7 @@ class SearchResult(BaseModel):
             "genres": [{"id": 28, "name": "Action"}],
         },
     )
-    anilist_data: Optional[Media] = Field(
+    anilist_data: Media | None = Field(
         None,
         description="AniList metadata (anime/manga details)",
         example={
@@ -126,7 +153,7 @@ class SearchResult(BaseModel):
             "genres": ["Action", "Adventure"],
         },
     )
-    match_confidence: Optional[float] = Field(
+    match_confidence: float | None = Field(
         None,
         description="Confidence score of the metadata match (0.0 to 1.0)",
         ge=0.0,
@@ -140,18 +167,18 @@ class VideoSource(BaseModel):
     url: str
     original_url: str
     quality: str
-    language: Optional[str] = None
-    type: Optional[str] = None  # "Dub" or "Sub"
-    host: Optional[str] = None  # Video host name (e.g., "vidmoly", "voe", "doodstream")
+    language: str | None = None
+    type: str | None = None  # "Dub" or "Sub"
+    host: str | None = None  # Video host name (e.g., "vidmoly", "voe", "doodstream")
     requires_proxy: bool = False  # Whether this source requires proxy due to CORS
-    headers: Optional[Dict[str, str]] = None
-    subtitles: Optional[List[Dict[str, str]]] = None
-    audios: Optional[List[Dict[str, str]]] = None
+    headers: dict[str, str] | None = None
+    subtitles: list[dict[str, str]] | None = None
+    audios: list[dict[str, str]] | None = None
 
 
 class SourcePreference(BaseModel):
     """Source preference configuration."""
 
     key: str
-    list_preference: Optional[Dict[str, Any]] = None
-    multi_select_list_preference: Optional[Dict[str, Any]] = None
+    list_preference: dict[str, Any] | None = None
+    multi_select_list_preference: dict[str, Any] | None = None

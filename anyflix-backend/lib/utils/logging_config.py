@@ -4,20 +4,8 @@ import logging
 import logging.handlers
 import sys
 from pathlib import Path
-from typing import Dict, Optional
 
-try:
-    from ..config import settings
-except ImportError:
-    # If running from app context, try different import
-    try:
-        from app.config import settings
-    except ImportError:
-        # Default settings if neither works
-        class DefaultSettings:
-            log_level = "INFO"
-
-        settings = DefaultSettings()
+from app.config import settings
 
 
 class ColorFormatter(logging.Formatter):
@@ -45,8 +33,8 @@ class ColorFormatter(logging.Formatter):
 
 
 def setup_logging(
-    level: Optional[str] = None,
-    log_file: Optional[str] = None,
+    level: str | None = None,
+    log_file: str | None = None,
     enable_console: bool = True,
     enable_file: bool = True,
     max_bytes: int = 10 * 1024 * 1024,  # 10MB
@@ -158,7 +146,7 @@ def log_function_call(func_name: str, *args, **kwargs) -> None:
     if args:
         arg_strs.extend([repr(arg) for arg in args])
     if kwargs:
-        arg_strs.extend([f"{k}={repr(v)}" for k, v in kwargs.items()])
+        arg_strs.extend([f"{k}={v!r}" for k, v in kwargs.items()])
 
     args_str = ", ".join(arg_strs)
     logger.debug(f"Calling {func_name}({args_str})")
@@ -181,7 +169,7 @@ def log_performance(func_name: str, duration: float, success: bool = True) -> No
 class LoggingContext:
     """Context manager for enhanced logging during operations."""
 
-    def __init__(self, operation: str, logger: Optional[logging.Logger] = None):
+    def __init__(self, operation: str, logger: logging.Logger | None = None):
         """Initialize logging context.
 
         Args:
@@ -217,7 +205,7 @@ class LoggingContext:
 
 
 # Convenience function for timing operations
-def timed_operation(operation: str, logger: Optional[logging.Logger] = None):
+def timed_operation(operation: str, logger: logging.Logger | None = None):
     """Decorator or context manager for timing operations.
 
     Args:

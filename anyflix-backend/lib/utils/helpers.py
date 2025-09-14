@@ -4,7 +4,8 @@ import asyncio
 import random
 import re
 import string
-from typing import Any, Awaitable, Callable, List, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import TypeVar
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -32,8 +33,8 @@ def clean_html_string(input_str: str) -> str:
 
 
 async def async_pool(
-    pool_limit: int, array: List[T], iterator_fn: Callable[[T], Awaitable[R]]
-) -> List[R]:
+    pool_limit: int, array: list[T], iterator_fn: Callable[[T], Awaitable[R]]
+) -> list[R]:
     """Execute async operations with concurrency limit.
 
     Args:
@@ -79,7 +80,6 @@ def abs_url(url: str, base: str) -> str:
     """
     if re.match(r"^\w+://", url):
         return url
-    elif url.startswith("/"):
+    if url.startswith("/"):
         return base[: base.rfind("/") + 1] + url[1:]
-    else:
-        return base[: base.rfind("/") + 1] + url
+    return base[: base.rfind("/") + 1] + url

@@ -7,20 +7,19 @@ import os
 import random
 import re
 import time
-from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
 
-from ..models.base import VideoSource
-from ..utils.caching import ServiceCacheConfig, cached
+from lib.models.base import VideoSource
+from lib.utils.caching import ServiceCacheConfig, cached
 
 
 @cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="voe_extract")
 async def voe_extractor(
-    url: str, headers: Optional[Dict[str, str]] = None
-) -> List[VideoSource]:
+    url: str, headers: dict[str, str] | None = None
+) -> list[VideoSource]:
     """
     Extract video sources from VOE (voe.sx) links.
     source: https://github.com/p4ul17/voe-dl
@@ -40,9 +39,8 @@ async def voe_extractor(
     # extract_voe now returns List[VideoSource] or empty list
     if isinstance(result, list):
         return result
-    else:
-        # Fallback for unexpected return types
-        return []
+    # Fallback for unexpected return types
+    return []
 
 
 # List of common user agents for rotation
@@ -392,11 +390,11 @@ def extract_voe(URL, lang=None, type_str=None):
                     decoded = base64.b64decode(match).decode("utf-8")
                     if ".mp4" in decoded:
                         source_json = {"mp4": decoded}
-                        print(f"[+] Found base64 encoded MP4 URL")
+                        print("[+] Found base64 encoded MP4 URL")
                         break
-                    elif ".m3u8" in decoded:
+                    if ".m3u8" in decoded:
                         source_json = {"hls": decoded}
-                        print(f"[+] Found base64 encoded HLS URL")
+                        print("[+] Found base64 encoded HLS URL")
                         break
                 except:
                     continue
@@ -586,13 +584,13 @@ def extract_voe(URL, lang=None, type_str=None):
                 f"debug_page_{int(time.time())}.html", "w", encoding="utf-8"
             ) as f:
                 f.write(html_page.text)
-            print(f"[*] Page content saved for debugging")
+            print("[*] Page content saved for debugging")
             return video_source_list
 
         # Process the found sources
         try:
             if isinstance(source_json, str):
-                print(f"[!] source_json is a string. Wrapping it in a dictionary.")
+                print("[!] source_json is a string. Wrapping it in a dictionary.")
                 source_json = {"mp4": source_json}
 
             if not isinstance(source_json, dict):

@@ -1,19 +1,18 @@
 """Filemoon extractor."""
 
 import re
-from typing import Dict, List, Optional
 
-from ..models.base import VideoSource
-from ..utils.caching import ServiceCacheConfig, cached
-from ..utils.client import HTTPClient
-from .jwplayer_extractor import jwplayer_extractor
-from .ytdlp_extractor import ytdlp_extractor
+from lib.extractors.jwplayer_extractor import jwplayer_extractor
+from lib.extractors.ytdlp_extractor import ytdlp_extractor
+from lib.models.base import VideoSource
+from lib.utils.caching import ServiceCacheConfig, cached
+from lib.utils.client import HTTPClient
 
 
 @cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="filemoon_extract")
 async def filemoon_extractor(
-    url: str, headers: Optional[Dict[str, str]] = None
-) -> List[VideoSource]:
+    url: str, headers: dict[str, str] | None = None
+) -> list[VideoSource]:
     """
     Extract video sources from Filemoon.
     Based on the JavaScript filemoonExtractor function.

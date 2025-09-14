@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import AnimeDemo from "./pages/AnimeDemo";
+import Aniworld from "./pages/Aniworld";
 
 const queryClient = new QueryClient();
 
@@ -43,11 +44,9 @@ const App = () => (
                 }
               />
               <Route
-                path="/movies"
+                path="/aniworld"
                 element={
-                  <div className="pt-16 text-white text-center">
-                    Movies - Coming Soon
-                  </div>
+                 <Aniworld/>
                 }
               />
               <Route

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from pydantic import BaseModel, field_validator
 
@@ -140,43 +140,43 @@ class MediaListStatus(str, Enum):
 class AniListDate(BaseModel):
     """AniList date model."""
 
-    year: Optional[int] = None
-    month: Optional[int] = None
-    day: Optional[int] = None
+    year: int | None = None
+    month: int | None = None
+    day: int | None = None
 
 
 class MediaTitle(BaseModel):
     """Media title model."""
 
-    romaji: Optional[str] = None
-    english: Optional[str] = None
-    native: Optional[str] = None
-    userPreferred: Optional[str] = None
+    romaji: str | None = None
+    english: str | None = None
+    native: str | None = None
+    userPreferred: str | None = None
 
 
 class CoverImage(BaseModel):
     """Cover image model."""
 
-    extraLarge: Optional[str] = None
-    large: Optional[str] = None
-    medium: Optional[str] = None
-    color: Optional[str] = None
+    extraLarge: str | None = None
+    large: str | None = None
+    medium: str | None = None
+    color: str | None = None
 
 
 class Trailer(BaseModel):
     """Trailer model."""
 
-    id: Optional[str] = None
-    site: Optional[str] = None
-    thumbnail: Optional[str] = None
+    id: str | None = None
+    site: str | None = None
+    thumbnail: str | None = None
 
 
 class NextAiringEpisode(BaseModel):
     """Next airing episode model."""
 
-    airingAt: Optional[int] = None
-    timeUntilAiring: Optional[int] = None
-    episode: Optional[int] = None
+    airingAt: int | None = None
+    timeUntilAiring: int | None = None
+    episode: int | None = None
 
 
 class MediaTag(BaseModel):
@@ -184,13 +184,13 @@ class MediaTag(BaseModel):
 
     id: int
     name: str
-    description: Optional[str] = None
-    category: Optional[str] = None
-    rank: Optional[int] = None
-    isGeneralSpoiler: Optional[bool] = None
-    isMediaSpoiler: Optional[bool] = None
-    isAdult: Optional[bool] = None
-    userId: Optional[int] = None
+    description: str | None = None
+    category: str | None = None
+    rank: int | None = None
+    isGeneralSpoiler: bool | None = None
+    isMediaSpoiler: bool | None = None
+    isAdult: bool | None = None
+    userId: int | None = None
 
 
 class MediaRanking(BaseModel):
@@ -200,207 +200,207 @@ class MediaRanking(BaseModel):
     rank: int
     type: RankingType
     format: MediaFormat
-    year: Optional[int] = None
-    season: Optional[MediaSeason] = None
-    allTime: Optional[bool] = None
+    year: int | None = None
+    season: MediaSeason | None = None
+    allTime: bool | None = None
     context: str
 
 
 class StatusDistribution(BaseModel):
     """Status distribution model."""
 
-    status: Optional[MediaListStatus] = None
-    amount: Optional[int] = None
+    status: MediaListStatus | None = None
+    amount: int | None = None
 
 
 class ScoreDistribution(BaseModel):
     """Score distribution model."""
 
-    score: Optional[int] = None
-    amount: Optional[int] = None
+    score: int | None = None
+    amount: int | None = None
 
 
 class MediaStats(BaseModel):
     """Media statistics model."""
 
-    statusDistribution: Optional[List[StatusDistribution]] = None
-    scoreDistribution: Optional[List[ScoreDistribution]] = None
+    statusDistribution: list[StatusDistribution] | None = None
+    scoreDistribution: list[ScoreDistribution] | None = None
 
 
 class MediaListEntry(BaseModel):
     """Media list entry model."""
 
     id: int
-    status: Optional[MediaListStatus] = None
-    score: Optional[float] = None
-    progress: Optional[int] = None
-    progressVolumes: Optional[int] = None
-    repeat: Optional[int] = None
-    priority: Optional[int] = None
-    private: Optional[bool] = None
-    notes: Optional[str] = None
-    hiddenFromStatusLists: Optional[bool] = None
-    customLists: Optional[Dict[str, Any]] = None
-    advancedScores: Optional[Dict[str, Any]] = None
-    startedAt: Optional[AniListDate] = None
-    completedAt: Optional[AniListDate] = None
-    updatedAt: Optional[int] = None
-    createdAt: Optional[int] = None
+    status: MediaListStatus | None = None
+    score: float | None = None
+    progress: int | None = None
+    progressVolumes: int | None = None
+    repeat: int | None = None
+    priority: int | None = None
+    private: bool | None = None
+    notes: str | None = None
+    hiddenFromStatusLists: bool | None = None
+    customLists: dict[str, Any] | None = None
+    advancedScores: dict[str, Any] | None = None
+    startedAt: AniListDate | None = None
+    completedAt: AniListDate | None = None
+    updatedAt: int | None = None
+    createdAt: int | None = None
 
 
 class StreamingEpisode(BaseModel):
     """Streaming episode model."""
 
-    title: Optional[str] = None
-    thumbnail: Optional[str] = None
-    url: Optional[str] = None
-    site: Optional[str] = None
+    title: str | None = None
+    thumbnail: str | None = None
+    url: str | None = None
+    site: str | None = None
 
 
 class ExternalLink(BaseModel):
     """External link model."""
 
     id: int
-    url: Optional[str] = None
+    url: str | None = None
     site: str
-    siteId: Optional[int] = None
-    type: Optional[ExternalLinkType] = None
-    language: Optional[str] = None
-    color: Optional[str] = None
-    icon: Optional[str] = None
-    notes: Optional[str] = None
-    isDisabled: Optional[bool] = None
+    siteId: int | None = None
+    type: ExternalLinkType | None = None
+    language: str | None = None
+    color: str | None = None
+    icon: str | None = None
+    notes: str | None = None
+    isDisabled: bool | None = None
 
 
 # Character and Staff models
 class CharacterName(BaseModel):
     """Character name model."""
 
-    first: Optional[str] = None
-    middle: Optional[str] = None
-    last: Optional[str] = None
-    full: Optional[str] = None
-    native: Optional[str] = None
-    alternative: Optional[List[str]] = None
-    alternativeSpoiler: Optional[List[str]] = None
-    userPreferred: Optional[str] = None
+    first: str | None = None
+    middle: str | None = None
+    last: str | None = None
+    full: str | None = None
+    native: str | None = None
+    alternative: list[str] | None = None
+    alternativeSpoiler: list[str] | None = None
+    userPreferred: str | None = None
 
 
 class CharacterImage(BaseModel):
     """Character image model."""
 
-    large: Optional[str] = None
-    medium: Optional[str] = None
+    large: str | None = None
+    medium: str | None = None
 
 
 class Character(BaseModel):
     """Character model."""
 
     id: int
-    name: Optional[CharacterName] = None
-    image: Optional[CharacterImage] = None
-    description: Optional[str] = None
-    gender: Optional[str] = None
-    dateOfBirth: Optional[AniListDate] = None
-    age: Optional[str] = None
-    bloodType: Optional[str] = None
-    isFavourite: Optional[bool] = None
-    isFavouriteBlocked: Optional[bool] = None
-    siteUrl: Optional[str] = None
+    name: CharacterName | None = None
+    image: CharacterImage | None = None
+    description: str | None = None
+    gender: str | None = None
+    dateOfBirth: AniListDate | None = None
+    age: str | None = None
+    bloodType: str | None = None
+    isFavourite: bool | None = None
+    isFavouriteBlocked: bool | None = None
+    siteUrl: str | None = None
 
 
 class StaffName(BaseModel):
     """Staff name model."""
 
-    first: Optional[str] = None
-    middle: Optional[str] = None
-    last: Optional[str] = None
-    full: Optional[str] = None
-    native: Optional[str] = None
-    alternative: Optional[List[str]] = None
-    userPreferred: Optional[str] = None
+    first: str | None = None
+    middle: str | None = None
+    last: str | None = None
+    full: str | None = None
+    native: str | None = None
+    alternative: list[str] | None = None
+    userPreferred: str | None = None
 
 
 class StaffImage(BaseModel):
     """Staff image model."""
 
-    large: Optional[str] = None
-    medium: Optional[str] = None
+    large: str | None = None
+    medium: str | None = None
 
 
 class Staff(BaseModel):
     """Staff model."""
 
     id: int
-    name: Optional[StaffName] = None
-    languageV2: Optional[str] = None
-    image: Optional[StaffImage] = None
-    description: Optional[str] = None
-    primaryOccupations: Optional[List[str]] = None
-    gender: Optional[str] = None
-    dateOfBirth: Optional[AniListDate] = None
-    dateOfDeath: Optional[AniListDate] = None
-    age: Optional[int] = None
-    yearsActive: Optional[List[int]] = None
-    homeTown: Optional[str] = None
-    bloodType: Optional[str] = None
-    isFavourite: Optional[bool] = None
-    isFavouriteBlocked: Optional[bool] = None
-    siteUrl: Optional[str] = None
+    name: StaffName | None = None
+    languageV2: str | None = None
+    image: StaffImage | None = None
+    description: str | None = None
+    primaryOccupations: list[str] | None = None
+    gender: str | None = None
+    dateOfBirth: AniListDate | None = None
+    dateOfDeath: AniListDate | None = None
+    age: int | None = None
+    yearsActive: list[int] | None = None
+    homeTown: str | None = None
+    bloodType: str | None = None
+    isFavourite: bool | None = None
+    isFavouriteBlocked: bool | None = None
+    siteUrl: str | None = None
 
 
 class VoiceActor(BaseModel):
     """Voice actor model."""
 
     id: int
-    name: Optional[StaffName] = None
-    language: Optional[str] = None
-    languageV2: Optional[str] = None
-    image: Optional[StaffImage] = None
-    description: Optional[str] = None
-    primaryOccupations: Optional[List[str]] = None
-    gender: Optional[str] = None
-    dateOfBirth: Optional[AniListDate] = None
-    dateOfDeath: Optional[AniListDate] = None
-    age: Optional[int] = None
-    yearsActive: Optional[List[int]] = None
-    homeTown: Optional[str] = None
-    bloodType: Optional[str] = None
-    isFavourite: Optional[bool] = None
-    isFavouriteBlocked: Optional[bool] = None
-    siteUrl: Optional[str] = None
+    name: StaffName | None = None
+    language: str | None = None
+    languageV2: str | None = None
+    image: StaffImage | None = None
+    description: str | None = None
+    primaryOccupations: list[str] | None = None
+    gender: str | None = None
+    dateOfBirth: AniListDate | None = None
+    dateOfDeath: AniListDate | None = None
+    age: int | None = None
+    yearsActive: list[int] | None = None
+    homeTown: str | None = None
+    bloodType: str | None = None
+    isFavourite: bool | None = None
+    isFavouriteBlocked: bool | None = None
+    siteUrl: str | None = None
 
 
 class CharacterEdge(BaseModel):
     """Character edge model."""
 
-    id: Optional[int] = None
-    role: Optional[CharacterRole] = None
-    name: Optional[str] = None
-    voiceActors: Optional[List[VoiceActor]] = None
-    node: Optional[Character] = None
+    id: int | None = None
+    role: CharacterRole | None = None
+    name: str | None = None
+    voiceActors: list[VoiceActor] | None = None
+    node: Character | None = None
 
 
 class StaffEdge(BaseModel):
     """Staff edge model."""
 
-    id: Optional[int] = None
-    role: Optional[str] = None
-    node: Optional[Staff] = None
+    id: int | None = None
+    role: str | None = None
+    node: Staff | None = None
 
 
 class CharacterConnection(BaseModel):
     """Character connection model."""
 
-    edges: Optional[List[CharacterEdge]] = None
-    nodes: Optional[List[Character]] = None
+    edges: list[CharacterEdge] | None = None
+    nodes: list[Character] | None = None
 
 
 class StaffConnection(BaseModel):
     """Staff connection model."""
 
-    edges: Optional[List[StaffEdge]] = None
-    nodes: Optional[List[Staff]] = None
+    edges: list[StaffEdge] | None = None
+    nodes: list[Staff] | None = None
 
 
 # Studio models
@@ -409,32 +409,32 @@ class Studio(BaseModel):
 
     id: int
     name: str
-    isAnimationStudio: Optional[bool] = None
-    siteUrl: Optional[str] = None
-    isFavourite: Optional[bool] = None
+    isAnimationStudio: bool | None = None
+    siteUrl: str | None = None
+    isFavourite: bool | None = None
 
 
 class StudioEdge(BaseModel):
     """Studio edge model."""
 
-    id: Optional[int] = None
+    id: int | None = None
     isMain: bool
-    node: Optional[Studio] = None
+    node: Studio | None = None
 
 
 class StudioConnection(BaseModel):
     """Studio connection model."""
 
-    edges: Optional[List[StudioEdge]] = None
-    nodes: Optional[List[Studio]] = None
+    edges: list[StudioEdge] | None = None
+    nodes: list[Studio] | None = None
 
 
 # User and Review models
 class UserAvatar(BaseModel):
     """User avatar model."""
 
-    large: Optional[str] = None
-    medium: Optional[str] = None
+    large: str | None = None
+    medium: str | None = None
 
 
 class User(BaseModel):
@@ -442,62 +442,62 @@ class User(BaseModel):
 
     id: int
     name: str
-    avatar: Optional[UserAvatar] = None
-    bannerImage: Optional[str] = None
-    about: Optional[str] = None
-    isFollowing: Optional[bool] = None
-    isFollower: Optional[bool] = None
-    isBlocked: Optional[bool] = None
-    bans: Optional[List[Any]] = None
-    options: Optional[Dict[str, Any]] = None
-    mediaListOptions: Optional[Dict[str, Any]] = None
-    favourites: Optional[Dict[str, Any]] = None
-    statistics: Optional[Dict[str, Any]] = None
-    unreadNotificationCount: Optional[int] = None
-    siteUrl: Optional[str] = None
-    donatorTier: Optional[int] = None
-    donatorBadge: Optional[str] = None
-    moderatorRoles: Optional[List[str]] = None
-    createdAt: Optional[int] = None
-    updatedAt: Optional[int] = None
+    avatar: UserAvatar | None = None
+    bannerImage: str | None = None
+    about: str | None = None
+    isFollowing: bool | None = None
+    isFollower: bool | None = None
+    isBlocked: bool | None = None
+    bans: list[Any] | None = None
+    options: dict[str, Any] | None = None
+    mediaListOptions: dict[str, Any] | None = None
+    favourites: dict[str, Any] | None = None
+    statistics: dict[str, Any] | None = None
+    unreadNotificationCount: int | None = None
+    siteUrl: str | None = None
+    donatorTier: int | None = None
+    donatorBadge: str | None = None
+    moderatorRoles: list[str] | None = None
+    createdAt: int | None = None
+    updatedAt: int | None = None
 
 
 class Review(BaseModel):
     """Review model."""
 
     id: int
-    userId: Optional[int] = None
-    mediaId: Optional[int] = None
-    mediaType: Optional[MediaType] = None
-    summary: Optional[str] = None
-    body: Optional[str] = None
-    rating: Optional[int] = None
-    ratingAmount: Optional[int] = None
-    userRating: Optional[int] = None
-    score: Optional[int] = None
-    private: Optional[bool] = None
-    siteUrl: Optional[str] = None
-    createdAt: Optional[int] = None
-    updatedAt: Optional[int] = None
-    user: Optional[User] = None
+    userId: int | None = None
+    mediaId: int | None = None
+    mediaType: MediaType | None = None
+    summary: str | None = None
+    body: str | None = None
+    rating: int | None = None
+    ratingAmount: int | None = None
+    userRating: int | None = None
+    score: int | None = None
+    private: bool | None = None
+    siteUrl: str | None = None
+    createdAt: int | None = None
+    updatedAt: int | None = None
+    user: User | None = None
 
 
 class PageInfo(BaseModel):
     """Page info model."""
 
-    total: Optional[int] = None
-    perPage: Optional[int] = None
-    currentPage: Optional[int] = None
-    lastPage: Optional[int] = None
-    hasNextPage: Optional[bool] = None
+    total: int | None = None
+    perPage: int | None = None
+    currentPage: int | None = None
+    lastPage: int | None = None
+    hasNextPage: bool | None = None
 
 
 class ReviewConnection(BaseModel):
     """Review connection model."""
 
-    edges: Optional[List[Any]] = None
-    nodes: Optional[List[Review]] = None
-    pageInfo: Optional[PageInfo] = None
+    edges: list[Any] | None = None
+    nodes: list[Review] | None = None
+    pageInfo: PageInfo | None = None
 
 
 # Recommendation models
@@ -505,23 +505,23 @@ class MediaRecommendation(BaseModel):
     """Media recommendation model."""
 
     id: int
-    title: Optional[MediaTitle] = None
-    format: Optional[MediaFormat] = None
-    type: Optional[MediaType] = None
-    status: Optional[MediaStatus] = None
-    bannerImage: Optional[str] = None
-    coverImage: Optional[CoverImage] = None
-    siteUrl: Optional[str] = None
+    title: MediaTitle | None = None
+    format: MediaFormat | None = None
+    type: MediaType | None = None
+    status: MediaStatus | None = None
+    bannerImage: str | None = None
+    coverImage: CoverImage | None = None
+    siteUrl: str | None = None
 
 
 class Recommendation(BaseModel):
     """Recommendation model."""
 
     id: int
-    rating: Optional[int] = None
-    userRating: Optional[Union[int, str]] = None
-    mediaRecommendation: Optional[MediaRecommendation] = None
-    user: Optional[User] = None
+    rating: int | None = None
+    userRating: int | str | None = None
+    mediaRecommendation: MediaRecommendation | None = None
+    user: User | None = None
 
     @field_validator("userRating", mode="before")
     @classmethod
@@ -535,35 +535,35 @@ class Recommendation(BaseModel):
 class RecommendationConnection(BaseModel):
     """Recommendation connection model."""
 
-    edges: Optional[List[Any]] = None
-    nodes: Optional[List[Recommendation]] = None
-    pageInfo: Optional[PageInfo] = None
+    edges: list[Any] | None = None
+    nodes: list[Recommendation] | None = None
+    pageInfo: PageInfo | None = None
 
 
 # Media relation models
 class MediaEdge(BaseModel):
     """Media edge model."""
 
-    id: Optional[int] = None
-    relationType: Optional[RelationType] = None
-    isMainStudio: Optional[bool] = None
-    characters: Optional[List[Character]] = None
-    characterRole: Optional[CharacterRole] = None
-    characterName: Optional[str] = None
-    roleNotes: Optional[str] = None
-    dubGroup: Optional[str] = None
-    staffRole: Optional[str] = None
-    voiceActors: Optional[List[VoiceActor]] = None
-    voiceActorRoles: Optional[List[Any]] = None
-    node: Optional[Media] = None
+    id: int | None = None
+    relationType: RelationType | None = None
+    isMainStudio: bool | None = None
+    characters: list[Character] | None = None
+    characterRole: CharacterRole | None = None
+    characterName: str | None = None
+    roleNotes: str | None = None
+    dubGroup: str | None = None
+    staffRole: str | None = None
+    voiceActors: list[VoiceActor] | None = None
+    voiceActorRoles: list[Any] | None = None
+    node: Media | None = None
 
 
 class MediaConnection(BaseModel):
     """Media connection model."""
 
-    edges: Optional[List[MediaEdge]] = None
-    nodes: Optional[List[Media]] = None
-    pageInfo: Optional[PageInfo] = None
+    edges: list[MediaEdge] | None = None
+    nodes: list[Media] | None = None
+    pageInfo: PageInfo | None = None
 
 
 # Forward declare Media for use in other models
@@ -571,110 +571,109 @@ class Media(BaseModel):
     """Main media model."""
 
     id: int
-    idMal: Optional[int] = None
-    title: Optional[MediaTitle] = None
-    type: Optional[MediaType] = None
-    format: Optional[MediaFormat] = None
-    status: Optional[MediaStatus] = None
-    description: Optional[str] = None
-    startDate: Optional[AniListDate] = None
-    endDate: Optional[AniListDate] = None
-    season: Optional[MediaSeason] = None
-    seasonYear: Optional[int] = None
-    seasonInt: Optional[int] = None
-    episodes: Optional[int] = None
-    duration: Optional[int] = None
-    chapters: Optional[int] = None
-    volumes: Optional[int] = None
-    countryOfOrigin: Optional[str] = None
-    isLicensed: Optional[bool] = None
-    source: Optional[MediaSource] = None
-    hashtag: Optional[str] = None
-    trailer: Optional[Trailer] = None
-    updatedAt: Optional[int] = None
-    coverImage: Optional[CoverImage] = None
-    bannerImage: Optional[str] = None
-    genres: Optional[List[str]] = None
-    synonyms: Optional[List[str]] = None
-    averageScore: Optional[int] = None
-    meanScore: Optional[int] = None
-    popularity: Optional[int] = None
-    isLocked: Optional[bool] = None
-    trending: Optional[int] = None
-    favourites: Optional[int] = None
-    tags: Optional[List[MediaTag]] = None
-    relations: Optional[MediaConnection] = None
-    characters: Optional[CharacterConnection] = None
-    characterPreview: Optional[CharacterConnection] = None
-    staff: Optional[StaffConnection] = None
-    staffPreview: Optional[StaffConnection] = None
-    studios: Optional[StudioConnection] = None
-    isFavourite: Optional[bool] = None
-    isFavouriteBlocked: Optional[bool] = None
-    isAdult: Optional[bool] = None
-    nextAiringEpisode: Optional[NextAiringEpisode] = None
-    airingSchedule: Optional[Any] = None
-    trends: Optional[Any] = None
-    externalLinks: Optional[List[ExternalLink]] = None
-    streamingEpisodes: Optional[List[StreamingEpisode]] = None
-    rankings: Optional[List[MediaRanking]] = None
-    mediaListEntry: Optional[MediaListEntry] = None
-    reviews: Optional[ReviewConnection] = None
-    reviewPreview: Optional[ReviewConnection] = None
-    recommendations: Optional[RecommendationConnection] = None
-    stats: Optional[MediaStats] = None
-    siteUrl: Optional[str] = None
-    autoCreateForumThread: Optional[bool] = None
-    isRecommendationBlocked: Optional[bool] = None
-    isReviewBlocked: Optional[bool] = None
-    modNotes: Optional[str] = None
+    idMal: int | None = None
+    title: MediaTitle | None = None
+    type: MediaType | None = None
+    format: MediaFormat | None = None
+    status: MediaStatus | None = None
+    description: str | None = None
+    startDate: AniListDate | None = None
+    endDate: AniListDate | None = None
+    season: MediaSeason | None = None
+    seasonYear: int | None = None
+    seasonInt: int | None = None
+    episodes: int | None = None
+    duration: int | None = None
+    chapters: int | None = None
+    volumes: int | None = None
+    countryOfOrigin: str | None = None
+    isLicensed: bool | None = None
+    source: MediaSource | None = None
+    hashtag: str | None = None
+    trailer: Trailer | None = None
+    updatedAt: int | None = None
+    coverImage: CoverImage | None = None
+    bannerImage: str | None = None
+    genres: list[str] | None = None
+    synonyms: list[str] | None = None
+    averageScore: int | None = None
+    meanScore: int | None = None
+    popularity: int | None = None
+    isLocked: bool | None = None
+    trending: int | None = None
+    favourites: int | None = None
+    tags: list[MediaTag] | None = None
+    relations: MediaConnection | None = None
+    characters: CharacterConnection | None = None
+    characterPreview: CharacterConnection | None = None
+    staff: StaffConnection | None = None
+    staffPreview: StaffConnection | None = None
+    studios: StudioConnection | None = None
+    isFavourite: bool | None = None
+    isFavouriteBlocked: bool | None = None
+    isAdult: bool | None = None
+    nextAiringEpisode: NextAiringEpisode | None = None
+    airingSchedule: Any | None = None
+    trends: Any | None = None
+    externalLinks: list[ExternalLink] | None = None
+    streamingEpisodes: list[StreamingEpisode] | None = None
+    rankings: list[MediaRanking] | None = None
+    mediaListEntry: MediaListEntry | None = None
+    reviews: ReviewConnection | None = None
+    reviewPreview: ReviewConnection | None = None
+    recommendations: RecommendationConnection | None = None
+    stats: MediaStats | None = None
+    siteUrl: str | None = None
+    autoCreateForumThread: bool | None = None
+    isRecommendationBlocked: bool | None = None
+    isReviewBlocked: bool | None = None
+    modNotes: str | None = None
 
 
 # Response models
 class MediaResponse(BaseModel):
     """Response model for single media query."""
 
-    media: Optional[Media] = None
+    media: Media | None = None
 
 
 class PageResponse(BaseModel):
     """Response model for paginated media query."""
 
-    pageInfo: Optional[PageInfo] = None
-    media: Optional[List[Media]] = None
+    pageInfo: PageInfo | None = None
+    media: list[Media] | None = None
 
 
 class MediaPageResponse(BaseModel):
     """Response model for media page query."""
 
-    Page: Optional[PageResponse] = None
+    Page: PageResponse | None = None
 
 
 # Search and query models
 class MediaSearchVariables(BaseModel):
     """Variables for media search query."""
 
-    search: Optional[str] = None
-    type: Optional[MediaType] = None
-    format: Optional[List[MediaFormat]] = None
-    status: Optional[MediaStatus] = None
-    season: Optional[MediaSeason] = None
-    seasonYear: Optional[int] = None
-    year: Optional[str] = None
-    onList: Optional[bool] = None
-    isAdult: Optional[bool] = False
-    genre: Optional[List[str]] = None
-    tag: Optional[List[str]] = None
-    sort: Optional[List[str]] = None
-    page: Optional[int] = 1
-    perPage: Optional[int] = 20
+    search: str | None = None
+    type: MediaType | None = None
+    format: list[MediaFormat] | None = None
+    status: MediaStatus | None = None
+    season: MediaSeason | None = None
+    seasonYear: int | None = None
+    year: str | None = None
+    onList: bool | None = None
+    isAdult: bool | None = False
+    genre: list[str] | None = None
+    tag: list[str] | None = None
+    page: int | None = 1
+    perPage: int | None = 10
 
 
 class MediaByIdVariables(BaseModel):
     """Variables for media by ID query."""
 
     id: int
-    type: Optional[MediaType] = None
+    type: MediaType | None = None
 
 
 # Update forward references

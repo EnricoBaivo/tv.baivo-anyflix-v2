@@ -1,7 +1,6 @@
 """Base64 utilities similar to JavaScript Uint8Array extensions."""
 
 import base64
-from typing import List
 
 
 class Base64Utils:

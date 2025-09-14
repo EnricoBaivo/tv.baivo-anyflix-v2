@@ -1,21 +1,21 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const Auth = () => {
   const [isSignIn, setIsSignIn] = useState(true);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement authentication logic
-    console.log('Form submitted:', formData);
+    console.log("Form submitted:", formData);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,13 +28,13 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
         style={{
           backgroundImage: `url('https://assets.nflxext.com/ffe/siteui/vlv3/9d3533b2-0e2b-40b2-95e0-ecd7979cc88b/a3873901-5b7c-46eb-b9fa-12fea5197bd3/US-en-20240311-popsignuptwoweeks-perspective_alpha_website_small.jpg')`,
         }}
       />
-      
+
       {/* Content */}
       <div className="relative z-10 w-full max-w-md mx-auto p-6">
         <div className="bg-black/75 backdrop-blur-sm rounded-lg p-8">
@@ -45,7 +45,7 @@ const Auth = () => {
 
           {/* Form Title */}
           <h1 className="text-white text-2xl font-bold mb-6">
-            {isSignIn ? 'Sign In' : 'Sign Up'}
+            {isSignIn ? "Sign In" : "Sign Up"}
           </h1>
 
           {/* Form */}
@@ -101,7 +101,7 @@ const Auth = () => {
             )}
 
             <Button type="submit" className="w-full anyflix-button">
-              {isSignIn ? 'Sign In' : 'Sign Up'}
+              {isSignIn ? "Sign In" : "Sign Up"}
             </Button>
           </form>
 
@@ -109,7 +109,7 @@ const Auth = () => {
           <div className="mt-6 text-center text-anyflix-light-gray">
             {isSignIn ? (
               <>
-                New to ANYFLIX?{' '}
+                New to ANYFLIX?{" "}
                 <button
                   onClick={() => setIsSignIn(false)}
                   className="text-white hover:underline"
@@ -119,7 +119,7 @@ const Auth = () => {
               </>
             ) : (
               <>
-                Already have an account?{' '}
+                Already have an account?{" "}
                 <button
                   onClick={() => setIsSignIn(true)}
                   className="text-white hover:underline"
@@ -132,7 +132,8 @@ const Auth = () => {
 
           {/* Additional Info */}
           <div className="mt-4 text-xs text-anyflix-light-gray">
-            This page is protected by Google reCAPTCHA to ensure you're not a bot.
+            This page is protected by Google reCAPTCHA to ensure you're not a
+            bot.
           </div>
         </div>
       </div>

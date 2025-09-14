@@ -5,7 +5,7 @@ from .base import BaseProvider
 from .serienstream import SerienStreamProvider
 
 __all__ = [
-    "BaseProvider",
     "AniWorldProvider",
+    "BaseProvider",
     "SerienStreamProvider",
 ]

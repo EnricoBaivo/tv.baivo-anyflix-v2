@@ -8,7 +8,7 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -68,7 +68,7 @@ class DebugMiddleware(BaseHTTPMiddleware):
         except Exception as e:
             process_time = time.time() - start_time
             self.logger.error(
-                f"🔴 {request.method} {request.url} -> EXCEPTION ({process_time:.3f}s): {str(e)}",
+                f"🔴 {request.method} {request.url} -> EXCEPTION ({process_time:.3f}s): {e!s}",
                 exc_info=True,
             )
             raise

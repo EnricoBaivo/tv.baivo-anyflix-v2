@@ -1,24 +1,20 @@
 """Base provider class similar to JavaScript MProvider."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
 
-from ..models.base import (
+from lib.models.base import (
     MediaInfo,
     MediaSource,
-    SearchResult,
     SourcePreference,
-    VideoSource,
 )
-from ..models.responses import (
-    DetailResponse,
+from lib.models.responses import (
     LatestResponse,
     PopularResponse,
     SearchResponse,
     VideoListResponse,
 )
-from ..utils.client import HTTPClient
-from ..utils.helpers import async_pool, clean_html_string
+from lib.utils.client import HTTPClient
+from lib.utils.helpers import async_pool, clean_html_string
 
 
 class BaseProvider(ABC):
@@ -57,7 +53,6 @@ class BaseProvider(ABC):
         Returns:
             PopularResponse with anime list
         """
-        pass
 
     @abstractmethod
     async def get_latest_updates(self, page: int = 1) -> LatestResponse:
@@ -69,11 +64,10 @@ class BaseProvider(ABC):
         Returns:
             LatestResponse with anime list
         """
-        pass
 
     @abstractmethod
     async def search(
-        self, query: str, page: int = 1, lang: Optional[str] = None
+        self, query: str, page: int = 1, lang: str | None = None
     ) -> SearchResponse:
         """Search for content.
 
@@ -85,23 +79,21 @@ class BaseProvider(ABC):
         Returns:
             SearchResponse with search results
         """
-        pass
 
     @abstractmethod
-    async def get_detail(self, url: str) -> DetailResponse:
+    async def get_detail(self, url: str) -> MediaInfo:
         """Get anime details.
 
         Args:
             url: Anime URL
 
         Returns:
-            DetailResponse with anime details
+            MediaInfo with anime details
         """
-        pass
 
     @abstractmethod
     async def get_video_list(
-        self, url: str, lang_filter: Optional[str] = None
+        self, url: str, lang_filter: str | None = None
     ) -> VideoListResponse:
         """Get video sources for episode.
 
@@ -112,16 +104,14 @@ class BaseProvider(ABC):
         Returns:
             VideoListResponse with video sources
         """
-        pass
 
     @abstractmethod
-    def get_source_preferences(self) -> List[SourcePreference]:
+    def get_source_preferences(self) -> list[SourcePreference]:
         """Get source preferences configuration.
 
         Returns:
             List of source preferences
         """
-        pass
 
     def clean_html_string(self, input_str: str) -> str:
         """Clean HTML string helper.
@@ -134,7 +124,7 @@ class BaseProvider(ABC):
         """
         return clean_html_string(input_str)
 
-    async def async_pool(self, pool_limit: int, array: List, iterator_fn) -> List:
+    async def async_pool(self, pool_limit: int, array: list, iterator_fn) -> list:
         """Async pool helper.
 
         Args:

@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Bell, User, Menu, X } from "lucide-react";
 import SearchModal from "./search/SearchModal";
 import { useWebOSNavigation } from "../hooks/useWebOSFocus";
+import { useSources } from "@/lib/api/hooks";
+import { useQuery } from "@/lib/api/client";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,7 +16,7 @@ const Navbar = () => {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "TV Shows", path: "/tv-shows" },
-    { name: "Movies", path: "/movies" },
+    { name: "Aniworld", path: "/aniworld" },
     { name: "My List", path: "/my-list" },
     { name: "Anime", path: "/anime" },
   ];
@@ -25,7 +27,7 @@ const Navbar = () => {
   const { navigationMode, updateFocusableElements } = useWebOSNavigation({
     containerRef: navRef,
     onNavigate: (direction) => {
-      if (direction === 'down' && !isMenuOpen) {
+      if (direction === "down" && !isMenuOpen) {
         setIsMenuOpen(true);
         return true; // Handled
       }
@@ -60,19 +62,19 @@ const Navbar = () => {
   // Helper function to generate webOS-compatible button classes
   const getWebOSButtonClasses = (baseClasses: string, isActive?: boolean) => {
     const webOSClasses = [
-      'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-      navigationMode === '5way' ? 'focus:ring-offset-4' : 'focus:ring-offset-1',
-      'min-w-[75px] min-h-[50px] flex items-center justify-center',
-      'transition-all duration-200',
-    ].join(' ');
+      "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+      navigationMode === "5way" ? "focus:ring-offset-4" : "focus:ring-offset-1",
+      "min-w-[75px] min-h-[50px] flex items-center justify-center",
+      "transition-all duration-200",
+    ].join(" ");
 
-    const activeClasses = isActive ? 'bg-anyflix-gray/30' : '';
-    
+    const activeClasses = isActive ? "bg-anyflix-gray/30" : "";
+
     return `${baseClasses} ${webOSClasses} ${activeClasses}`.trim();
   };
 
   return (
-    <nav 
+    <nav
       ref={navRef}
       className="fixed top-0 w-full z-50 bg-anyflix-black/95 backdrop-blur-sm transition-all duration-300"
     >
@@ -80,8 +82,8 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className={getWebOSButtonClasses(
                 "text-primary text-2xl font-bold focus:ring-offset-anyflix-black rounded-md px-2 py-1"
               )}
@@ -99,7 +101,9 @@ const Navbar = () => {
                 to={link.path}
                 className={getWebOSButtonClasses(
                   `text-sm font-medium hover:text-anyflix-light-gray focus:ring-offset-anyflix-black rounded-md px-3 py-2 ${
-                    isActive(link.path) ? "text-white" : "text-anyflix-light-gray"
+                    isActive(link.path)
+                      ? "text-white"
+                      : "text-anyflix-light-gray"
                   }`,
                   isActive(link.path)
                 )}
@@ -122,7 +126,7 @@ const Navbar = () => {
             >
               <Search className="h-5 w-5" />
             </button>
-            <button 
+            <button
               className={getWebOSButtonClasses(
                 "text-white hover:text-anyflix-light-gray focus:ring-offset-anyflix-black rounded-md p-3"
               )}

@@ -1,12 +1,11 @@
 """AniList API service for GraphQL queries."""
 
-import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import aiohttp
 from pydantic import ValidationError
 
-from ..models.anilist import (
+from lib.models.anilist import (
     Media,
     MediaByIdVariables,
     MediaPageResponse,
@@ -15,8 +14,8 @@ from ..models.anilist import (
     MediaType,
     PageResponse,
 )
-from ..utils.caching import ServiceCacheConfig, cached
-from ..utils.logging_config import get_logger, timed_operation
+from lib.utils.caching import ServiceCacheConfig, cached
+from lib.utils.logging_config import get_logger, timed_operation
 
 
 class AniListService:
@@ -265,7 +264,7 @@ class AniListService:
 
     # GraphQL query for searching media with pagination
     MEDIA_SEARCH_QUERY = """
-    query ($page: Int = 1, $perPage: Int = 20, $search: String, $type: MediaType, $format: [MediaFormat], $status: MediaStatus, $season: MediaSeason, $seasonYear: Int, $year: String, $onList: Boolean, $isAdult: Boolean = false, $genre: [String], $tag: [String], $sort: [MediaSort] = [POPULARITY_DESC, SCORE_DESC]) {
+    query ($page: Int = 1, $perPage: Int = 20, $search: String, $type: MediaType, $format: [MediaFormat], $status: MediaStatus, $season: MediaSeason, $seasonYear: Int, $year: String, $onList: Boolean, $isAdult: Boolean = false, $genre: [String], $tag: [String] ) {
       Page(page: $page, perPage: $perPage) {
         pageInfo {
           total
@@ -274,7 +273,7 @@ class AniListService:
           hasNextPage
           perPage
         }
-        media(search: $search, type: $type, format_in: $format, status: $status, season: $season, seasonYear: $seasonYear, startDate_like: $year, onList: $onList, isAdult: $isAdult, genre_in: $genre, tag_in: $tag, sort: $sort) {
+        media(search: $search, type: $type, format_in: $format, status: $status, season: $season, seasonYear: $seasonYear, startDate_like: $year, onList: $onList, isAdult: $isAdult, genre_in: $genre, tag_in: $tag) {
           id
           title {
             userPreferred
@@ -398,7 +397,7 @@ class AniListService:
     def __init__(self):
         """Initialize AniList service."""
         self.logger = get_logger(__name__)
-        self.session: Optional[aiohttp.ClientSession] = None
+        self.session: aiohttp.ClientSession | None = None
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -411,8 +410,8 @@ class AniListService:
             await self.session.close()
 
     async def _make_request(
-        self, query: str, variables: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        self, query: str, variables: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Make a GraphQL request to AniList API.
 
         Args:
@@ -455,9 +454,9 @@ class AniListService:
     async def get_media_by_id(
         self,
         media_id: int,
-        media_type: Optional[MediaType] = None,
+        media_type: MediaType | None = None,
         detailed: bool = True,
-    ) -> Optional[Media]:
+    ) -> Media | None:
         """Get media by ID.
 
         Args:
@@ -486,15 +485,16 @@ class AniListService:
                 response_data = {"media": data["Media"]}
                 response = MediaResponse(**response_data)
                 self.logger.info(
-                    f"Retrieved media: {response.media.title.userPreferred if response.media else 'Unknown'}"
+                    "Retrieved media: %s",
+                    response.media.title.userPreferred if response.media else "Unknown",
                 )
                 return response.media
 
-            except ValidationError as e:
-                self.logger.error(f"Failed to parse media response: {e}")
+            except ValidationError:
+                self.logger.exception("Failed to parse media response")
                 raise
-            except Exception as e:
-                self.logger.error(f"Failed to get media by ID {media_id}: {e}")
+            except Exception:
+                self.logger.exception("Failed to get media by ID %s", media_id)
                 raise
 
     @cached(
@@ -502,12 +502,12 @@ class AniListService:
     )
     async def search_media(
         self,
-        search: Optional[str] = None,
-        media_type: Optional[MediaType] = None,
+        search: str | None = None,
+        media_type: MediaType | None = None,
         page: int = 1,
         per_page: int = 20,
-        **kwargs,
-    ) -> Optional[PageResponse]:
+        **kwargs: str | int | bool | list[str] | None,
+    ) -> PageResponse | None:
         """Search for media.
 
         Args:
@@ -540,11 +540,11 @@ class AniListService:
                 )
                 return response.Page
 
-            except ValidationError as e:
-                self.logger.error(f"Failed to parse search response: {e}")
+            except ValidationError:
+                self.logger.exception("Failed to parse search response")
                 raise
-            except Exception as e:
-                self.logger.error(f"Failed to search media: {e}")
+            except Exception:
+                self.logger.exception("Failed to search media")
                 raise
 
     @cached(
@@ -552,7 +552,7 @@ class AniListService:
     )
     async def get_trending_anime(
         self, page: int = 1, per_page: int = 20
-    ) -> Optional[PageResponse]:
+    ) -> PageResponse | None:
         """Get trending anime.
 
         Args:
@@ -574,7 +574,7 @@ class AniListService:
     )
     async def get_popular_anime(
         self, page: int = 1, per_page: int = 20
-    ) -> Optional[PageResponse]:
+    ) -> PageResponse | None:
         """Get popular anime.
 
         Args:
@@ -593,7 +593,7 @@ class AniListService:
 
     async def get_top_rated_anime(
         self, page: int = 1, per_page: int = 20
-    ) -> Optional[PageResponse]:
+    ) -> PageResponse | None:
         """Get top rated anime.
 
         Args:
@@ -612,7 +612,7 @@ class AniListService:
 
     async def get_seasonal_anime(
         self, season: str, year: int, page: int = 1, per_page: int = 20
-    ) -> Optional[PageResponse]:
+    ) -> PageResponse | None:
         """Get seasonal anime.
 
         Args:
@@ -635,7 +635,7 @@ class AniListService:
 
     async def get_upcoming_anime(
         self, page: int = 1, per_page: int = 20
-    ) -> Optional[PageResponse]:
+    ) -> PageResponse | None:
         """Get upcoming anime.
 
         Args:
@@ -658,7 +658,7 @@ class AniListService:
     )
     async def search_anime(
         self, query: str, page: int = 1, per_page: int = 20
-    ) -> Optional[PageResponse]:
+    ) -> PageResponse | None:
         """Search anime by title.
 
         Args:
@@ -675,7 +675,7 @@ class AniListService:
 
     async def search_manga(
         self, query: str, page: int = 1, per_page: int = 20
-    ) -> Optional[PageResponse]:
+    ) -> PageResponse | None:
         """Search manga by title.
 
         Args:
@@ -690,7 +690,7 @@ class AniListService:
             search=query, media_type=MediaType.MANGA, page=page, per_page=per_page
         )
 
-    async def get_media_relations(self, media_id: int) -> Optional[Media]:
+    async def get_media_relations(self, media_id: int) -> Media | None:
         """Get media with its relations.
 
         Args:
@@ -701,7 +701,7 @@ class AniListService:
         """
         return await self.get_media_by_id(media_id, detailed=True)
 
-    async def get_media_characters(self, media_id: int) -> Optional[Media]:
+    async def get_media_characters(self, media_id: int) -> Media | None:
         """Get media with character information.
 
         Args:
@@ -712,7 +712,7 @@ class AniListService:
         """
         return await self.get_media_by_id(media_id, detailed=True)
 
-    async def get_media_staff(self, media_id: int) -> Optional[Media]:
+    async def get_media_staff(self, media_id: int) -> Media | None:
         """Get media with staff information.
 
         Args:

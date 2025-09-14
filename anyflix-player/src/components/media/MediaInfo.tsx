@@ -7,9 +7,31 @@ interface MediaInfoProps {
 }
 
 const MediaInfo = ({ media }: MediaInfoProps) => {
-  // Mock genres - in a real app, you'd get these from the media object or API
-  const genres = ["Fantasy", "Action", "Adventure"];
+  // Use actual genres from media object with fallback
+  const genres = media.genres || [];
   
+  // Determine content type and duration info
+  const getContentInfo = () => {
+    if (media.episodes) {
+      return `${media.episodes} Episodes`;
+    }
+    if (media.dataSource === 'tmdb') {
+      return media.video ? 'Movie' : 'Series';
+    }
+    return 'Series';
+  };
+
+  // Get rating info
+  const getRatingInfo = () => {
+    if (media.averageScore) {
+      return `${media.averageScore}% Score`;
+    }
+    if (media.vote_average > 0) {
+      return `${media.vote_average.toFixed(1)}/10 Rating`;
+    }
+    return null;
+  };
+
   return (
     <div
       key={media.id}
@@ -19,35 +41,59 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
       <div className="absolute -top-4 left-0">
         <MetadataText>
           <div className="flex items-center space-x-4 mb-2">
-            <span>{new Date(media.release_date).getFullYear()}</span>
-            <span>•</span>
-            <span>Staffeln oder Film Länge</span>
-            <span>•</span>
-            <span className="flex items-center">FSK 18</span>
+            {media.release_date && (
+              <>
+                <span>{new Date(media.release_date).getFullYear()}</span>
+                <span>•</span>
+              </>
+            )}
+            <span>{getContentInfo()}</span>
+            {getRatingInfo() && (
+              <>
+                <span>•</span>
+                <span>{getRatingInfo()}</span>
+              </>
+            )}
+            {(media.dataSource === 'anilist' || media.dataSource === 'hybrid') && media.rankings?.highestRated && (
+              <>
+                <span>•</span>
+                <span>#{media.rankings.highestRated} Rated</span>
+              </>
+            )}
+            {media.status && (
+              <>
+                <span>•</span>
+                <span className="capitalize">{media.status.toLowerCase()}</span>
+              </>
+            )}
           </div>
         </MetadataText>
         
-        <MetadataText>
-          <div className="flex items-center space-x-4 mb-6">
-            {genres.map((genre, index) => (
-              <Badge 
-                key={index}
-                variant="secondary"
-                className="px-3 py-2 bg-gray-600 hover:bg-gray-500 text-sm font-medium"
-              >
-                {genre}
-              </Badge>
-            ))}
-          </div>
-        </MetadataText>
+        {genres.length > 0 && (
+          <MetadataText>
+            <div className="flex items-center space-x-4 mb-6 flex-wrap">
+              {genres.slice(0, 5).map((genre, index) => (
+                <Badge 
+                  key={index}
+                  variant="secondary"
+                  className="px-3 py-2 bg-gray-600 hover:bg-gray-500 text-sm font-medium"
+                >
+                  {genre}
+                </Badge>
+              ))}
+            </div>
+          </MetadataText>
+        )}
         
-        <div className="mt-2">
-          <DescriptionText>
-            <span className="line-clamp-3 block">
-              {media.overview}
-            </span>
-          </DescriptionText>
-        </div>
+        {media.overview && (
+          <div className="mt-2">
+            <DescriptionText>
+              <span className="line-clamp-3 block">
+                {media.overview}
+              </span>
+            </DescriptionText>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,11 +1,9 @@
 """Series conversion service for transforming flat episode data into hierarchical structure."""
 
 import logging
-from typing import Optional
 
-from ..models.base import SeriesDetail
-from ..models.responses import DetailResponse
-from ..utils.normalization import normalize_series_detail
+from lib.models.base import MediaInfo, SeriesDetail
+from lib.utils.normalization import normalize_series_detail
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +13,7 @@ class SeriesConverterService:
 
     @staticmethod
     def convert_to_hierarchical(
-        detail_response: DetailResponse, slug: Optional[str] = None
+        detail_response: MediaInfo, slug: str | None = None
     ) -> SeriesDetail:
         """Convert flat DetailResponse to hierarchical SeriesDetail structure.
 
@@ -29,13 +27,8 @@ class SeriesConverterService:
         Raises:
             ValueError: If episode data is invalid or cannot be processed
         """
-        try:
-            # Create flat_data structure expected by normalize_series_detail
-            flat_data = {"episodes": detail_response.media.episodes}
+        # Create flat_data structure expected by normalize_series_detail
+        flat_data = {"episodes": detail_response.episodes}
 
-            # Use the existing normalization utility which has advanced German parsing
-            return normalize_series_detail(flat_data, slug=slug)
-
-        except Exception as e:
-            logger.error(f"Failed to convert series to hierarchical structure: {e}")
-            raise ValueError(f"Series conversion failed: {e}")
+        # Use the existing normalization utility which has advanced German parsing
+        return normalize_series_detail(flat_data, slug=slug)

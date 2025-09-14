@@ -1,15 +1,11 @@
 """Series normalization utilities for transforming flat episodes into hierarchical structure."""
 
 import re
-from typing import Dict, List, Optional
-from urllib.parse import urlparse
 
-from ..models.base import Episode, Movie, MovieKind, Season, SeriesDetail
+from lib.models.base import Episode, Movie, MovieKind, Season, SeriesDetail
 
 
-def normalize_series_detail(
-    flat_data: Dict, slug: Optional[str] = None
-) -> SeriesDetail:
+def normalize_series_detail(flat_data: dict, slug: str | None = None) -> SeriesDetail:
     """Normalize flat episodes data into hierarchical SeriesDetail structure.
 
     Args:
@@ -24,8 +20,8 @@ def normalize_series_detail(
         slug = _extract_slug_from_episodes(episodes_data)
 
     # Parse episodes into hierarchical structure
-    seasons_dict: Dict[int, List[Episode]] = {}
-    movies_list: List[Movie] = []
+    seasons_dict: dict[int, list[Episode]] = {}
+    movies_list: list[Movie] = []
 
     for ep_data in episodes_data:
         name = ep_data.get("name", "")
@@ -62,7 +58,7 @@ def normalize_series_detail(
     return SeriesDetail(slug=slug, seasons=seasons, movies=movies_list)
 
 
-def _extract_slug_from_episodes(episodes_data: List[Dict]) -> str:
+def _extract_slug_from_episodes(episodes_data: list[dict]) -> str:
     """Extract slug from episode URLs."""
     for ep in episodes_data:
         url = ep.get("url", "")
@@ -74,9 +70,7 @@ def _extract_slug_from_episodes(episodes_data: List[Dict]) -> str:
     return "unknown"
 
 
-def _parse_episode_name(
-    name: str, url: str, date_upload: Optional[str]
-) -> Optional[Episode]:
+def _parse_episode_name(name: str, url: str, date_upload: str | None) -> Episode | None:
     """Parse episode name using German format: 'Staffel X Folge Y : Title [Tags]'."""
     # Regex for German episode format
     episode_pattern = (
@@ -119,9 +113,7 @@ def _parse_episode_name(
     )
 
 
-def _parse_movie_name(
-    name: str, url: str, date_upload: Optional[str]
-) -> Optional[Movie]:
+def _parse_movie_name(name: str, url: str, date_upload: str | None) -> Movie | None:
     """Parse movie/film name using German format: 'Film X : Title [Kind]'."""
     # Regex for German film format - handle optional space before bracket
     film_pattern = (

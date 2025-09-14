@@ -125,8 +125,7 @@ const AnimeDemo: React.FC = () => {
     data: seriesData,
     error: seriesError,
     isLoading: seriesLoading,
-  } = useSeriesDetail(selectedSource, selectedAnimeUrl || "/anime/dummy");
-
+  } = useSeriesDetail(selectedSource, selectedAnimeUrl);
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
@@ -268,8 +267,10 @@ const AnimeDemo: React.FC = () => {
                           }}
                         />
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium mb-1 line-clamp-2">{anime.name}</h4>
-                          
+                          <h4 className="font-medium mb-1 line-clamp-2">
+                            {anime.name}
+                          </h4>
+
                           {/* Enhanced metadata display */}
                           <div className="space-y-2">
                             {anime.anilist_data && (
@@ -277,17 +278,24 @@ const AnimeDemo: React.FC = () => {
                                 {anime.anilist_data.averageScore && (
                                   <div className="flex items-center gap-1">
                                     <Star className="h-3 w-3 text-yellow-500" />
-                                    <span className="font-medium">{anime.anilist_data.averageScore}%</span>
+                                    <span className="font-medium">
+                                      {anime.anilist_data.averageScore}%
+                                    </span>
                                   </div>
                                 )}
                                 {anime.anilist_data.episodes && (
                                   <div className="flex items-center gap-1">
                                     <Tv className="h-3 w-3 text-blue-500" />
-                                    <span>{anime.anilist_data.episodes} eps</span>
+                                    <span>
+                                      {anime.anilist_data.episodes} eps
+                                    </span>
                                   </div>
                                 )}
                                 {anime.anilist_data.status && (
-                                  <Badge variant="outline" className="text-xs py-0 px-1 h-4">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs py-0 px-1 h-4"
+                                  >
                                     {anime.anilist_data.status.toLowerCase()}
                                   </Badge>
                                 )}
@@ -299,39 +307,68 @@ const AnimeDemo: React.FC = () => {
                                 {anime.tmdb_data.vote_average && (
                                   <div className="flex items-center gap-1">
                                     <ThumbsUp className="h-3 w-3 text-green-500" />
-                                    <span className="font-medium">{anime.tmdb_data.vote_average.toFixed(1)}</span>
+                                    <span className="font-medium">
+                                      {anime.tmdb_data.vote_average.toFixed(1)}
+                                    </span>
                                   </div>
                                 )}
-                                {'release_date' in anime.tmdb_data && anime.tmdb_data.release_date && (
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="h-3 w-3 text-purple-500" />
-                                    <span>{new Date(anime.tmdb_data.release_date).getFullYear()}</span>
-                                  </div>
-                                )}
-                                {'first_air_date' in anime.tmdb_data && anime.tmdb_data.first_air_date && (
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="h-3 w-3 text-purple-500" />
-                                    <span>{new Date(anime.tmdb_data.first_air_date).getFullYear()}</span>
-                                  </div>
-                                )}
+                                {"release_date" in anime.tmdb_data &&
+                                  anime.tmdb_data.release_date && (
+                                    <div className="flex items-center gap-1">
+                                      <Calendar className="h-3 w-3 text-purple-500" />
+                                      <span>
+                                        {new Date(
+                                          anime.tmdb_data.release_date
+                                        ).getFullYear()}
+                                      </span>
+                                    </div>
+                                  )}
+                                {"first_air_date" in anime.tmdb_data &&
+                                  anime.tmdb_data.first_air_date && (
+                                    <div className="flex items-center gap-1">
+                                      <Calendar className="h-3 w-3 text-purple-500" />
+                                      <span>
+                                        {new Date(
+                                          anime.tmdb_data.first_air_date
+                                        ).getFullYear()}
+                                      </span>
+                                    </div>
+                                  )}
                               </div>
                             )}
 
                             {/* Description preview */}
-                            {(anime.anilist_data?.description || anime.tmdb_data?.overview) && (
+                            {(anime.anilist_data?.description ||
+                              anime.tmdb_data?.overview) && (
                               <p className="text-xs text-muted-foreground line-clamp-2">
-                                {anime.anilist_data?.description?.replace(/<[^>]*>/g, '') || anime.tmdb_data?.overview}
+                                {anime.anilist_data?.description?.replace(
+                                  /<[^>]*>/g,
+                                  ""
+                                ) || anime.tmdb_data?.overview}
                               </p>
                             )}
 
                             {/* Genres */}
-                            {(anime.anilist_data?.genres || anime.tmdb_data?.genres) && (
+                            {(anime.anilist_data?.genres ||
+                              anime.tmdb_data?.genres) && (
                               <div className="flex flex-wrap gap-1">
-                                {(anime.anilist_data?.genres || anime.tmdb_data?.genres?.map(g => 'name' in g ? g.name : g) || [])
+                                {(
+                                  anime.anilist_data?.genres ||
+                                  anime.tmdb_data?.genres?.map((g) =>
+                                    "name" in g ? g.name : g
+                                  ) ||
+                                  []
+                                )
                                   .slice(0, 3)
                                   .map((genre, i) => (
-                                    <Badge key={i} variant="secondary" className="text-xs py-0 px-1 h-4">
-                                      {typeof genre === 'string' ? genre : genre}
+                                    <Badge
+                                      key={i}
+                                      variant="secondary"
+                                      className="text-xs py-0 px-1 h-4"
+                                    >
+                                      {typeof genre === "string"
+                                        ? genre
+                                        : genre}
                                     </Badge>
                                   ))}
                               </div>
@@ -340,7 +377,10 @@ const AnimeDemo: React.FC = () => {
                             {anime.match_confidence && (
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Zap className="h-3 w-3" />
-                                <span>Match: {(anime.match_confidence * 100).toFixed(0)}%</span>
+                                <span>
+                                  Match:{" "}
+                                  {(anime.match_confidence * 100).toFixed(0)}%
+                                </span>
                               </div>
                             )}
                           </div>
@@ -408,69 +448,106 @@ const AnimeDemo: React.FC = () => {
                             <h5 className="font-medium text-sm mb-1 line-clamp-2">
                               {anime.name}
                             </h5>
-                            
+
                             {/* Enhanced metadata display */}
                             <div className="space-y-1">
                               {anime.anilist_data && (
                                 <div className="flex items-center gap-2 text-xs">
                                   {anime.anilist_data.averageScore && (
-                            <div className="flex items-center gap-1">
-                              <Star className="h-3 w-3 text-yellow-500" />
-                                      <span className="font-medium">{anime.anilist_data.averageScore}%</span>
-                            </div>
+                                    <div className="flex items-center gap-1">
+                                      <Star className="h-3 w-3 text-yellow-500" />
+                                      <span className="font-medium">
+                                        {anime.anilist_data.averageScore}%
+                                      </span>
+                                    </div>
                                   )}
                                   {anime.anilist_data.episodes && (
                                     <div className="flex items-center gap-1">
                                       <Tv className="h-3 w-3 text-blue-500" />
-                                      <span>{anime.anilist_data.episodes} eps</span>
-                          </div>
+                                      <span>
+                                        {anime.anilist_data.episodes} eps
+                                      </span>
+                                    </div>
                                   )}
                                   {anime.anilist_data.status && (
-                                    <Badge variant="outline" className="text-xs py-0 px-1 h-4">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs py-0 px-1 h-4"
+                                    >
                                       {anime.anilist_data.status.toLowerCase()}
                                     </Badge>
                                   )}
                                 </div>
                               )}
-                              
+
                               {anime.tmdb_data && (
                                 <div className="flex items-center gap-2 text-xs">
                                   {anime.tmdb_data?.vote_average && (
                                     <div className="flex items-center gap-1">
                                       <ThumbsUp className="h-3 w-3 text-green-500" />
-                                      <span className="font-medium">{anime.tmdb_data.vote_average.toFixed(1)}</span>
+                                      <span className="font-medium">
+                                        {anime.tmdb_data.vote_average.toFixed(
+                                          1
+                                        )}
+                                      </span>
                                     </div>
                                   )}
-                                  {'release_date' in anime.tmdb_data && anime.tmdb_data?.release_date && (
-                                    <div className="flex items-center gap-1">
-                                      <Calendar className="h-3 w-3 text-purple-500" />
-                                      <span>{new Date(anime.tmdb_data.release_date).getFullYear()}</span>
-                                    </div>
-                                  )}
-                                  {'first_air_date' in anime.tmdb_data && anime.tmdb_data?.first_air_date && (
-                                    <div className="flex items-center gap-1">
-                                      <Calendar className="h-3 w-3 text-purple-500" />
-                                      <span>{new Date(anime.tmdb_data.first_air_date).getFullYear()}</span>
-                                    </div>
-                                  )}
+                                  {"release_date" in anime.tmdb_data &&
+                                    anime.tmdb_data?.release_date && (
+                                      <div className="flex items-center gap-1">
+                                        <Calendar className="h-3 w-3 text-purple-500" />
+                                        <span>
+                                          {new Date(
+                                            anime.tmdb_data.release_date
+                                          ).getFullYear()}
+                                        </span>
+                                      </div>
+                                    )}
+                                  {"first_air_date" in anime.tmdb_data &&
+                                    anime.tmdb_data?.first_air_date && (
+                                      <div className="flex items-center gap-1">
+                                        <Calendar className="h-3 w-3 text-purple-500" />
+                                        <span>
+                                          {new Date(
+                                            anime.tmdb_data.first_air_date
+                                          ).getFullYear()}
+                                        </span>
+                                      </div>
+                                    )}
                                 </div>
                               )}
 
                               {anime.match_confidence && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Zap className="h-3 w-3" />
-                                  <span>Match: {(anime.match_confidence * 100).toFixed(0)}%</span>
+                                  <span>
+                                    Match:{" "}
+                                    {(anime.match_confidence * 100).toFixed(0)}%
+                                  </span>
                                 </div>
                               )}
 
                               {/* Genres */}
-                              {(anime.anilist_data?.genres || anime.tmdb_data?.genres) && (
+                              {(anime.anilist_data?.genres ||
+                                anime.tmdb_data?.genres) && (
                                 <div className="flex flex-wrap gap-1 mt-1">
-                                  {(anime.anilist_data?.genres || anime.tmdb_data?.genres?.map(g => 'name' in g ? g.name : g) || [])
+                                  {(
+                                    anime.anilist_data?.genres ||
+                                    anime.tmdb_data?.genres?.map((g) =>
+                                      "name" in g ? g.name : g
+                                    ) ||
+                                    []
+                                  )
                                     .slice(0, 2)
                                     .map((genre, i) => (
-                                      <Badge key={i} variant="secondary" className="text-xs py-0 px-1 h-4">
-                                        {typeof genre === 'string' ? genre : genre}
+                                      <Badge
+                                        key={i}
+                                        variant="secondary"
+                                        className="text-xs py-0 px-1 h-4"
+                                      >
+                                        {typeof genre === "string"
+                                          ? genre
+                                          : genre}
                                       </Badge>
                                     ))}
                                 </div>
@@ -535,69 +612,106 @@ const AnimeDemo: React.FC = () => {
                             <h5 className="font-medium text-sm mb-1 line-clamp-2">
                               {anime.name}
                             </h5>
-                            
+
                             {/* Enhanced metadata display */}
                             <div className="space-y-1">
                               {anime.anilist_data && (
                                 <div className="flex items-center gap-2 text-xs">
                                   {anime.anilist_data.averageScore && (
-                            <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1">
                                       <Star className="h-3 w-3 text-yellow-500" />
-                                      <span className="font-medium">{anime.anilist_data.averageScore}%</span>
-                            </div>
+                                      <span className="font-medium">
+                                        {anime.anilist_data.averageScore}%
+                                      </span>
+                                    </div>
                                   )}
                                   {anime.anilist_data.episodes && (
                                     <div className="flex items-center gap-1">
                                       <Tv className="h-3 w-3 text-blue-500" />
-                                      <span>{anime.anilist_data.episodes} eps</span>
-                          </div>
+                                      <span>
+                                        {anime.anilist_data.episodes} eps
+                                      </span>
+                                    </div>
                                   )}
                                   {anime.anilist_data.status && (
-                                    <Badge variant="outline" className="text-xs py-0 px-1 h-4">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs py-0 px-1 h-4"
+                                    >
                                       {anime.anilist_data.status.toLowerCase()}
                                     </Badge>
                                   )}
                                 </div>
                               )}
-                              
+
                               {anime.tmdb_data && (
                                 <div className="flex items-center gap-2 text-xs">
                                   {anime.tmdb_data?.vote_average && (
                                     <div className="flex items-center gap-1">
                                       <ThumbsUp className="h-3 w-3 text-green-500" />
-                                      <span className="font-medium">{anime.tmdb_data.vote_average.toFixed(1)}</span>
+                                      <span className="font-medium">
+                                        {anime.tmdb_data.vote_average.toFixed(
+                                          1
+                                        )}
+                                      </span>
                                     </div>
                                   )}
-                                  {'release_date' in anime.tmdb_data && anime.tmdb_data?.release_date && (
-                                    <div className="flex items-center gap-1">
-                                      <Calendar className="h-3 w-3 text-purple-500" />
-                                      <span>{new Date(anime.tmdb_data.release_date).getFullYear()}</span>
-                                    </div>
-                                  )}
-                                  {'first_air_date' in anime.tmdb_data && anime.tmdb_data?.first_air_date && (
-                                    <div className="flex items-center gap-1">
-                                      <Calendar className="h-3 w-3 text-purple-500" />
-                                      <span>{new Date(anime.tmdb_data.first_air_date).getFullYear()}</span>
-                                    </div>
-                                  )}
+                                  {"release_date" in anime.tmdb_data &&
+                                    anime.tmdb_data?.release_date && (
+                                      <div className="flex items-center gap-1">
+                                        <Calendar className="h-3 w-3 text-purple-500" />
+                                        <span>
+                                          {new Date(
+                                            anime.tmdb_data.release_date
+                                          ).getFullYear()}
+                                        </span>
+                                      </div>
+                                    )}
+                                  {"first_air_date" in anime.tmdb_data &&
+                                    anime.tmdb_data?.first_air_date && (
+                                      <div className="flex items-center gap-1">
+                                        <Calendar className="h-3 w-3 text-purple-500" />
+                                        <span>
+                                          {new Date(
+                                            anime.tmdb_data.first_air_date
+                                          ).getFullYear()}
+                                        </span>
+                                      </div>
+                                    )}
                                 </div>
                               )}
 
                               {anime.match_confidence && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Zap className="h-3 w-3" />
-                                  <span>Match: {(anime.match_confidence * 100).toFixed(0)}%</span>
+                                  <span>
+                                    Match:{" "}
+                                    {(anime.match_confidence * 100).toFixed(0)}%
+                                  </span>
                                 </div>
                               )}
 
                               {/* Genres */}
-                              {(anime.anilist_data?.genres || anime.tmdb_data?.genres) && (
+                              {(anime.anilist_data?.genres ||
+                                anime.tmdb_data?.genres) && (
                                 <div className="flex flex-wrap gap-1 mt-1">
-                                  {(anime.anilist_data?.genres || anime.tmdb_data?.genres?.map(g => 'name' in g ? g.name : g) || [])
+                                  {(
+                                    anime.anilist_data?.genres ||
+                                    anime.tmdb_data?.genres?.map((g) =>
+                                      "name" in g ? g.name : g
+                                    ) ||
+                                    []
+                                  )
                                     .slice(0, 2)
                                     .map((genre, i) => (
-                                      <Badge key={i} variant="secondary" className="text-xs py-0 px-1 h-4">
-                                        {typeof genre === 'string' ? genre : genre}
+                                      <Badge
+                                        key={i}
+                                        variant="secondary"
+                                        className="text-xs py-0 px-1 h-4"
+                                      >
+                                        {typeof genre === "string"
+                                          ? genre
+                                          : genre}
                                       </Badge>
                                     ))}
                                 </div>
@@ -623,19 +737,19 @@ const AnimeDemo: React.FC = () => {
           {shouldFetchSeries && (
             <div className="space-y-6">
               {/* Main Series Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
                     <Info className="h-5 w-5" />
                     Detailed Series Information
-                </CardTitle>
-                <CardDescription>
+                  </CardTitle>
+                  <CardDescription>
                     Comprehensive metadata from multiple sources
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {seriesLoading ? (
-                  <div className="space-y-4">
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {seriesLoading ? (
+                    <div className="space-y-4">
                       <div className="flex gap-4">
                         <Skeleton className="w-32 h-48" />
                         <div className="flex-1 space-y-2">
@@ -643,18 +757,18 @@ const AnimeDemo: React.FC = () => {
                           <Skeleton className="h-4 w-full" />
                           <Skeleton className="h-4 w-full" />
                           <Skeleton className="h-4 w-2/3" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : seriesError ? (
-                  <Alert variant="destructive">
-                    <XCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Failed to load series details:{" "}
-                      {seriesError?.detail?.[0]?.msg || "Unknown error"}
-                    </AlertDescription>
-                  </Alert>
-                ) : seriesData ? (
+                  ) : seriesError ? (
+                    <Alert variant="destructive">
+                      <XCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Failed to load series details:{" "}
+                        {seriesError?.detail?.[0]?.msg || "Unknown error"}
+                      </AlertDescription>
+                    </Alert>
+                  ) : seriesData ? (
                     <div className="space-y-6">
                       {/* Header with cover and basic info */}
                       <div className="flex gap-6">
@@ -682,11 +796,17 @@ const AnimeDemo: React.FC = () => {
                               {seriesData.anilist_data?.title?.userPreferred ||
                                 seriesData.anilist_data?.title?.english ||
                                 seriesData.anilist_data?.title?.romaji ||
-                                (seriesData.tmdb_data && 'title' in seriesData.tmdb_data ? seriesData.tmdb_data.title : null) ||
-                                (seriesData.tmdb_data && 'name' in seriesData.tmdb_data ? seriesData.tmdb_data.name : null) ||
+                                (seriesData.tmdb_data &&
+                                "title" in seriesData.tmdb_data
+                                  ? seriesData.tmdb_data.title
+                                  : null) ||
+                                (seriesData.tmdb_data &&
+                                "name" in seriesData.tmdb_data
+                                  ? seriesData.tmdb_data.name
+                                  : null) ||
                                 seriesData.series.slug}
-                      </h3>
-                    </div>
+                            </h3>
+                          </div>
 
                           {/* Key Statistics */}
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -695,7 +815,9 @@ const AnimeDemo: React.FC = () => {
                               <div className="text-center p-3 bg-yellow-50 rounded-lg">
                                 <div className="flex items-center justify-center gap-1 mb-1">
                                   <Star className="h-4 w-4 text-yellow-500" />
-                                  <span className="text-xs font-medium">AniList</span>
+                                  <span className="text-xs font-medium">
+                                    AniList
+                                  </span>
                                 </div>
                                 <div className="text-lg font-bold text-yellow-700">
                                   {seriesData.anilist_data.averageScore}%
@@ -708,10 +830,14 @@ const AnimeDemo: React.FC = () => {
                               <div className="text-center p-3 bg-green-50 rounded-lg">
                                 <div className="flex items-center justify-center gap-1 mb-1">
                                   <ThumbsUp className="h-4 w-4 text-green-500" />
-                                  <span className="text-xs font-medium">TMDB</span>
+                                  <span className="text-xs font-medium">
+                                    TMDB
+                                  </span>
                                 </div>
                                 <div className="text-lg font-bold text-green-700">
-                                  {seriesData.tmdb_data?.vote_average?.toFixed(1)}
+                                  {seriesData.tmdb_data?.vote_average?.toFixed(
+                                    1
+                                  )}
                                 </div>
                               </div>
                             )}
@@ -721,7 +847,9 @@ const AnimeDemo: React.FC = () => {
                               <div className="text-center p-3 bg-blue-50 rounded-lg">
                                 <div className="flex items-center justify-center gap-1 mb-1">
                                   <Tv className="h-4 w-4 text-blue-500" />
-                                  <span className="text-xs font-medium">Episodes</span>
+                                  <span className="text-xs font-medium">
+                                    Episodes
+                                  </span>
                                 </div>
                                 <div className="text-lg font-bold text-blue-700">
                                   {seriesData.anilist_data.episodes}
@@ -734,7 +862,9 @@ const AnimeDemo: React.FC = () => {
                               <div className="text-center p-3 bg-purple-50 rounded-lg">
                                 <div className="flex items-center justify-center gap-1 mb-1">
                                   <Heart className="h-4 w-4 text-purple-500" />
-                                  <span className="text-xs font-medium">Popular</span>
+                                  <span className="text-xs font-medium">
+                                    Popular
+                                  </span>
                                 </div>
                                 <div className="text-lg font-bold text-purple-700">
                                   {seriesData.anilist_data.popularity.toLocaleString()}
@@ -745,23 +875,36 @@ const AnimeDemo: React.FC = () => {
 
                           {/* Status and Format */}
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline" className="flex items-center gap-1">
+                            <Badge
+                              variant="outline"
+                              className="flex items-center gap-1"
+                            >
                               <Monitor className="h-3 w-3" />
                               {selectedSource}
                             </Badge>
                             {seriesData.anilist_data?.status && (
-                              <Badge 
-                                variant={seriesData.anilist_data.status === 'RELEASING' ? 'default' : 'secondary'}
+                              <Badge
+                                variant={
+                                  seriesData.anilist_data.status === "RELEASING"
+                                    ? "default"
+                                    : "secondary"
+                                }
                                 className="flex items-center gap-1"
                               >
                                 <Clock4 className="h-3 w-3" />
-                                {seriesData.anilist_data.status.toLowerCase().replace('_', ' ')}
+                                {seriesData.anilist_data.status
+                                  .toLowerCase()
+                                  .replace("_", " ")}
                               </Badge>
                             )}
                             {seriesData.match_confidence && (
-                              <Badge variant="outline" className="flex items-center gap-1">
+                              <Badge
+                                variant="outline"
+                                className="flex items-center gap-1"
+                              >
                                 <Zap className="h-3 w-3" />
-                                {(seriesData.match_confidence * 100).toFixed(0)}% match
+                                {(seriesData.match_confidence * 100).toFixed(0)}
+                                % match
                               </Badge>
                             )}
                           </div>
@@ -769,80 +912,104 @@ const AnimeDemo: React.FC = () => {
                       </div>
 
                       {/* Description */}
-                      {(seriesData.anilist_data?.description || seriesData.tmdb_data?.overview) && (
+                      {(seriesData.anilist_data?.description ||
+                        seriesData.tmdb_data?.overview) && (
                         <div>
                           <h4 className="font-semibold mb-2 flex items-center gap-2">
                             <Info className="h-4 w-4" />
                             Synopsis
                           </h4>
                           <p className="text-sm text-muted-foreground leading-relaxed">
-                            {seriesData.anilist_data?.description?.replace(/<[^>]*>/g, '') || seriesData.tmdb_data?.overview}
+                            {seriesData.anilist_data?.description?.replace(
+                              /<[^>]*>/g,
+                              ""
+                            ) || seriesData.tmdb_data?.overview}
                           </p>
                         </div>
                       )}
 
                       {/* Genres */}
-                      {(seriesData.anilist_data?.genres || seriesData.tmdb_data?.genres) && (
+                      {(seriesData.anilist_data?.genres ||
+                        seriesData.tmdb_data?.genres) && (
                         <div>
                           <h4 className="font-semibold mb-2 flex items-center gap-2">
                             <Tag className="h-4 w-4" />
                             Genres
                           </h4>
                           <div className="flex flex-wrap gap-1">
-                            {(seriesData.anilist_data?.genres || seriesData.tmdb_data?.genres?.map(g => 'name' in g ? g.name : g) || [])
-                              .map((genre, i) => (
-                                <Badge key={i} variant="secondary">
-                                  {typeof genre === 'string' ? genre : genre}
-                                </Badge>
-                              ))}
+                            {(
+                              seriesData.anilist_data?.genres ||
+                              seriesData.tmdb_data?.genres?.map((g) =>
+                                "name" in g ? g.name : g
+                              ) ||
+                              []
+                            ).map((genre, i) => (
+                              <Badge key={i} variant="secondary">
+                                {typeof genre === "string" ? genre : genre}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
                       )}
                     </div>
                   ) : null}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Series Structure */}
-            {seriesData && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Tv className="h-5 w-5" />
-                    Series Structure
-                  </CardTitle>
-                  <CardDescription>
-                    Hierarchical organization of seasons, episodes, and movies
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
+              {/* Series Structure */}
+              {seriesData && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Tv className="h-5 w-5" />
+                      Series Structure
+                    </CardTitle>
+                    <CardDescription>
+                      Hierarchical organization of seasons, episodes, and movies
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-6">
                       {/* Seasons */}
                       <div>
-                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        <h4 className="font-medium mb-3 flex items-center gap-2">
                           <Tv className="h-4 w-4" />
                           Seasons ({seriesData.series.seasons.length})
                         </h4>
-                      <ScrollArea className="h-64">
-                        <div className="space-y-2">
+                        <ScrollArea className="h-64">
+                          <div className="space-y-2">
                             {seriesData.series.seasons.map((season) => (
                               <div
                                 key={season.season}
-                              className="p-3 border rounded-lg hover:bg-accent transition-colors"
+                                className="p-3 border rounded-lg hover:bg-accent transition-colors"
                               >
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="font-medium">
-                                  {season.title || `Season ${season.season}`}
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="font-medium">
+                                    {season.title || `Season ${season.season}`}
+                                  </div>
+                                  <Badge variant="secondary">
+                                    {season.episodes.length} eps
+                                  </Badge>
                                 </div>
-                                <Badge variant="secondary">
-                                  {season.episodes.length} eps
-                                </Badge>
-                              </div>
-                              <div className="text-xs text-muted-foreground space-y-1">
-                                <div>Episodes: {season.episodes.map(ep => `${ep.episode}`).join(', ')}</div>
-                                {season.episodes.some(ep => ep.date_upload) && (
-                                  <div>Latest: {season.episodes.find(ep => ep.date_upload)?.date_upload}</div>
-                                )}
+                                <div className="text-xs text-muted-foreground space-y-1">
+                                  <div>
+                                    Episodes:{" "}
+                                    {season.episodes
+                                      .map((ep) => `${ep.episode}`)
+                                      .join(", ")}
+                                  </div>
+                                  {season.episodes.some(
+                                    (ep) => ep.date_upload
+                                  ) && (
+                                    <div>
+                                      Latest:{" "}
+                                      {
+                                        season.episodes.find(
+                                          (ep) => ep.date_upload
+                                        )?.date_upload
+                                      }
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             ))}
@@ -850,44 +1017,53 @@ const AnimeDemo: React.FC = () => {
                         </ScrollArea>
                       </div>
 
-                    {/* Movies/OVAs/Specials */}
+                      {/* Movies/OVAs/Specials */}
                       <div>
-                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        <h4 className="font-medium mb-3 flex items-center gap-2">
                           <Film className="h-4 w-4" />
-                        Movies/OVAs/Specials ({seriesData.series.movies.length})
+                          Movies/OVAs/Specials (
+                          {seriesData.series.movies.length})
                         </h4>
-                      <ScrollArea className="h-64">
-                        <div className="space-y-2">
+                        <ScrollArea className="h-64">
+                          <div className="space-y-2">
                             {seriesData.series.movies.map((movie) => (
                               <div
                                 key={movie.number}
-                              className="p-3 border rounded-lg hover:bg-accent transition-colors"
-                            >
-                              <div className="flex items-start justify-between mb-2">
-                                <div className="font-medium line-clamp-2 flex-1">
-                                  {movie.title}
-                                </div>
-                                <Badge 
-                                  variant={movie.kind === 'movie' ? 'default' : 'secondary'}
-                                  className="ml-2 capitalize"
-                                >
-                                  {movie.kind}
-                                </Badge>
-                              </div>
-                              <div className="text-xs text-muted-foreground space-y-1">
-                                <div>Number: {movie.number}</div>
-                                {movie.date_upload && (
-                                  <div>Uploaded: {movie.date_upload}</div>
-                                )}
-                                {movie.tags.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {movie.tags.slice(0, 3).map((tag, i) => (
-                                      <Badge key={i} variant="outline" className="text-xs py-0 px-1 h-4">
-                                        {tag}
-                                      </Badge>
-                                    ))}
+                                className="p-3 border rounded-lg hover:bg-accent transition-colors"
+                              >
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="font-medium line-clamp-2 flex-1">
+                                    {movie.title}
                                   </div>
-                                )}
+                                  <Badge
+                                    variant={
+                                      movie.kind === "movie"
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                    className="ml-2 capitalize"
+                                  >
+                                    {movie.kind}
+                                  </Badge>
+                                </div>
+                                <div className="text-xs text-muted-foreground space-y-1">
+                                  <div>Number: {movie.number}</div>
+                                  {movie.date_upload && (
+                                    <div>Uploaded: {movie.date_upload}</div>
+                                  )}
+                                  {movie.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {movie.tags.slice(0, 3).map((tag, i) => (
+                                        <Badge
+                                          key={i}
+                                          variant="outline"
+                                          className="text-xs py-0 px-1 h-4"
+                                        >
+                                          {tag}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             ))}
@@ -895,9 +1071,9 @@ const AnimeDemo: React.FC = () => {
                         </ScrollArea>
                       </div>
                     </div>
-              </CardContent>
-            </Card>
-            )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
 
@@ -940,69 +1116,112 @@ const AnimeDemo: React.FC = () => {
                         Configuration loaded for {selectedSource}
                       </span>
                     </div>
-                    
+
                     {/* Display preferences in a more readable format */}
                     <div className="grid gap-4">
-                      {Object.entries(preferences.preferences || {}).map(([key, pref]) => {
-                        const prefData = pref as Record<string, unknown>; // Type assertion for preferences data
-                        return (
-                          <div key={key} className="p-4 border rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="outline">{key}</Badge>
+                      {Object.entries(preferences.preferences || {}).map(
+                        ([key, pref]) => {
+                          const prefData = pref as Record<string, unknown>; // Type assertion for preferences data
+                          return (
+                            <div key={key} className="p-4 border rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="outline">{key}</Badge>
+                              </div>
+
+                              {/* List preference */}
+                              {prefData?.list_preference && (
+                                <div className="space-y-2">
+                                  <h5 className="text-sm font-medium">
+                                    List Options:
+                                  </h5>
+                                  <div className="flex flex-wrap gap-1">
+                                    {(
+                                      ((
+                                        prefData.list_preference as Record<
+                                          string,
+                                          unknown
+                                        >
+                                      )?.entries as string[]) || []
+                                    ).map((entry: string, i: number) => (
+                                      <Badge
+                                        key={i}
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
+                                        {entry}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                  {(
+                                    prefData.list_preference as Record<
+                                      string,
+                                      unknown
+                                    >
+                                  )?.entry_values && (
+                                    <p className="text-xs text-muted-foreground">
+                                      Default:{" "}
+                                      {
+                                        (
+                                          (
+                                            prefData.list_preference as Record<
+                                              string,
+                                              unknown
+                                            >
+                                          ).entry_values as string[]
+                                        )[0]
+                                      }
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Multi-select preference */}
+                              {prefData?.multi_select_list_preference && (
+                                <div className="space-y-2">
+                                  <h5 className="text-sm font-medium">
+                                    Multi-select Options:
+                                  </h5>
+                                  <div className="flex flex-wrap gap-1">
+                                    {(
+                                      ((
+                                        prefData.multi_select_list_preference as Record<
+                                          string,
+                                          unknown
+                                        >
+                                      )?.entries as string[]) || []
+                                    ).map((entry: string, i: number) => (
+                                      <Badge
+                                        key={i}
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        {entry}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                            
-                            {/* List preference */}
-                            {prefData?.list_preference && (
-                              <div className="space-y-2">
-                                <h5 className="text-sm font-medium">List Options:</h5>
-                                <div className="flex flex-wrap gap-1">
-                                  {((prefData.list_preference as Record<string, unknown>)?.entries as string[] || []).map((entry: string, i: number) => (
-                                    <Badge key={i} variant="secondary" className="text-xs">
-                                      {entry}
-                                    </Badge>
-                                  ))}
-                                </div>
-                                {(prefData.list_preference as Record<string, unknown>)?.entry_values && (
-                                  <p className="text-xs text-muted-foreground">
-                                    Default: {((prefData.list_preference as Record<string, unknown>).entry_values as string[])[0]}
-                                  </p>
-                                )}
-                              </div>
-                            )}
-                            
-                            {/* Multi-select preference */}
-                            {prefData?.multi_select_list_preference && (
-                              <div className="space-y-2">
-                                <h5 className="text-sm font-medium">Multi-select Options:</h5>
-                                <div className="flex flex-wrap gap-1">
-                                  {((prefData.multi_select_list_preference as Record<string, unknown>)?.entries as string[] || []).map((entry: string, i: number) => (
-                                    <Badge key={i} variant="outline" className="text-xs">
-                                      {entry}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                          );
+                        }
+                      )}
                     </div>
-                    
+
                     {/* Raw JSON for debugging */}
                     <details className="mt-4">
                       <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
                         Show raw configuration
                       </summary>
                       <pre className="text-xs bg-muted p-3 rounded mt-2 overflow-auto max-h-40">
-                      {JSON.stringify(preferences, null, 2)}
-                    </pre>
+                        {JSON.stringify(preferences, null, 2)}
+                      </pre>
                     </details>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Info className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                    No preferences available for {selectedSource}
+                      No preferences available for {selectedSource}
                     </span>
                   </div>
                 )}
@@ -1036,9 +1255,15 @@ const AnimeDemo: React.FC = () => {
                 Extract streaming URLs from multiple hosts with quality options
               </p>
               <div className="flex flex-wrap gap-1">
-                <Badge variant="outline" className="text-xs">Multiple Hosts</Badge>
-                <Badge variant="outline" className="text-xs">Quality Selection</Badge>
-                <Badge variant="outline" className="text-xs">Subtitles</Badge>
+                <Badge variant="outline" className="text-xs">
+                  Multiple Hosts
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Quality Selection
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Subtitles
+                </Badge>
               </div>
             </div>
 
@@ -1051,9 +1276,15 @@ const AnimeDemo: React.FC = () => {
                 Convert AniList/TMDB trailer data to streamable URLs
               </p>
               <div className="flex flex-wrap gap-1">
-                <Badge variant="outline" className="text-xs">YouTube</Badge>
-                <Badge variant="outline" className="text-xs">Direct URLs</Badge>
-                <Badge variant="outline" className="text-xs">Quality Info</Badge>
+                <Badge variant="outline" className="text-xs">
+                  YouTube
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Direct URLs
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Quality Info
+                </Badge>
               </div>
             </div>
 
@@ -1066,9 +1297,15 @@ const AnimeDemo: React.FC = () => {
                 Support for multiple languages and subtitle options
               </p>
               <div className="flex flex-wrap gap-1">
-                <Badge variant="outline" className="text-xs">Dub/Sub</Badge>
-                <Badge variant="outline" className="text-xs">Multi-Lang</Badge>
-                <Badge variant="outline" className="text-xs">Auto-Detect</Badge>
+                <Badge variant="outline" className="text-xs">
+                  Dub/Sub
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Multi-Lang
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Auto-Detect
+                </Badge>
               </div>
             </div>
 
@@ -1081,9 +1318,15 @@ const AnimeDemo: React.FC = () => {
                 AI-powered metadata matching with confidence scores
               </p>
               <div className="flex flex-wrap gap-1">
-                <Badge variant="outline" className="text-xs">AniList</Badge>
-                <Badge variant="outline" className="text-xs">TMDB</Badge>
-                <Badge variant="outline" className="text-xs">Confidence</Badge>
+                <Badge variant="outline" className="text-xs">
+                  AniList
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  TMDB
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Confidence
+                </Badge>
               </div>
             </div>
 
@@ -1096,9 +1339,15 @@ const AnimeDemo: React.FC = () => {
                 Support for various anime and series streaming sources
               </p>
               <div className="flex flex-wrap gap-1">
-                <Badge variant="outline" className="text-xs">AniWorld</Badge>
-                <Badge variant="outline" className="text-xs">SerienStream</Badge>
-                <Badge variant="outline" className="text-xs">Extensible</Badge>
+                <Badge variant="outline" className="text-xs">
+                  AniWorld
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  SerienStream
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Extensible
+                </Badge>
               </div>
             </div>
 
@@ -1111,9 +1360,15 @@ const AnimeDemo: React.FC = () => {
                 Organized season/episode structure with movies and specials
               </p>
               <div className="flex flex-wrap gap-1">
-                <Badge variant="outline" className="text-xs">Seasons</Badge>
-                <Badge variant="outline" className="text-xs">Episodes</Badge>
-                <Badge variant="outline" className="text-xs">Movies/OVAs</Badge>
+                <Badge variant="outline" className="text-xs">
+                  Seasons
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Episodes
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Movies/OVAs
+                </Badge>
               </div>
             </div>
           </div>
@@ -1126,7 +1381,7 @@ const AnimeDemo: React.FC = () => {
           <CheckCircle className="h-5 w-5 text-green-500" />
           <span className="text-lg font-semibold">Enhanced Demo Complete</span>
         </div>
-        
+
         <div className="text-sm text-muted-foreground space-y-2">
           <p>
             <strong>Backend:</strong>{" "}
@@ -1135,7 +1390,8 @@ const AnimeDemo: React.FC = () => {
             </code>
           </p>
           <p>
-            <strong>Frontend:</strong> React + TypeScript + SWR + Tailwind CSS + shadcn/ui
+            <strong>Frontend:</strong> React + TypeScript + SWR + Tailwind CSS +
+            shadcn/ui
           </p>
         </div>
 
@@ -1146,10 +1402,11 @@ const AnimeDemo: React.FC = () => {
               <span className="font-semibold">Rich Metadata</span>
             </div>
             <p className="text-muted-foreground">
-              AniList + TMDB integration with scores, genres, descriptions, and more
+              AniList + TMDB integration with scores, genres, descriptions, and
+              more
             </p>
           </div>
-          
+
           <div className="p-3 bg-muted rounded-lg">
             <div className="flex items-center gap-2 mb-1">
               <Monitor className="h-4 w-4 text-blue-500" />
@@ -1159,7 +1416,7 @@ const AnimeDemo: React.FC = () => {
               Enhanced cards, badges, statistics, and hierarchical data display
             </p>
           </div>
-          
+
           <div className="p-3 bg-muted rounded-lg">
             <div className="flex items-center gap-2 mb-1">
               <Award className="h-4 w-4 text-purple-500" />

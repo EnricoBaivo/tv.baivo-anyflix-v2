@@ -1,21 +1,23 @@
 """AniWorld provider implementation."""
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from ..extractors.extract_any import extract_any
-from ..models.base import MediaInfo, MediaSource, SearchResult, SourcePreference
-from ..models.responses import (
-    DetailResponse,
+import httpx
+
+from lib.extractors.extract_any import extract_any
+from lib.models.base import MediaInfo, MediaSource, SearchResult, SourcePreference
+from lib.models.responses import (
     LatestResponse,
     PopularResponse,
     SearchResponse,
     VideoListResponse,
 )
-from ..utils.caching import ServiceCacheConfig, cached
-from ..utils.logging_config import get_logger, timed_operation
-from ..utils.parser import Document
-from ..utils.url_utils import normalize_url
+from lib.utils.caching import ServiceCacheConfig, cached
+from lib.utils.logging_config import get_logger
+from lib.utils.parser import Document
+from lib.utils.url_utils import normalize_url
+
 from .base import BaseProvider
 
 
@@ -41,10 +43,9 @@ def _map_language_to_code(lang: str) -> str:
     # Handle language names
     if "deutsch" in lang_lower:
         return "de"
-    elif "englisch" in lang_lower or "english" in lang_lower:
+    if "englisch" in lang_lower or "english" in lang_lower:
         return "en"
-    else:
-        return "sub"  # Default fallback
+    return "sub"  # Default fallback
 
 
 class AniWorldProvider(BaseProvider):
@@ -71,164 +72,107 @@ class AniWorldProvider(BaseProvider):
         )
         super().__init__(source)
         self.logger = get_logger(__name__)
-        self.logger.info(f"Initialized AniWorld provider: {source.base_url}")
-        self.type = "anime"
+        self.logger.info("Initialized AniWorld provider: %s", source.base_url)
+        self.type = "anime"  # anime
 
-    @cached(ttl=ServiceCacheConfig.PROVIDER_POPULAR_TTL, key_prefix="aniworld_popular")
-    async def get_popular(self, page: int = 1) -> PopularResponse:
-        """Get popular anime from AniWorld with pagination.
-
-        Args:
-            page: Page number (1-based)
-
-        Returns:
-            PopularResponse with paginated anime list (max 15 per page)
-        """
-        base_url = self.source.base_url
-        res = await self.client.get(f"{base_url}/beliebte-animes")
-        elements = Document(res.body).select("div.seriesListContainer div")
-
-        # Build complete list first
-        all_anime = []
-        for element in elements:
-            link_element = element.select_first("a")
-            name_element = element.select_first("h3")
-            img_element = link_element.select_first("img")
-
-            if link_element._element and name_element._element and img_element._element:
-                name = name_element.text
-                image_url = base_url + img_element.attr("data-src")
-                link = link_element.attr("href")
-
-                all_anime.append(
-                    SearchResult(name=name, image_url=image_url, link=link)
-                )
-
-        # Implement pagination (max 15 items per page)
-        items_per_page = self.ITEMS_PER_PAGE
-        start_index = (page - 1) * items_per_page
-        end_index = start_index + items_per_page
-
-        paginated_anime = all_anime[start_index:end_index]
-        has_next_page = end_index < len(all_anime)
-
-        return PopularResponse(
-            type=self.response_type, list=paginated_anime, has_next_page=has_next_page
-        )
-
-    @cached(ttl=ServiceCacheConfig.PROVIDER_LATEST_TTL, key_prefix="aniworld_latest")
-    async def get_latest_updates(self, page: int = 1) -> LatestResponse:
-        """Get latest anime updates from AniWorld with pagination.
+    def _parse_anime_list_elements(self, elements) -> list[SearchResult]:
+        """Parse anime list elements into SearchResult objects.
 
         Args:
-            page: Page number (1-based)
+            elements: DOM elements containing anime data
 
         Returns:
-            LatestResponse with paginated anime list (max 15 per page)
+            List of SearchResult objects
         """
-        base_url = self.source.base_url
-        res = await self.client.get(f"{base_url}/neu")
-        elements = Document(res.body).select("div.seriesListContainer div")
-
-        # Build complete list first
-        all_anime = []
-        for element in elements:
-            link_element = element.select_first("a")
-            name_element = element.select_first("h3")
-            img_element = link_element.select_first("img")
-
-            if link_element._element and name_element._element and img_element._element:
-                name = name_element.text
-                image_url = base_url + img_element.attr("data-src")
-                link = link_element.attr("href")
-
-                all_anime.append(
-                    SearchResult(name=name, image_url=image_url, link=link)
-                )
-
-        # Implement pagination (max 15 items per page)
-        items_per_page = self.ITEMS_PER_PAGE
-        start_index = (page - 1) * items_per_page
-        end_index = start_index + items_per_page
-
-        paginated_anime = all_anime[start_index:end_index]
-        has_next_page = end_index < len(all_anime)
-
-        return LatestResponse(
-            type=self.response_type, list=paginated_anime, has_next_page=has_next_page
-        )
-
-    @cached(ttl=ServiceCacheConfig.PROVIDER_SEARCH_TTL, key_prefix="aniworld_search")
-    async def search(
-        self, query: str, page: int = 1, lang: Optional[str] = None
-    ) -> SearchResponse:
-        """Search for anime on AniWorld with pagination.
-
-        Args:
-            query: Search query
-            page: Page number (1-based)
-            lang: Optional language filter (de, en, sub, all)
-
-        Returns:
-            SearchResponse with paginated search results (max 15 per page)
-        """
-        # Log language filter for debugging
-        if lang:
-            self.logger.info(f"Search with language filter: {lang}")
-
-        base_url = self.source.base_url
-        res = await self.client.get(f"{base_url}/animes")
-        elements = Document(res.body).select("#seriesContainer > div > ul > li > a")
-
-        # Filter elements by query
-        filtered_elements = []
-        for element in elements:
-            title = element.attr("title").lower()
-            if query.lower() in title:
-                filtered_elements.append(element)
-
-        # Calculate pagination parameters
-        items_per_page = self.ITEMS_PER_PAGE
-        start_index = (page - 1) * items_per_page
-        end_index = start_index + items_per_page
-
-        # Only process the elements we need for this page
-        page_elements = filtered_elements[start_index:end_index]
-        has_next_page = end_index < len(filtered_elements)
-
         anime_list = []
-        for element in page_elements:
-            name = element.text
-            link = element.attr("href")
 
-            # Get image from detail page and check for language availability
-            try:
-                detail_res = await self.client.get(base_url + link)
-                detail_doc = Document(detail_res.body)
-                img_element = detail_doc.select_first("div.seriesCoverBox img")
-                img = img_element.attr("data-src") if img_element._element else ""
-                image_url = base_url + img if img else ""
+        for element in elements:
+            link_element = element.select_first("a")
+            name_element = element.select_first("h3")
+            img_element = (
+                link_element.select_first("img") if link_element._element else None
+            )
 
-                # Check if language filter is specified
-                if lang and lang != "all":
-                    # Look for language indicators in the detail page
-                    has_language = self._check_anime_has_language(detail_doc, lang)
-                    if not has_language:
-                        self.logger.info(
-                            f"Skipping {name} - no {lang} language available"
-                        )
-                        continue
+            if (
+                link_element._element
+                and name_element._element
+                and img_element
+                and img_element._element
+            ):
+                name = name_element.text
+                image_path = img_element.attr("data-src")
+                image_url = self._build_full_url(image_path)
+                link = link_element.attr("href")
 
                 anime_list.append(
                     SearchResult(name=name, image_url=image_url, link=link)
                 )
-            except Exception:
-                # Skip this entry if we can't get the image
-                continue
 
-        return SearchResponse(
-            type=self.response_type, list=anime_list, has_next_page=has_next_page
-        )
+        return anime_list
+
+    def _apply_pagination(self, items: list, page: int) -> tuple[list, bool]:
+        """Apply pagination to a list of items.
+
+        Args:
+            items: List of items to paginate
+            page: Page number (1-based)
+
+        Returns:
+            Tuple of (paginated_items, has_next_page)
+        """
+        items_per_page = self.ITEMS_PER_PAGE
+        start_index = (page - 1) * items_per_page
+        end_index = start_index + items_per_page
+
+        paginated_items = items[start_index:end_index]
+        has_next_page = end_index < len(items)
+
+        return paginated_items, has_next_page
+
+    def _build_full_url(self, path: str) -> str:
+        """Build full URL from base URL and path.
+
+        Args:
+            path: URL path (can start with / or not)
+
+        Returns:
+            Full URL
+        """
+        base_url = self.source.base_url
+        if path.startswith("http"):
+            return path
+        if path.startswith("/"):
+            return base_url + path
+        return f"{base_url}/{path}"
+
+    def _safe_extract_text(self, element, default: str = "") -> str:
+        """Safely extract text from an element.
+
+        Args:
+            element: DOM element (can be None)
+            default: Default value if element is None or empty
+
+        Returns:
+            Element text or default value
+        """
+        if element and element._element:
+            return element.text or default
+        return default
+
+    def _safe_extract_attr(self, element, attr_name: str, default: str = "") -> str:
+        """Safely extract attribute from an element.
+
+        Args:
+            element: DOM element (can be None)
+            attr_name: Attribute name to extract
+            default: Default value if element is None or attribute doesn't exist
+
+        Returns:
+            Attribute value or default value
+        """
+        if element and element._element:
+            return element.attr(attr_name) or default
+        return default
 
     def _check_anime_has_language(self, document: Document, lang_filter: str) -> bool:
         """Check if an anime has the specified language available.
@@ -258,102 +202,192 @@ class AniWorldProvider(BaseProvider):
         if lang_filter == "de":
             # German: check for lang keys 1 (Dub) or 3 (Sub)
             return "1" in available_lang_keys or "3" in available_lang_keys
-        elif lang_filter == "en":
+        if lang_filter == "en":
             # English: check for lang key 2 (Sub)
             return "2" in available_lang_keys
-        elif lang_filter == "sub":
+        if lang_filter == "sub":
             # Sub: check for lang keys 2 (English Sub) or 3 (German Sub)
             return "2" in available_lang_keys or "3" in available_lang_keys
-        else:
-            # For any other filter, assume available
-            return True
+        # For any other filter, assume available
+        return True
 
-    @cached(ttl=ServiceCacheConfig.PROVIDER_DETAIL_TTL, key_prefix="aniworld_detail")
-    async def get_detail(self, url: str) -> DetailResponse:
-        """Get anime details from AniWorld.
+    def _extract_extended_metadata(self, document: Document, base_url: str):
+        """Extract extended metadata from seriesContentBox.
 
         Args:
-            url: Anime URL
+            document: Parsed HTML document
+            base_url: Base URL for resolving relative URLs
 
         Returns:
-            DetailResponse with anime details
+            Dictionary with extracted metadata
         """
-        base_url = self.source.base_url
+        metadata = {}
 
-        # Use robust URL normalization
-        full_url = normalize_url(base_url, url)
-
-        self.logger.debug(f"Fetching anime detail from: {full_url}")
-        res = await self.client.get(full_url)
-        document = Document(res.body)
-
-        # Extract basic info
-        image_element = document.select_first("div.seriesCoverBox img")
-        image_url = (
-            base_url + image_element.attr("data-src") if image_element._element else ""
-        )
-
+        # Extract basic required fields
+        # Extract name
         name_element = document.select_first("div.series-title h1 span")
-        name = name_element.text if name_element._element else ""
-
-        # Extract genres
-        genre_elements = document.select("div.genres ul li")
-        genre = []
-        for g in genre_elements:
-            genre_text = g.text
-            # Filter out "+X" entries
-            if not re.match(r"^\+\s\d+$", genre_text):
-                genre.append(genre_text)
+        if name_element and name_element._element:
+            metadata["name"] = name_element.text.strip()
+        else:
+            metadata["name"] = ""
 
         # Extract description
         desc_element = document.select_first("p.seri_des")
-        description = ""
-        if desc_element._element:
-            description = self.clean_html_string(
-                desc_element.attr("data-full-description")
+        if desc_element and desc_element._element:
+            metadata["description"] = self.clean_html_string(
+                desc_element.attr("data-full-description") or ""
             )
+        else:
+            metadata["description"] = ""
 
-        # Extract author/producer
-        producer_elements = document.select("div.cast li")
-        author = ""
-        for prod in producer_elements:
-            if "Produzent:" in prod.outer_html:
-                producer_items = prod.select("li")
-                author_parts = []
-                for item in producer_items:
-                    text = item.text
-                    if not re.match(r"^\s\&\s\d+\sweitere$", text):
-                        author_parts.append(text)
-                author = ", ".join(author_parts)
-                break
+        # Extract cover image
+        cover_element = document.select_first("div.seriesCoverBox img")
+        if cover_element and cover_element._element:
+            cover_path = cover_element.attr("data-src") or cover_element.attr("src")
+            if cover_path:
+                metadata["cover_image_url"] = self._build_full_url(cover_path)
+            else:
+                metadata["cover_image_url"] = ""
+        else:
+            metadata["cover_image_url"] = ""
 
-        # Extract episodes
-        seasons_elements = document.select("#stream > ul:nth-child(1) > li > a")
-
-        # Process seasons with concurrency limit
-        episodes_arrays = await self.async_pool(
-            2, seasons_elements, self.parse_episodes_from_series
+        # Extract alternative titles
+        title_element = document.select_first(
+            "div.series-title h1[data-alternativetitles]"
         )
+        if title_element and title_element._element:
+            alt_titles_str = title_element.attr("data-alternativetitles")
+            if alt_titles_str:
+                # Split by comma and clean up
+                alt_titles = [
+                    title.strip()
+                    for title in alt_titles_str.split(",")
+                    if title.strip()
+                ]
+                metadata["alternative_titles"] = alt_titles
 
-        # Flatten and reverse episodes
-        episodes = []
-        for ep_array in episodes_arrays:
-            episodes.extend(ep_array)
-        episodes.reverse()
+        # Extract years
+        start_year_element = document.select_first('span[itemprop="startDate"] a')
+        if start_year_element and start_year_element._element:
+            try:
+                metadata["start_year"] = int(start_year_element.text)
+            except (ValueError, TypeError):
+                pass
 
-        anime_info = MediaInfo(
-            name=name,
-            image_url=image_url,
-            description=description,
-            author=author,
-            status=5,
-            genre=genre,
-            episodes=episodes,
+        end_year_element = document.select_first('span[itemprop="endDate"] a')
+        if end_year_element and end_year_element._element:
+            try:
+                end_year_text = end_year_element.text
+                if end_year_text != "Heute":  # "Today" in German
+                    metadata["end_year"] = int(end_year_text)
+            except (ValueError, TypeError):
+                pass
+
+        # Extract FSK rating
+        fsk_element = document.select_first("div[data-fsk]")
+        if fsk_element and fsk_element._element:
+            try:
+                metadata["fsk_rating"] = int(fsk_element.attr("data-fsk"))
+            except (ValueError, TypeError):
+                pass
+
+        # Extract IMDB ID
+        imdb_element = document.select_first("a[data-imdb]")
+        if imdb_element and imdb_element._element:
+            imdb_id = imdb_element.attr("data-imdb")
+            if imdb_id:
+                metadata["imdb_id"] = imdb_id
+
+        # Extract country of origin
+        country_element = document.select_first(
+            'li[data-content-type="country"] span[itemprop="name"]'
         )
+        if country_element and country_element._element:
+            metadata["country_of_origin"] = country_element.text
 
-        return DetailResponse(media=anime_info)
+        # Extract genres
+        genre_elements = document.select("div.genres ul li")
+        genres = []
+        for elem in genre_elements:
+            if elem._element:
+                genre_name = elem.text.strip()
+                # Filter out "+ X" patterns (e.g., "+ 1", "+ 5", etc.)
+                if genre_name and not re.match(r"^\+\s*\d+$", genre_name):
+                    genres.append(genre_name)
+        if genres:
+            metadata["genres"] = genres
 
-    async def parse_episodes_from_series(self, element) -> List[Dict[str, Any]]:
+        # Extract main genre
+        main_genre_element = document.select_first("div.genres ul[data-main-genre]")
+        if main_genre_element and main_genre_element._element:
+            main_genre = main_genre_element.attr("data-main-genre")
+            if main_genre:
+                metadata["main_genre"] = main_genre
+
+        # Extract directors
+        director_elements = document.select("li.seriesDirector a span[itemprop='name']")
+        directors = []
+        for elem in director_elements:
+            if elem._element:
+                director_name = elem.text.strip()
+                if director_name and not re.match(
+                    r"^\s*&\s*\d+\s*weitere\s*$", director_name
+                ):
+                    directors.append(director_name)
+        if directors:
+            metadata["directors"] = directors
+
+        # Extract actors
+        actor_elements = document.select(
+            "li .seriesActor ~ ul li span[itemprop='name']"
+        )
+        actors = []
+        for elem in actor_elements:
+            if elem._element:
+                actor_name = elem.text.strip()
+                if actor_name and not re.match(
+                    r"^\s*&\s*\d+\s*weitere\s*$", actor_name
+                ):
+                    actors.append(actor_name)
+        if actors:
+            metadata["actors"] = actors
+
+        # Extract producers
+        producer_elements = document.select(
+            "li .seriesProducer ~ ul li span[itemprop='name']"
+        )
+        producers = []
+        for elem in producer_elements:
+            if elem._element:
+                producer_name = elem.text.strip()
+                if producer_name and not re.match(
+                    r"^\s*&\s*\d+\s*weitere\s*$", producer_name
+                ):
+                    producers.append(producer_name)
+        if producers:
+            metadata["producers"] = producers
+
+        # Extract backdrop URL
+        backdrop_element = document.select_first("div.backdrop")
+        if backdrop_element and backdrop_element._element:
+            style = backdrop_element.attr("style")
+            if style:
+                # Extract URL from background-image style
+                match = re.search(r"url\(([^)]+)\)", style)
+                if match:
+                    backdrop_path = match.group(1).strip("'\"")
+                    metadata["backdrop_url"] = self._build_full_url(backdrop_path)
+
+        # Extract series ID
+        series_id_element = document.select_first("div.add-series[data-series-id]")
+        if series_id_element and series_id_element._element:
+            series_id = series_id_element.attr("data-series-id")
+            if series_id:
+                metadata["series_id"] = series_id
+
+        return metadata
+
+    async def parse_episodes_from_series(self, element) -> list[dict[str, Any]]:
         """Parse episodes from a season.
 
         Args:
@@ -376,7 +410,7 @@ class AniWorldProvider(BaseProvider):
         # Process episodes with concurrency limit
         return await self.async_pool(13, episode_elements, self.episode_from_element)
 
-    async def episode_from_element(self, element) -> Dict[str, Any]:
+    async def episode_from_element(self, element) -> dict[str, Any]:
         """Create episode from table row element.
 
         Args:
@@ -390,9 +424,7 @@ class AniWorldProvider(BaseProvider):
         url = title_anchor.attr("href")
         episode_season_id = element.attr("data-episode-season-id")
 
-        episode_title = (
-            self.clean_html_string(episode_span.text) if episode_span._element else ""
-        )
+        episode_title = self.clean_html_string(self._safe_extract_text(episode_span))
 
         # Parse season and episode numbers from URL
         if "/filme/" in url:
@@ -407,47 +439,138 @@ class AniWorldProvider(BaseProvider):
                 "number": film_num,
                 "title": episode_title,
             }
-        else:
-            # Handle regular episodes
-            season_match = re.search(r"staffel-(\d+)/episode-(\d+)", url)
-            if season_match:
-                season_num = int(season_match.group(1))
-                episode_num = int(season_match.group(2))
-                name = f"Staffel {season_num} Folge {episode_num} : {episode_title}"
+        # Handle regular episodes
+        season_match = re.search(r"staffel-(\d+)/episode-(\d+)", url)
+        if season_match:
+            season_num = int(season_match.group(1))
+            episode_num = int(season_match.group(2))
+            name = f"Staffel {season_num} Folge {episode_num} : {episode_title}"
 
-                return {
-                    "name": name,
-                    "url": url,
-                    "date_upload": None,
-                    "season": season_num,
-                    "episode": episode_num,
-                    "title": episode_title,
-                }
-            else:
-                # Fallback: try to extract from episode_season_id and URL
-                try:
-                    episode_num = int(episode_season_id) if episode_season_id else 1
-                except (ValueError, TypeError):
-                    episode_num = 1
+            return {
+                "name": name,
+                "url": url,
+                "date_upload": None,
+                "season": season_num,
+                "episode": episode_num,
+                "title": episode_title,
+            }
+        # Fallback: try to extract from episode_season_id and URL
+        try:
+            episode_num = int(episode_season_id) if episode_season_id else 1
+        except (ValueError, TypeError):
+            episode_num = 1
 
-                # Try to extract season from URL pattern
-                season_match = re.search(r"staffel-(\d+)", url)
-                season_num = int(season_match.group(1)) if season_match else 1
+        # Try to extract season from URL pattern
+        season_match = re.search(r"staffel-(\d+)", url)
+        season_num = int(season_match.group(1)) if season_match else 1
 
-                name = f"Staffel {season_num} Folge {episode_num} : {episode_title}"
+        name = f"Staffel {season_num} Folge {episode_num} : {episode_title}"
 
-                return {
-                    "name": name,
-                    "url": url,
-                    "date_upload": None,
-                    "season": season_num,
-                    "episode": episode_num,
-                    "title": episode_title,
-                }
+        return {
+            "name": name,
+            "url": url,
+            "date_upload": None,
+            "season": season_num,
+            "episode": episode_num,
+            "title": episode_title,
+        }
+
+    @cached(ttl=ServiceCacheConfig.PROVIDER_POPULAR_TTL, key_prefix="aniworld_popular")
+    async def get_popular(self, page: int = 1) -> PopularResponse:
+        """Get popular anime with pagination."""
+        res = await self.client.get(f"{self.source.base_url}/beliebte-animes")
+        elements = Document(res.body).select("div.seriesListContainer div")
+
+        all_anime = self._parse_anime_list_elements(elements)
+        paginated_anime, has_next_page = self._apply_pagination(all_anime, page)
+
+        return PopularResponse(
+            type=self.response_type, list=paginated_anime, has_next_page=has_next_page
+        )
+
+    @cached(ttl=ServiceCacheConfig.PROVIDER_LATEST_TTL, key_prefix="aniworld_latest")
+    async def get_latest_updates(self, page: int = 1) -> LatestResponse:
+        """Get latest anime updates from AniWorld with pagination."""
+        res = await self.client.get(f"{self.source.base_url}/neu")
+        elements = Document(res.body).select("div.seriesListContainer div")
+
+        all_anime = self._parse_anime_list_elements(elements)
+        paginated_anime, has_next_page = self._apply_pagination(all_anime, page)
+
+        return LatestResponse(
+            type=self.response_type, list=paginated_anime, has_next_page=has_next_page
+        )
+
+    @cached(ttl=ServiceCacheConfig.PROVIDER_SEARCH_TTL, key_prefix="aniworld_search")
+    async def search(
+        self, query: str, page: int = 1, lang: str | None = None
+    ) -> SearchResponse:
+        """Search for anime with pagination."""
+
+        res = await self.client.get(f"{self.source.base_url}/animes")
+        elements = Document(res.body).select("#seriesContainer > div > ul > li > a")
+
+        # Filter and build results
+        filtered_results = []
+        for element in elements:
+            if element._element:
+                name = element.text
+                if query.lower() in name.lower():
+                    filtered_results.append(
+                        SearchResult(name=name, image_url="", link=element.attr("href"))
+                    )
+
+        paginated_results, has_next_page = self._apply_pagination(
+            filtered_results, page
+        )
+        return SearchResponse(
+            type=self.response_type, list=paginated_results, has_next_page=has_next_page
+        )
+
+    @cached(ttl=ServiceCacheConfig.PROVIDER_DETAIL_TTL, key_prefix="aniworld_detail")
+    async def get_detail(self, url: str):
+        """Get anime details from AniWorld.
+
+        Args:
+            url: Anime URL
+
+        Returns:
+            DetailResponse with anime details
+        """
+        # Use robust URL normalization
+        full_url = normalize_url(self.source.base_url, url)
+
+        self.logger.debug(f"Fetching anime detail from: {full_url}")
+        res = await self.client.get(full_url)
+        document = Document(res.body)
+
+        # Extract extended metadata (includes basic info)
+        extended_metadata = self._extract_extended_metadata(
+            document, self.source.base_url
+        )
+
+        # Extract episodes
+        seasons_elements = document.select("#stream > ul:nth-child(1) > li > a")
+
+        # Process seasons with concurrency limit
+        episodes_arrays = await self.async_pool(
+            2, seasons_elements, self.parse_episodes_from_series
+        )
+
+        # Flatten and reverse episodes
+        episodes = []
+        for ep_array in episodes_arrays:
+            episodes.extend(ep_array)
+        episodes.reverse()
+
+        # Add episodes to the metadata and create MediaInfo
+        extended_metadata["episodes"] = episodes
+
+        return MediaInfo(**extended_metadata)
 
     @cached(ttl=ServiceCacheConfig.PROVIDER_VIDEOS_TTL, key_prefix="aniworld_videos")
     async def get_video_list(
-        self, url: str, lang_filter: Optional[str] = None
+        self, url: str, lang_filter: str | None = None
     ) -> VideoListResponse:
         """Get video sources for episode from AniWorld.
 
@@ -506,7 +629,7 @@ class AniWorldProvider(BaseProvider):
                 lang = "Unknown"
                 type_str = "Unknown"
             host_element = element.select_first("a h4")
-            host = host_element.text if host_element._element else ""
+            host = self._safe_extract_text(host_element)
 
             # Apply language filter if specified
             lang_code = _map_language_to_code(lang)
@@ -520,7 +643,7 @@ class AniWorldProvider(BaseProvider):
 
             redirect_element = element.select_first("a.watchEpisode")
             if redirect_element._element:
-                redirect = base_url + redirect_element.attr("href")
+                redirect = self._build_full_url(redirect_element.attr("href"))
                 task = self._extract_videos_from_host(
                     redirect, host, lang, type_str, headers
                 )
@@ -546,7 +669,7 @@ class AniWorldProvider(BaseProvider):
 
     async def _extract_videos_from_host(
         self, redirect: str, host: str, lang: str, type_str: str, headers: dict
-    ) -> List:
+    ) -> list:
         """Extract videos from a single host asynchronously.
 
         Args:
@@ -561,7 +684,6 @@ class AniWorldProvider(BaseProvider):
         """
         try:
             # Get the redirect URL manually by disabling auto-redirect
-            import httpx
 
             async with httpx.AsyncClient(
                 follow_redirects=False, timeout=30.0
@@ -607,7 +729,7 @@ class AniWorldProvider(BaseProvider):
             self.logger.error(f"Failed to extract from {host}: {e}")
             return []
 
-    def get_source_preferences(self) -> List[SourcePreference]:
+    def get_source_preferences(self) -> list[SourcePreference]:
         """Get AniWorld source preferences.
 
         Returns:

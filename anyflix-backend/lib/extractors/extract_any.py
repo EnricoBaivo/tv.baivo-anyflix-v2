@@ -1,6 +1,6 @@
 """Extract Any video extractor dispatcher."""
 
-from typing import Awaitable, Callable, Dict, List, Optional
+from collections.abc import Awaitable, Callable
 
 from ..models.base import VideoSource
 
@@ -27,17 +27,16 @@ def _map_language_to_code(lang: str) -> str:
     lang_lower = lang.lower()
     if "deutsch" in lang_lower:
         return "de"
-    elif "englisch" in lang_lower or "english" in lang_lower:
+    if "englisch" in lang_lower or "english" in lang_lower:
         return "en"
-    else:
-        return "sub"  # Default fallback
+    return "sub"  # Default fallback
 
 
 async def extract_any(
     url: str,
     method: str,
-    headers: Optional[Dict[str, str]] = None,
-) -> List[VideoSource]:
+    headers: dict[str, str] | None = None,
+) -> list[VideoSource]:
     """
     Extract video sources from any supported host.
 
@@ -56,23 +55,23 @@ async def extract_any(
 
     logger = logging.getLogger(__name__)
 
-    logger.info(f"extract_any called with method={method}, url={url}")
+    logger.info("extract_any called with method=%s, url=%s", method, url)
     extractor_func = EXTRACTOR_METHODS.get(method.lower())
     if not extractor_func:
-        logger.warning(f"No extractor found for method: {method}")
+        logger.warning("No extractor found for method: %s", method)
         return []
 
     try:
-        logger.info(f"Using extractor: {extractor_func.__name__}")
+        logger.info("Using extractor: %s", extractor_func.__name__)
         # Call the appropriate extractor
         video_sources = await extractor_func(url, headers)
 
-        logger.info(f"Extractor returned {len(video_sources)} videos")
+        logger.info("Extractor returned %d videos", len(video_sources))
         return video_sources
 
     except Exception as e:
         # If extraction fails, return empty list
-        logger.error(f"Extraction failed for {method}: {e}")
+        logger.error("Extraction failed for %s: %s", method, e)
         return []
 
 
@@ -80,8 +79,8 @@ async def extract_any(
 
 
 # Mapping of extractor methods to their implementations
-EXTRACTOR_METHODS: Dict[
-    str, Callable[[str, Optional[Dict[str, str]]], Awaitable[List[VideoSource]]]
+EXTRACTOR_METHODS: dict[
+    str, Callable[[str, dict[str, str] | None], Awaitable[list[VideoSource]]]
 ] = {
     "doodstream": dood_extractor,
     "filemoon": filemoon_extractor,

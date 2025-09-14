@@ -1,9 +1,8 @@
 """Base extractor class for video sources."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional
 
-from ..models.base import VideoSource
+from lib.models.base import VideoSource
 
 
 class BaseExtractor(ABC):
@@ -11,8 +10,8 @@ class BaseExtractor(ABC):
 
     @abstractmethod
     async def extract(
-        self, url: str, headers: Optional[Dict[str, str]] = None
-    ) -> List[VideoSource]:
+        self, url: str, headers: dict[str, str] | None = None
+    ) -> list[VideoSource]:
         """Extract video sources from URL.
 
         Args:
@@ -22,10 +21,8 @@ class BaseExtractor(ABC):
         Returns:
             List of video sources
         """
-        pass
 
     @property
     @abstractmethod
     def name(self) -> str:
         """Get extractor name."""
-        pass

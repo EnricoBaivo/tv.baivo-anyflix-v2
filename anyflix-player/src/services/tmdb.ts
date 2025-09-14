@@ -43,11 +43,24 @@ export const tmdbFetcher = async (url: string): Promise<MediaResponse> => {
 };
 
 /**
- * Get image URL for TMDB images
+ * Get image URL for both TMDB images and external URLs
+ * Handles TMDB paths (starting with '/') and full URLs (AniList, etc.)
  */
 export const getImageUrl = (path: string, size: string = 'w500') => {
   if (!path) return '/placeholder.svg';
-  return `${IMAGE_BASE_URL}/${size}${path}`;
+  
+  // If it's already a full URL (starts with http), return as-is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  
+  // If it's a TMDB path (starts with '/'), prepend TMDB base URL
+  if (path.startsWith('/')) {
+    return `${IMAGE_BASE_URL}/${size}${path}`;
+  }
+  
+  // Fallback for any other format - treat as TMDB path
+  return `${IMAGE_BASE_URL}/${size}/${path}`;
 };
 
 // ========== SWR KEY GENERATORS ==========

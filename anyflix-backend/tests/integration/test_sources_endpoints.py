@@ -1,7 +1,7 @@
 """Integration tests for all sources API endpoints."""
 
 import json
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -11,7 +11,7 @@ from app.main import app
 client = TestClient(app)
 
 # Test data storage for documentation updates
-test_results: Dict[str, Dict[str, Any]] = {}
+test_results: dict[str, dict[str, Any]] = {}
 
 
 class TestSourcesEndpoints:
@@ -23,7 +23,7 @@ class TestSourcesEndpoints:
         self.backup_source = "serienstream"  # Backup if primary fails
 
     def capture_response(
-        self, endpoint: str, response_data: Dict[str, Any], status_code: int = 200
+        self, endpoint: str, response_data: dict[str, Any], status_code: int = 200
     ):
         """Capture response data for documentation updates."""
         test_results[endpoint] = {
@@ -352,11 +352,11 @@ class TestSourcesEndpoints:
         with open("tests/integration/test_results.json", "w") as f:
             json.dump(test_results, f, indent=2, default=str)
 
-        print(f"\n📊 Test Results Summary:")
+        print("\n📊 Test Results Summary:")
         print(f"   Total endpoints tested: {len(test_results)}")
         successful = len([r for r in test_results.values() if r["status_code"] == 200])
         print(f"   Successful responses: {successful}")
-        print(f"   Test results saved to: tests/integration/test_results.json")
+        print("   Test results saved to: tests/integration/test_results.json")
 
 
 if __name__ == "__main__":

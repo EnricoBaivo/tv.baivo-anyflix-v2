@@ -1,7 +1,6 @@
 """Configuration management for anime backend service."""
 
-import os
-from typing import Any, Dict, List
+from typing import Any
 
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
@@ -13,7 +12,7 @@ class SharedPreferences(BaseModel):
     def __init__(self):
         """Initialize with default preferences."""
         super().__init__()
-        self._prefs: Dict[str, Any] = {
+        self._prefs: dict[str, Any] = {
             "lang": "Deutscher",
             "type": "Dub",
             "res": "1080p",
@@ -57,7 +56,7 @@ class SharedPreferences(BaseModel):
         """
         self._prefs[key] = value
 
-    def get_all(self) -> Dict[str, Any]:
+    def get_all(self) -> dict[str, Any]:
         """Get all preferences.
 
         Returns:
@@ -80,9 +79,9 @@ class Settings(BaseSettings):
     api_version: str = "0.1.0"
 
     # CORS settings
-    cors_origins: List[str] = ["*"]
-    cors_methods: List[str] = ["*"]
-    cors_headers: List[str] = ["*"]
+    cors_origins: list[str] = ["*"]
+    cors_methods: list[str] = ["*"]
+    cors_headers: list[str] = ["*"]
 
     # HTTP client settings
     request_timeout: int = 30
@@ -102,7 +101,7 @@ class Settings(BaseSettings):
     tmdb_api_key: str = ""  # TMDB API key for metadata enrichment
 
     # Feature flags
-    enable_caching: bool = True
+    enable_caching: bool = False
     cache_ttl: int = 300  # 5 minutes
 
     # Cache settings

@@ -1,20 +1,19 @@
 """SpeedFiles extractor."""
 
 import re
-from typing import Dict, List, Optional
 
-from ..models.base import VideoSource
-from ..utils.base64_utils import Base64Utils
-from ..utils.caching import ServiceCacheConfig, cached
-from ..utils.client import HTTPClient
-from ..utils.string_utils import StringUtils
-from .ytdlp_extractor import ytdlp_extractor
+from lib.extractors.ytdlp_extractor import ytdlp_extractor
+from lib.models.base import VideoSource
+from lib.utils.base64_utils import Base64Utils
+from lib.utils.caching import ServiceCacheConfig, cached
+from lib.utils.client import HTTPClient
+from lib.utils.string_utils import StringUtils
 
 
 @cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="speedfiles_extract")
 async def speedfiles_extractor(
-    url: str, headers: Optional[Dict[str, str]] = None
-) -> List[VideoSource]:
+    url: str, headers: dict[str, str] | None = None
+) -> list[VideoSource]:
     """
     Extract video sources from SpeedFiles.
     Based on the JavaScript speedfilesExtractor function.

@@ -1,6 +1,6 @@
 """Admin utilities and internal functionality."""
 
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
@@ -19,7 +19,7 @@ async def get_sources_status():
 
 
 @router.get("/cache/stats")
-async def get_cache_stats() -> Dict[str, Any]:
+async def get_cache_stats() -> dict[str, Any]:
     """Get cache statistics."""
     try:
         from lib.utils.caching import CacheManager
@@ -32,13 +32,11 @@ async def get_cache_stats() -> Dict[str, Any]:
             "status": "active" if stats else "unavailable",
         }
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get cache stats: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get cache stats: {e!s}")
 
 
 @router.post("/cache/clear/{prefix}")
-async def clear_cache_prefix(prefix: str) -> Dict[str, Any]:
+async def clear_cache_prefix(prefix: str) -> dict[str, Any]:
     """Clear cache entries with specific prefix.
 
     Args:
@@ -55,11 +53,11 @@ async def clear_cache_prefix(prefix: str) -> Dict[str, Any]:
             "cleared_count": cleared_count,
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to clear cache: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to clear cache: {e!s}")
 
 
 @router.post("/cache/clear/endpoint/{endpoint_path:path}")
-async def clear_cache_endpoint(endpoint_path: str) -> Dict[str, Any]:
+async def clear_cache_endpoint(endpoint_path: str) -> dict[str, Any]:
     """Clear cache entries for a specific endpoint.
 
     Args:
@@ -77,12 +75,12 @@ async def clear_cache_endpoint(endpoint_path: str) -> Dict[str, Any]:
         }
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Failed to clear endpoint cache: {str(e)}"
+            status_code=500, detail=f"Failed to clear endpoint cache: {e!s}"
         )
 
 
 @router.post("/cache/flush")
-async def flush_cache() -> Dict[str, Any]:
+async def flush_cache() -> dict[str, Any]:
     """Flush all cache entries."""
     try:
         from lib.utils.caching import CacheManager
@@ -91,7 +89,6 @@ async def flush_cache() -> Dict[str, Any]:
         success = await cache_manager.flush_all()
         if success:
             return {"message": "All cache entries flushed successfully"}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to flush cache")
+        raise HTTPException(status_code=500, detail="Failed to flush cache")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to flush cache: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to flush cache: {e!s}")

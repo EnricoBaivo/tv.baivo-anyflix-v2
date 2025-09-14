@@ -1,12 +1,11 @@
 """Trailer utility functions."""
 
 import logging
-from typing import Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 
-def build_youtube_url(trailer_data: dict, source: str = "unknown") -> Optional[str]:
+def build_youtube_url(trailer_data: dict, source: str = "unknown") -> str | None:
     """
     Build a full YouTube URL from trailer data.
 
@@ -53,7 +52,7 @@ def build_youtube_url(trailer_data: dict, source: str = "unknown") -> Optional[s
 
 def extract_trailer_info(
     trailer_data: dict, source: str = "unknown"
-) -> Tuple[Optional[str], Optional[str]]:
+) -> tuple[str | None, str | None]:
     """
     Extract trailer URL and site information.
 

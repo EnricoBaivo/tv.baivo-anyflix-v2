@@ -2,16 +2,15 @@
 
 import json
 import re
-from typing import Dict, List, Optional
 
-from ..models.base import VideoSource
-from ..utils.cryptoaes.js_unpacker import JsUnpacker
-from .m3u8_extractor import m3u8_extractor
+from lib.extractors.m3u8_extractor import m3u8_extractor
+from lib.models.base import VideoSource
+from lib.utils.cryptoaes.js_unpacker import JsUnpacker
 
 
 async def jwplayer_extractor(
-    text: str, headers: Optional[Dict[str, str]] = None, host: Optional[str] = None
-) -> List[VideoSource]:
+    text: str, headers: dict[str, str] | None = None, host: str | None = None
+) -> list[VideoSource]:
     """
     Extract video sources from JWPlayer setup.
     Based on the JavaScript jwplayerExtractor function.
@@ -130,7 +129,7 @@ def _js_object_to_json(js_obj: str) -> str:
     return js_obj
 
 
-def _extract_array(text: str, pattern: str) -> Optional[List]:
+def _extract_array(text: str, pattern: str) -> list | None:
     """Extract and parse array from text using regex pattern."""
     match = re.search(pattern, text)
     if not match:

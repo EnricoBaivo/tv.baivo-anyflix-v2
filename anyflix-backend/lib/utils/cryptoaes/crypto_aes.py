@@ -1,7 +1,6 @@
 import base64
 import hashlib
 import secrets
-from typing import Tuple
 
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -83,7 +82,7 @@ class CryptoAES:
             raise error
 
     @staticmethod
-    def _derive_key_and_iv(passphrase: str, salt: bytes) -> Tuple[bytes, bytes]:
+    def _derive_key_and_iv(passphrase: str, salt: bytes) -> tuple[bytes, bytes]:
         """
         Derive key and IV from passphrase and salt using MD5 (compatible with CryptoJS).
 

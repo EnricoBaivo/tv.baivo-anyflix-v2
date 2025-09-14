@@ -1,7 +1,7 @@
 """Comprehensive integration tests with better error handling and more endpoints."""
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -272,18 +272,17 @@ class TestComprehensiveEndpoints:
                     self.capture_response("POST /sources/trailer", data)
                     print(f"✅ Trailer extraction ({case['name']}) successful")
                     break
-                else:
-                    error_data = (
-                        response.json()
-                        if response.headers.get("content-type") == "application/json"
-                        else {"error": "Non-JSON response"}
-                    )
-                    self.capture_response(
-                        "POST /sources/trailer", error_data, response.status_code
-                    )
-                    print(
-                        f"⚠️ Trailer extraction ({case['name']}) failed: {response.status_code}"
-                    )
+                error_data = (
+                    response.json()
+                    if response.headers.get("content-type") == "application/json"
+                    else {"error": "Non-JSON response"}
+                )
+                self.capture_response(
+                    "POST /sources/trailer", error_data, response.status_code
+                )
+                print(
+                    f"⚠️ Trailer extraction ({case['name']}) failed: {response.status_code}"
+                )
 
             except Exception as e:
                 print(f"⚠️ Trailer extraction ({case['name']}) error: {e}")
@@ -327,7 +326,7 @@ class TestComprehensiveEndpoints:
             # Append to existing results or create new file
             try:
                 with open(
-                    "tests/integration/comprehensive_test_results.json", "r"
+                    "tests/integration/comprehensive_test_results.json"
                 ) as f:
                     existing_results = json.load(f)
             except (FileNotFoundError, json.JSONDecodeError):

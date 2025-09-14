@@ -94,12 +94,13 @@ export const useSearch = (source: string, query: string, page: number = 1, lang?
  * Get complete series data with hierarchical structure
  */
 export const useSeriesDetail = (source: string, url: string) => {
-  return useQuery("/sources/{source}/series", {
+  const result = useQuery("/sources/{source}/series", {
     params: {
       path: { source },
       query: { url },
     },
   });
+  return result;
 };
 
 /**

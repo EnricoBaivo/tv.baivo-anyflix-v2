@@ -1,16 +1,15 @@
 """M3U8 playlist extractor."""
 
 import re
-from typing import Any, Dict, List, Optional
 
-from ..models.base import VideoSource
-from ..utils.client import HTTPClient
-from ..utils.helpers import abs_url
+from lib.models.base import VideoSource
+from lib.utils.client import HTTPClient
+from lib.utils.helpers import abs_url
 
 
 async def m3u8_extractor(
-    url: str, headers: Optional[Dict[str, str]] = None, host: Optional[str] = None
-) -> List[VideoSource]:
+    url: str, headers: dict[str, str] | None = None, host: str | None = None
+) -> list[VideoSource]:
     """
     Extract video sources from M3U8 playlist.
     Based on the JavaScript m3u8Extractor function.

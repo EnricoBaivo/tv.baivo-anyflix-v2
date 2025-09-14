@@ -1,11 +1,7 @@
 """TMDB (The Movie Database) service."""
 
-import asyncio
 import json
 import logging
-from typing import Dict, List, Optional
-
-import aiohttp
 
 from lib.models.tmdb import (
     TMDBConfiguration,
@@ -32,7 +28,7 @@ class TMDBService:
         self.api_key = api_key
         self.base_url = base_url
         self.client = HTTPClient()
-        self._configuration: Optional[TMDBConfiguration] = None
+        self._configuration: TMDBConfiguration | None = None
         self._api_available = bool(api_key.strip())
 
     async def __aenter__(self):
@@ -44,7 +40,7 @@ class TMDBService:
         """Async context manager exit."""
         await self.client.__aexit__(exc_type, exc_val, exc_tb)
 
-    def _get_headers(self) -> Dict[str, str]:
+    def _get_headers(self) -> dict[str, str]:
         """Get headers for TMDB API requests."""
         return {
             "Authorization": f"Bearer {self.api_key}",
@@ -134,8 +130,8 @@ class TMDBService:
 
     @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_movie_details")
     async def get_movie_details(
-        self, movie_id: int, append_to_response: Optional[str] = None
-    ) -> Optional[TMDBMovieDetail]:
+        self, movie_id: int, append_to_response: str | None = None
+    ) -> TMDBMovieDetail | None:
         """Get movie details by ID.
 
         Args:
@@ -164,8 +160,8 @@ class TMDBService:
 
     @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_tv_details")
     async def get_tv_details(
-        self, tv_id: int, append_to_response: Optional[str] = None
-    ) -> Optional[TMDBTVDetail]:
+        self, tv_id: int, append_to_response: str | None = None
+    ) -> TMDBTVDetail | None:
         """Get TV show details by ID.
 
         Args:
@@ -236,8 +232,8 @@ class TMDBService:
 
     @cached(ttl=ServiceCacheConfig.TMDB_CONFIG_TTL, key_prefix="tmdb_image_url")
     async def get_image_url(
-        self, path: Optional[str], size: str = "w500"
-    ) -> Optional[str]:
+        self, path: str | None, size: str = "w500"
+    ) -> str | None:
         """Get full image URL from TMDB path.
 
         Args:
@@ -256,8 +252,8 @@ class TMDBService:
 
     @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_search_and_match")
     async def search_and_match(
-        self, title: str, year: Optional[int] = None, media_type: Optional[str] = None
-    ) -> Optional[TMDBMovieDetail | TMDBTVDetail]:
+        self, title: str, year: int | None = None, media_type: str | None = None
+    ) -> TMDBMovieDetail | TMDBTVDetail | None:
         """Search and find the best match for a title.
 
         Args:

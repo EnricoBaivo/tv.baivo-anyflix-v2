@@ -8,7 +8,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any, TypeVar
 
-from aiocache import caches
+from aiocache import caches, redis
 
 logger = logging.getLogger(__name__)
 
@@ -406,7 +406,7 @@ def cached(
 
                 return result
 
-            except Exception:
+            except (redis.RedisError, pickle.PickleError, ValueError):
                 logger.exception("Cache error for key %s", cache_key)
                 if skip_cache_on_error:
                     # Execute function without caching on error
@@ -464,7 +464,7 @@ class CacheManager:
                     await self.cache.release_conn(conn)
                     return 0
 
-                except Exception:
+                except (redis.RedisError, pickle.PickleError, ValueError):
                     await self.cache.release_conn(conn)
                     raise
 

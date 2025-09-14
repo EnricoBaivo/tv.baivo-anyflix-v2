@@ -723,7 +723,7 @@ class AniWorldProvider(BaseProvider):
 
             return extracted_videos if extracted_videos else []
 
-        except Exception:
+        except (httpx.HTTPError, ValueError, RuntimeError):
             # Log the error but don't raise it (handled by gather)
             self.logger.exception("Failed to extract from %s", host)
             return []

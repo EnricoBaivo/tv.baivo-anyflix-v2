@@ -165,7 +165,7 @@ async def get_series_detail(
     try:
         async with provider:
             detail_response = await provider.get_detail(url)
-    except Exception:
+    except (httpx.HTTPError, ValueError, RuntimeError):
         logger.exception("Failed to get detail from provider %s", source)
         raise HTTPException(
             status_code=500, detail=f"Failed to fetch series data from {source}"
@@ -394,7 +394,7 @@ async def extract_trailer_url(request: TrailerRequest):
                 error=f"Failed to extract streamable URL: {extraction_error!s}",
             )
 
-    except Exception as e:
+    except (httpx.HTTPError, ValueError, RuntimeError) as e:
         logger.exception("Trailer extraction error")
         return TrailerResponse(
             success=False, original_url="", error=f"Internal error: {e!s}"

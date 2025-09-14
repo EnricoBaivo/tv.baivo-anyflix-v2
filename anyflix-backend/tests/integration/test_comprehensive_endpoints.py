@@ -213,7 +213,7 @@ class TestComprehensiveEndpoints:
                 )
                 print(f"⚠️ Series detail failed: {response.status_code}")
 
-        except Exception as e:
+        except (ConnectionError, TimeoutError, ValueError) as e:
             print(f"⚠️ Series endpoints test failed: {e}")
 
     def test_video_endpoint(self):
@@ -245,7 +245,7 @@ class TestComprehensiveEndpoints:
                 )
                 print(f"⚠️ Video sources failed (expected): {response.status_code}")
 
-        except Exception as e:
+        except (ConnectionError, TimeoutError, ValueError) as e:
             print(f"⚠️ Video endpoint test failed: {e}")
 
     def test_trailer_endpoint(self):
@@ -284,7 +284,7 @@ class TestComprehensiveEndpoints:
                     f"⚠️ Trailer extraction ({case['name']}) failed: {response.status_code}"
                 )
 
-            except Exception as e:
+            except (ConnectionError, TimeoutError, ValueError) as e:
                 print(f"⚠️ Trailer extraction ({case['name']}) error: {e}")
 
     def test_error_handling(self):

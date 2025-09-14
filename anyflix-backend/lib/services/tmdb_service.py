@@ -3,6 +3,8 @@
 import json
 import logging
 
+import httpx
+
 from lib.models.tmdb import (
     TMDBConfiguration,
     TMDBMovieDetail,
@@ -66,7 +68,7 @@ class TMDBService:
             self._configuration = TMDBConfiguration(**response_data)
             return self._configuration
 
-        except Exception:
+        except (httpx.HTTPError, ValueError, KeyError):
             logger.exception("Failed to get TMDB configuration")
             # Return default configuration
             return TMDBConfiguration(
@@ -124,7 +126,7 @@ class TMDBService:
             response_data = json.loads(response.body)
             return TMDBSearchResponse(**response_data)
 
-        except Exception:
+        except (httpx.HTTPError, ValueError, KeyError):
             logger.exception("Failed to search TMDB")
             return TMDBSearchResponse(
                 page=page, results=[], total_pages=0, total_results=0
@@ -156,7 +158,7 @@ class TMDBService:
             response_data = json.loads(response.body)
             return TMDBMovieDetail(**response_data)
 
-        except Exception:
+        except (httpx.HTTPError, ValueError, KeyError):
             logger.exception("Failed to get movie details for ID %s", movie_id)
             return None
 
@@ -186,7 +188,7 @@ class TMDBService:
             response_data = json.loads(response.body)
             return TMDBTVDetail(**response_data)
 
-        except Exception:
+        except (httpx.HTTPError, ValueError, KeyError):
             logger.exception("Failed to get TV details for ID %s", tv_id)
             return None
 
@@ -226,7 +228,7 @@ class TMDBService:
                 page=1, results=results, total_pages=1, total_results=len(results)
             )
 
-        except Exception:
+        except (httpx.HTTPError, ValueError, KeyError):
             logger.exception("Failed to find by external ID %s", external_id)
             return TMDBSearchResponse(
                 page=1, results=[], total_pages=0, total_results=0
@@ -331,6 +333,6 @@ class TMDBService:
 
             return details if details else None
 
-        except Exception:
+        except (httpx.HTTPError, ValueError, KeyError):
             logger.exception("Failed to search and match title '%s'", title)
             return None

@@ -494,7 +494,7 @@ class AniListService:
             except ValidationError:
                 self.logger.exception("Failed to parse media response")
                 raise
-            except Exception:
+            except (aiohttp.ClientError, ValueError, KeyError):
                 self.logger.exception("Failed to get media by ID %s", media_id)
                 raise
 
@@ -544,7 +544,7 @@ class AniListService:
             except ValidationError:
                 self.logger.exception("Failed to parse search response")
                 raise
-            except Exception:
+            except (aiohttp.ClientError, ValueError, KeyError):
                 self.logger.exception("Failed to search media")
                 raise
 

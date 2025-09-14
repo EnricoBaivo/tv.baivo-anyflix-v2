@@ -54,7 +54,8 @@ async def main() -> None:
     print("TMDB Media Info")
     tmdb_api_key = os.getenv("TMDB_API_KEY")
     if not tmdb_api_key:
-        raise ValueError("TMDB_API_KEY environment variable is required")
+        msg = "TMDB_API_KEY environment variable is required"
+        raise ValueError(msg)
 
     async with TMDBService(tmdb_api_key) as tmdb_service:
         tmdb_media_info = await tmdb_service.search_multi(

@@ -1,7 +1,7 @@
 import yt_dlp
 
-from ..models.base import VideoSource
-from ..utils.caching import ServiceCacheConfig, cached
+from lib.models.base import VideoSource
+from lib.utils.caching import ServiceCacheConfig, cached
 
 
 def _get_quality_score(video_source) -> int:

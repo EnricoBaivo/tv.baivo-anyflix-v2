@@ -1,5 +1,6 @@
 """Service for calculating match confidence between search queries and results."""
 
+import contextlib
 import logging
 import re
 from difflib import SequenceMatcher
@@ -201,15 +202,11 @@ class MatchingService:
         # Extract year from TMDB result
         tmdb_year = None
         if hasattr(tmdb_result, "release_date") and tmdb_result.release_date:
-            try:
+            with contextlib.suppress(ValueError, AttributeError):
                 tmdb_year = int(tmdb_result.release_date.split("-")[0])
-            except (ValueError, AttributeError):
-                pass
         elif hasattr(tmdb_result, "first_air_date") and tmdb_result.first_air_date:
-            try:
+            with contextlib.suppress(ValueError, AttributeError):
                 tmdb_year = int(tmdb_result.first_air_date.split("-")[0])
-            except (ValueError, AttributeError):
-                pass
 
         year_bonus = MatchingService._calculate_year_bonus(
             source_data.start_year, tmdb_year
@@ -253,7 +250,7 @@ class MatchingService:
             Base confidence score from title matching
         """
         source_titles = MatchingService._normalize_titles(
-            [source_data.name] + source_data.alternative_titles
+            [source_data.name, *source_data.alternative_titles]
         )
 
         # Get all available titles from AniList media
@@ -297,7 +294,7 @@ class MatchingService:
             Base confidence score from title matching
         """
         source_titles = MatchingService._normalize_titles(
-            [source_data.name] + source_data.alternative_titles
+            [source_data.name, *source_data.alternative_titles]
         )
 
         # Get available titles from TMDB result

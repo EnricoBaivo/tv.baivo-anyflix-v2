@@ -127,7 +127,7 @@ class Unbaser:
         95: " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",
     }
 
-    def __init__(self, base: int):
+    def __init__(self, base: int) -> None:
         """
         Initialize unbaser with specified base.
 

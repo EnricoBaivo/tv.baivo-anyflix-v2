@@ -325,9 +325,7 @@ class TestComprehensiveEndpoints:
         if hasattr(self, "test_results") and self.test_results:
             # Append to existing results or create new file
             try:
-                with open(
-                    "tests/integration/comprehensive_test_results.json"
-                ) as f:
+                with open("tests/integration/comprehensive_test_results.json") as f:
                     existing_results = json.load(f)
             except (FileNotFoundError, json.JSONDecodeError):
                 existing_results = {}

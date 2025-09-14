@@ -40,8 +40,8 @@ class CryptoAES:
             encrypted_bytes_with_salt = salted_prefix + salt + encrypted_bytes
 
             return base64.b64encode(encrypted_bytes_with_salt).decode("utf-8")
-        except Exception as error:
-            raise error
+        except Exception:
+            raise
 
     @staticmethod
     def decrypt_aes_crypto_js(encrypted: str, passphrase: str) -> str:
@@ -78,8 +78,8 @@ class CryptoAES:
             plain_data = unpadder.update(padded_data) + unpadder.finalize()
 
             return plain_data.decode("utf-8")
-        except Exception as error:
-            raise error
+        except Exception:
+            raise
 
     @staticmethod
     def _derive_key_and_iv(passphrase: str, salt: bytes) -> tuple[bytes, bytes]:

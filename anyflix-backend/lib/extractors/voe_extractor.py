@@ -709,9 +709,7 @@ def is_bait_source(source: str) -> bool:
     if any(fn.lower() in source.lower() for fn in bait_filenames):
         return True
     parsed = urlparse(source)
-    if any(dom in parsed.netloc for dom in bait_domains):
-        return True
-    return False
+    return bool(any(dom in parsed.netloc for dom in bait_domains))
 
 
 # Function to clean and pad base64 safely

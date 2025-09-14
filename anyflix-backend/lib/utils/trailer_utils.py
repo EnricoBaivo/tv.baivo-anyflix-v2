@@ -46,7 +46,7 @@ def build_youtube_url(trailer_data: dict, source: str = "unknown") -> str | None
         return None
 
     except Exception as e:
-        logger.error(f"Error building YouTube URL from {source} data: {e}")
+        logger.exception(f"Error building YouTube URL from {source} data: {e}")
         return None
 
 

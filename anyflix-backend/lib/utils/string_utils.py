@@ -74,5 +74,4 @@ class StringUtils:
         # Remove or replace invalid characters
         filename = re.sub(r'[<>:"/\\|?*]', "_", filename)
         # Remove trailing dots and spaces
-        filename = filename.strip(". ")
-        return filename
+        return filename.strip(". ")

@@ -102,8 +102,7 @@ async def get_popular(
     """Get popular content with optional metadata enrichment."""
     provider = get_provider(source)
     async with provider:
-        result = await provider.get_popular(page)
-        return result
+        return await provider.get_popular(page)
 
 
 @router.get(
@@ -116,8 +115,7 @@ async def get_latest_updates(
     """Get latest updates with optional metadata enrichment."""
     provider = get_provider(source)
     async with provider:
-        result = await provider.get_latest_updates(page)
-        return result
+        return await provider.get_latest_updates(page)
 
 
 @router.get(
@@ -132,8 +130,7 @@ async def search_content(
     """Search for content with optional metadata enrichment."""
     provider = get_provider(source)
     async with provider:
-        result = await provider.search(q, page, lang)
-        return result
+        return await provider.search(q, page, lang)
 
 
 @router.get(

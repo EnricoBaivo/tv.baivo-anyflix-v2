@@ -94,7 +94,7 @@ def initialize_cache(
     redis_port: int = 6379,
     redis_db: int = 0,
     redis_password: str = "",
-):
+) -> None:
     """Initialize cache configuration.
 
     Args:
@@ -405,7 +405,7 @@ def cached(
                 return result
 
             except Exception as e:
-                logger.error(f"Cache error for key {cache_key}: {e}")
+                logger.exception(f"Cache error for key {cache_key}: {e}")
                 if skip_cache_on_error:
                     # Execute function without caching on error
                     return await func(*args, **kwargs)
@@ -420,7 +420,7 @@ def cached(
 class CacheManager:
     """Cache management utilities."""
 
-    def __init__(self, cache_name: str = "default"):
+    def __init__(self, cache_name: str = "default") -> None:
         self.cache = caches.get(cache_name)
 
     async def clear_prefix(self, prefix: str) -> int:
@@ -462,9 +462,9 @@ class CacheManager:
                     await self.cache.release_conn(conn)
                     return 0
 
-                except Exception as e:
+                except Exception:
                     await self.cache.release_conn(conn)
-                    raise e
+                    raise
 
             else:
                 # For memory cache, try to clear all (limited functionality)
@@ -473,7 +473,7 @@ class CacheManager:
                 return 1  # Return 1 to indicate some action was taken
 
         except Exception as e:
-            logger.error(f"Failed to clear cache prefix {prefix}: {e}")
+            logger.exception(f"Failed to clear cache prefix {prefix}: {e}")
             return 0
 
     async def clear_endpoint(self, endpoint_path: str) -> int:
@@ -572,7 +572,7 @@ class CacheManager:
                     await self.cache.release_conn(conn)
 
                 except Exception as e:
-                    logger.error(f"Failed to get Redis stats: {e}")
+                    logger.exception(f"Failed to get Redis stats: {e}")
                     stats = {"cache_type": "redis", "error": str(e)}
 
             else:
@@ -584,7 +584,7 @@ class CacheManager:
 
             return stats
         except Exception as e:
-            logger.error(f"Failed to get cache stats: {e}")
+            logger.exception(f"Failed to get cache stats: {e}")
             return {"error": str(e)}
 
     async def flush_all(self) -> bool:
@@ -598,7 +598,7 @@ class CacheManager:
             logger.info("Flushed all cache entries")
             return True
         except Exception as e:
-            logger.error(f"Failed to flush cache: {e}")
+            logger.exception(f"Failed to flush cache: {e}")
             return False
 
 

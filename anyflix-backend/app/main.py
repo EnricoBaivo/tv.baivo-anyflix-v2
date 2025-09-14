@@ -31,7 +31,7 @@ except ImportError:
 class DebugMiddleware(BaseHTTPMiddleware):
     """Middleware for debugging requests and responses."""
 
-    def __init__(self, app, logger_name: str = "debug_middleware"):
+    def __init__(self, app, logger_name: str = "debug_middleware") -> None:
         super().__init__(app)
         self.logger = logging.getLogger(logger_name)
 
@@ -124,7 +124,7 @@ app = FastAPI(
     description="""
     **Python backend service for media streaming sources** 🎬
 
-    Complete media streaming API providing access to content from multiple streaming sources 
+    Complete media streaming API providing access to content from multiple streaming sources
     with a modern, logically organized structure. Currently supports anime content from German sources
     including AniWorld and SerienStream, with extensible architecture for other media types.
 
@@ -134,7 +134,7 @@ app = FastAPI(
     - List available streaming sources: `GET /sources/`
     - Get source-specific preferences: `GET /sources/{source}/preferences`
 
-    ### 🔍 Content Discovery  
+    ### 🔍 Content Discovery
     - Browse popular content: `GET /sources/{source}/popular?page=1`
     - Get latest updates: `GET /sources/{source}/latest?page=1`
     - Search by title: `GET /sources/{source}/search?q=attack&page=1`
@@ -154,13 +154,13 @@ app = FastAPI(
     ```bash
     # 1. List sources
     curl http://localhost:8000/sources/
-    
-    # 2. Search content  
+
+    # 2. Search content
     curl "http://localhost:8000/sources/aniworld/search?q=attack"
-    
+
     # 3. Get series details
     curl "http://localhost:8000/sources/aniworld/series?url=/anime/stream/attack-on-titan"
-    
+
     # 4. Get video sources
     curl "http://localhost:8000/sources/aniworld/videos?url=/episode/url"
     ```

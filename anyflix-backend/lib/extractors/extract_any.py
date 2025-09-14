@@ -2,7 +2,7 @@
 
 from collections.abc import Awaitable, Callable
 
-from ..models.base import VideoSource
+from lib.models.base import VideoSource
 
 # Import all implemented extractors
 from .dood_extractor import dood_extractor
@@ -71,7 +71,7 @@ async def extract_any(
 
     except Exception as e:
         # If extraction fails, return empty list
-        logger.error("Extraction failed for %s: %s", method, e)
+        logger.exception("Extraction failed for %s: %s", method, e)
         return []
 
 

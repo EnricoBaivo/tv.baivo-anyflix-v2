@@ -20,7 +20,7 @@ from lib.utils.helpers import async_pool, clean_html_string
 class BaseProvider(ABC):
     """Base class for anime source providers."""
 
-    def __init__(self, source: MediaSource):
+    def __init__(self, source: MediaSource) -> None:
         """Initialize provider with source configuration.
 
         Args:

@@ -15,7 +15,7 @@ class HTTPClient:
         self,
         follow_redirects: bool = True,
         use_cloudscraper: bool = True,
-    ):
+    ) -> None:
         """Initialize HTTP client.
 
         Args:
@@ -221,7 +221,7 @@ class HTTPClient:
 class ClientResponse:
     """Wrapper for HTTP response to match JavaScript API."""
 
-    def __init__(self, response: Response):
+    def __init__(self, response: Response) -> None:
         """Initialize with httpx Response."""
         self._response = response
 

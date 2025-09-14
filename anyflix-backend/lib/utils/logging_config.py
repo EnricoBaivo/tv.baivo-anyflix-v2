@@ -169,7 +169,7 @@ def log_performance(func_name: str, duration: float, success: bool = True) -> No
 class LoggingContext:
     """Context manager for enhanced logging during operations."""
 
-    def __init__(self, operation: str, logger: logging.Logger | None = None):
+    def __init__(self, operation: str, logger: logging.Logger | None = None) -> None:
         """Initialize logging context.
 
         Args:

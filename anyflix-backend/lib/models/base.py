@@ -5,12 +5,13 @@ from __future__ import annotations
 from enum import Enum
 
 # Import external data types for union typing
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
-from .anilist import Media
-from .tmdb import TMDBMovieDetail, TMDBTVDetail
+if TYPE_CHECKING:
+    from .anilist import Media
+    from .tmdb import TMDBMovieDetail, TMDBTVDetail
 
 
 class MediaSource(BaseModel):

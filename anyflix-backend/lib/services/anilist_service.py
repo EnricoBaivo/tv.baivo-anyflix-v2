@@ -426,7 +426,8 @@ class AniListService:
             ValueError: If response contains errors
         """
         if not self.session:
-            raise RuntimeError("Service not initialized. Use async with statement.")
+            msg = "Service not initialized. Use async with statement."
+            raise RuntimeError(msg)
 
         payload = {"query": query, "variables": variables or {}}
 

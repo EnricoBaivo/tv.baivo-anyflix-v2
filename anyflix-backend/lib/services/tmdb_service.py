@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class TMDBService:
     """Service for interacting with The Movie Database API."""
 
-    def __init__(self, api_key: str, base_url: str = "https://api.themoviedb.org/3"):
+    def __init__(self, api_key: str, base_url: str = "https://api.themoviedb.org/3") -> None:
         """Initialize TMDB service.
 
         Args:
@@ -65,7 +65,7 @@ class TMDBService:
             return self._configuration
 
         except Exception as e:
-            logger.error(f"Failed to get TMDB configuration: {e}")
+            logger.exception(f"Failed to get TMDB configuration: {e}")
             # Return default configuration
             return TMDBConfiguration(
                 images={
@@ -123,7 +123,7 @@ class TMDBService:
             return TMDBSearchResponse(**response_data)
 
         except Exception as e:
-            logger.error(f"Failed to search TMDB: {e}")
+            logger.exception(f"Failed to search TMDB: {e}")
             return TMDBSearchResponse(
                 page=page, results=[], total_pages=0, total_results=0
             )
@@ -155,7 +155,7 @@ class TMDBService:
             return TMDBMovieDetail(**response_data)
 
         except Exception as e:
-            logger.error(f"Failed to get movie details for ID {movie_id}: {e}")
+            logger.exception(f"Failed to get movie details for ID {movie_id}: {e}")
             return None
 
     @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_tv_details")
@@ -185,7 +185,7 @@ class TMDBService:
             return TMDBTVDetail(**response_data)
 
         except Exception as e:
-            logger.error(f"Failed to get TV details for ID {tv_id}: {e}")
+            logger.exception(f"Failed to get TV details for ID {tv_id}: {e}")
             return None
 
     @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_find_external")
@@ -225,15 +225,13 @@ class TMDBService:
             )
 
         except Exception as e:
-            logger.error(f"Failed to find by external ID {external_id}: {e}")
+            logger.exception(f"Failed to find by external ID {external_id}: {e}")
             return TMDBSearchResponse(
                 page=1, results=[], total_pages=0, total_results=0
             )
 
     @cached(ttl=ServiceCacheConfig.TMDB_CONFIG_TTL, key_prefix="tmdb_image_url")
-    async def get_image_url(
-        self, path: str | None, size: str = "w500"
-    ) -> str | None:
+    async def get_image_url(self, path: str | None, size: str = "w500") -> str | None:
         """Get full image URL from TMDB path.
 
         Args:
@@ -332,5 +330,5 @@ class TMDBService:
             return details if details else None
 
         except Exception as e:
-            logger.error(f"Failed to search and match title '{title}': {e}")
+            logger.exception(f"Failed to search and match title '{title}': {e}")
             return None

@@ -1,27 +1,24 @@
 """SerienStream provider implementation."""
 
+import contextlib
 import re
 from typing import Any
 
 import httpx
 
-from ..extractors.extract_any import extract_any
-from ..models.base import (
-    MediaInfo,
-    MediaSource,
-    SearchResult,
-    SourcePreference,
-)
-from ..models.responses import (
+from lib.extractors.extract_any import extract_any
+from lib.models.base import MediaInfo, MediaSource, SearchResult, SourcePreference
+from lib.models.responses import (
     LatestResponse,
     PopularResponse,
     SearchResponse,
     VideoListResponse,
 )
-from ..utils.caching import ServiceCacheConfig, cached
-from ..utils.logging_config import get_logger
-from ..utils.parser import Document
-from ..utils.url_utils import normalize_url
+from lib.utils.caching import ServiceCacheConfig, cached
+from lib.utils.logging_config import get_logger
+from lib.utils.parser import Document
+from lib.utils.url_utils import normalize_url
+
 from .base import BaseProvider
 
 
@@ -294,10 +291,8 @@ class SerienStreamProvider(BaseProvider):
         # Extract years
         start_year_element = document.select_first('span[itemprop="startDate"] a')
         if start_year_element and start_year_element._element:
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 metadata["start_year"] = int(start_year_element.text)
-            except (ValueError, TypeError):
-                pass
 
         end_year_element = document.select_first('span[itemprop="endDate"] a')
         if end_year_element and end_year_element._element:
@@ -311,10 +306,8 @@ class SerienStreamProvider(BaseProvider):
         # Extract FSK rating
         fsk_element = document.select_first("div[data-fsk]")
         if fsk_element and fsk_element._element:
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 metadata["fsk_rating"] = int(fsk_element.attr("data-fsk"))
-            except (ValueError, TypeError):
-                pass
 
         # Extract IMDB ID
         imdb_element = document.select_first("a[data-imdb]")
@@ -712,7 +705,7 @@ class SerienStreamProvider(BaseProvider):
 
         except Exception as e:
             # Log the error but don't raise it (handled by gather)
-            self.logger.error(f"Failed to extract from {host}: {e}")
+            self.logger.exception(f"Failed to extract from {host}: {e}")
             return []
 
     def get_source_preferences(self) -> list[SourcePreference]:

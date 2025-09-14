@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 class HTMLElement:
     """Wrapper for BeautifulSoup elements to match JavaScript API."""
 
-    def __init__(self, element: Tag | NavigableString | None):
+    def __init__(self, element: Tag | NavigableString | None) -> None:
         """Initialize with BeautifulSoup element."""
         self._element = element
 
@@ -115,7 +115,7 @@ class HTMLElement:
 class HTMLParser:
     """HTML document parser similar to JavaScript Document class."""
 
-    def __init__(self, html: str):
+    def __init__(self, html: str) -> None:
         """Initialize with HTML string.
 
         Args:

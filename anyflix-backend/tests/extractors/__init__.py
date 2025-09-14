@@ -1,3 +1,1 @@
 """Extractor tests package."""
-
-

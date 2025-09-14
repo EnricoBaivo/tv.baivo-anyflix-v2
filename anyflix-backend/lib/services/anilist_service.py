@@ -436,7 +436,7 @@ class AniListService:
             "Accept": "application/json",
         }
 
-        self.logger.debug(f"Making AniList API request with variables: {variables}")
+        self.logger.debug("Making AniList API request with variables: %s", variables)
 
         async with self.session.post(
             self.BASE_URL, json=payload, headers=headers
@@ -479,7 +479,7 @@ class AniListService:
                 data = await self._make_request(query, variables)
 
                 if not data.get("Media"):
-                    self.logger.warning(f"No media found with ID: {media_id}")
+                    self.logger.warning("No media found with ID: %s", media_id)
                     return None
 
                 # Map GraphQL response to our model (Media -> media)
@@ -531,7 +531,7 @@ class AniListService:
                 data = await self._make_request(self.MEDIA_SEARCH_QUERY, variables)
 
                 if not data.get("Page"):
-                    self.logger.warning(f"No search results for query: {search}")
+                    self.logger.warning("No search results for query: %s", search)
                     return None
 
                 response = MediaPageResponse(**data)

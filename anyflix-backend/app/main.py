@@ -38,12 +38,12 @@ class DebugMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Log request
         start_time = time.time()
-        self.logger.info(f"🔵 {request.method} {request.url}")
-        self.logger.debug(f"Request headers: {dict(request.headers)}")
+        self.logger.info("🔵 %s %s", request.method, request.url)
+        self.logger.debug("Request headers: %s", dict(request.headers))
 
         # Log query parameters for proxy endpoints
         if "/proxy/" in str(request.url):
-            self.logger.debug(f"Query params: {dict(request.query_params)}")
+            self.logger.debug("Query params: %s", dict(request.query_params))
 
         # Process request
         try:
@@ -61,7 +61,7 @@ class DebugMiddleware(BaseHTTPMiddleware):
                     f"❌ Error response: {response.status_code} for {request.method} {request.url}"
                 )
                 if hasattr(response, "body"):
-                    self.logger.debug(f"Error response body: {response.body}")
+                    self.logger.debug("Error response body: %s", response.body)
 
             return response
 
@@ -89,10 +89,10 @@ async def lifespan(app: FastAPI):
 
     logger = logging.getLogger(__name__)
     logger.info("🚀 Anime Backend Service starting up...")
-    logger.info(f"📊 Log level: {settings.log_level}")
-    logger.info(f"📁 Log file: {settings.log_file}")
-    logger.info(f"🔧 Debug extractors: {settings.debug_extractors}")
-    logger.info(f"🔧 Debug providers: {settings.debug_providers}")
+    logger.info("📊 Log level: %s", settings.log_level)
+    logger.info("📁 Log file: %s", settings.log_file)
+    logger.info("🔧 Debug extractors: %s", settings.debug_extractors)
+    logger.info("🔧 Debug providers: %s", settings.debug_providers)
 
     # Initialize cache if enabled
     if settings.enable_caching:
@@ -107,7 +107,7 @@ async def lifespan(app: FastAPI):
             )
             logger.info("✅ Cache initialized successfully")
         except Exception as e:
-            logger.warning(f"⚠️ Failed to initialize cache: {e}")
+            logger.warning("⚠️ Failed to initialize cache: %s", e)
     else:
         logger.info("🚫 Caching disabled in configuration")
 

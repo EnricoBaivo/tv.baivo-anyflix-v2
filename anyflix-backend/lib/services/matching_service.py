@@ -56,7 +56,7 @@ class MatchingService:
                 )
             )
             return tmdb_match, confidence
-        logger.warning(f"Unsupported target_data_list type: {type(target_data_list)}")
+        logger.warning("Unsupported target_data_list type: %s", type(target_data_list))
         return None, 0.0
 
     @staticmethod

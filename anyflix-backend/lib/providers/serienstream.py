@@ -73,7 +73,7 @@ class SerienStreamProvider(BaseProvider):
         )
         super().__init__(source)
         self.logger = get_logger(__name__)
-        self.logger.info(f"Initialized SerienStream provider: {source.base_url}")
+        self.logger.info("Initialized SerienStream provider: %s", source.base_url)
         self.type = "normal"
 
     def _parse_series_list_elements(self, elements) -> list[SearchResult]:
@@ -429,7 +429,7 @@ class SerienStreamProvider(BaseProvider):
         # Use robust URL normalization
         full_url = normalize_url(self.source.base_url, url)
 
-        self.logger.debug(f"Fetching series detail from: {full_url}")
+        self.logger.debug("Fetching series detail from: %s", full_url)
         res = await self.client.get(full_url)
         document = Document(res.body)
 
@@ -471,7 +471,7 @@ class SerienStreamProvider(BaseProvider):
         # Use robust URL normalization
         season_url = normalize_url(self.source.base_url, season_id)
 
-        self.logger.debug(f"Fetching season episodes from: {season_url}")
+        self.logger.debug("Fetching season episodes from: %s", season_url)
         res = await self.client.get(season_url)
         episode_elements = Document(res.body).select(
             "table.seasonEpisodesList tbody tr"
@@ -563,11 +563,11 @@ class SerienStreamProvider(BaseProvider):
         base_url = self.source.base_url
         if lang_filter and lang_filter != "all":
             self.logger.info(
-                f"Getting video list for {url} with language filter: {lang_filter}"
+                "Getting video list for %s with language filter: %s", url, lang_filter
             )
         else:
             lang_filter = None
-            self.logger.info(f"Getting video list for {url}")
+            self.logger.info("Getting video list for %s", url)
 
         # Use robust URL normalization
         full_url = normalize_url(base_url, url)
@@ -579,12 +579,12 @@ class SerienStreamProvider(BaseProvider):
             "Priority": "u=0, i",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0",
         }
-        self.logger.info(f"Getting video list for {full_url}")
+        self.logger.info("Getting video list for %s", full_url)
         res = await self.client.get(full_url, headers)
         document = Document(res.body)
 
         redirects_elements = document.select("ul.row li")
-        self.logger.info(f"Found {len(redirects_elements)} redirect elements")
+        self.logger.info("Found %d redirect elements", len(redirects_elements))
 
         # Create tasks for concurrent processing
         tasks = []
@@ -614,11 +614,13 @@ class SerienStreamProvider(BaseProvider):
             lang_code = _map_language_to_code(lang)
             if lang_filter and lang_code != lang_filter:
                 self.logger.info(
-                    f"Skipping {lang} {type_str} {host} (filter: {lang_filter})"
+                    "Skipping %s %s %s (filter: %s)", lang, type_str, host, lang_filter
                 )
                 continue
 
-            self.logger.info(f"Processing: lang={lang}, type={type_str}, host={host}")
+            self.logger.info(
+                "Processing: lang=%s, type=%s, host=%s", lang, type_str, host
+            )
 
             redirect_element = element.select_first("a.watchEpisode")
             if redirect_element._element:
@@ -638,7 +640,7 @@ class SerienStreamProvider(BaseProvider):
             videos = []
             for result in results:
                 if isinstance(result, Exception):
-                    self.logger.error(f"Task failed: {result}")
+                    self.logger.error("Task failed: %s", result)
                 elif result:  # result is a list of videos
                     videos.extend(result)
         else:
@@ -675,11 +677,13 @@ class SerienStreamProvider(BaseProvider):
                 location = redirect_response.headers.get("location")
                 if not location:
                     self.logger.warning(
-                        f"No location header for {host}. Status: {redirect_response.status_code}"
+                        "No location header for %s. Status: %d",
+                        host,
+                        redirect_response.status_code,
                     )
                     return []
 
-                self.logger.info(f"Extracting from {host}: {location}")
+                self.logger.info("Extracting from %s: %s", host, location)
 
             # Extract videos using the appropriate extractor
             extracted_videos = await extract_any(
@@ -699,13 +703,13 @@ class SerienStreamProvider(BaseProvider):
                 else:
                     video.quality = f"{lang} {type_str} {host}"
 
-            self.logger.info(f"Extracted {len(extracted_videos)} videos from {host}")
+            self.logger.info("Extracted %d videos from %s", len(extracted_videos), host)
 
             return extracted_videos if extracted_videos else []
 
-        except Exception as e:
+        except Exception:
             # Log the error but don't raise it (handled by gather)
-            self.logger.exception(f"Failed to extract from {host}: {e}")
+            self.logger.exception("Failed to extract from %s", host)
             return []
 
     def get_source_preferences(self) -> list[SourcePreference]:

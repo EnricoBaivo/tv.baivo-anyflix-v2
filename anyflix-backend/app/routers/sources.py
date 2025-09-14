@@ -338,13 +338,13 @@ async def extract_trailer_url(request: TrailerRequest):
         if request.anilist_trailer:
             youtube_url, site = extract_trailer_info(request.anilist_trailer, "anilist")
             source_type = "anilist"
-            logger.info(f"Processing AniList trailer: {request.anilist_trailer}")
+            logger.info("Processing AniList trailer: %s", request.anilist_trailer)
 
         # Process TMDB trailer data
         elif request.tmdb_trailer:
             youtube_url, site = extract_trailer_info(request.tmdb_trailer, "tmdb")
             source_type = "tmdb"
-            logger.info(f"Processing TMDB trailer: {request.tmdb_trailer}")
+            logger.info("Processing TMDB trailer: %s", request.tmdb_trailer)
 
         else:
             return TrailerResponse(
@@ -360,7 +360,7 @@ async def extract_trailer_url(request: TrailerRequest):
                 error=f"Unable to build YouTube URL from {source_type} trailer data",
             )
 
-        logger.info(f"Built YouTube URL: {youtube_url}")
+        logger.info("Built YouTube URL: %s", youtube_url)
 
         # Use ytdlp_extractor to get streamable URL
         try:

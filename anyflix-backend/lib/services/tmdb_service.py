@@ -18,7 +18,9 @@ logger = logging.getLogger(__name__)
 class TMDBService:
     """Service for interacting with The Movie Database API."""
 
-    def __init__(self, api_key: str, base_url: str = "https://api.themoviedb.org/3") -> None:
+    def __init__(
+        self, api_key: str, base_url: str = "https://api.themoviedb.org/3"
+    ) -> None:
         """Initialize TMDB service.
 
         Args:
@@ -64,8 +66,8 @@ class TMDBService:
             self._configuration = TMDBConfiguration(**response_data)
             return self._configuration
 
-        except Exception as e:
-            logger.exception(f"Failed to get TMDB configuration: {e}")
+        except Exception:
+            logger.exception("Failed to get TMDB configuration")
             # Return default configuration
             return TMDBConfiguration(
                 images={
@@ -122,8 +124,8 @@ class TMDBService:
             response_data = json.loads(response.body)
             return TMDBSearchResponse(**response_data)
 
-        except Exception as e:
-            logger.exception(f"Failed to search TMDB: {e}")
+        except Exception:
+            logger.exception("Failed to search TMDB")
             return TMDBSearchResponse(
                 page=page, results=[], total_pages=0, total_results=0
             )
@@ -154,8 +156,8 @@ class TMDBService:
             response_data = json.loads(response.body)
             return TMDBMovieDetail(**response_data)
 
-        except Exception as e:
-            logger.exception(f"Failed to get movie details for ID {movie_id}: {e}")
+        except Exception:
+            logger.exception("Failed to get movie details for ID %s", movie_id)
             return None
 
     @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_tv_details")
@@ -184,8 +186,8 @@ class TMDBService:
             response_data = json.loads(response.body)
             return TMDBTVDetail(**response_data)
 
-        except Exception as e:
-            logger.exception(f"Failed to get TV details for ID {tv_id}: {e}")
+        except Exception:
+            logger.exception("Failed to get TV details for ID %s", tv_id)
             return None
 
     @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_find_external")
@@ -224,8 +226,8 @@ class TMDBService:
                 page=1, results=results, total_pages=1, total_results=len(results)
             )
 
-        except Exception as e:
-            logger.exception(f"Failed to find by external ID {external_id}: {e}")
+        except Exception:
+            logger.exception("Failed to find by external ID %s", external_id)
             return TMDBSearchResponse(
                 page=1, results=[], total_pages=0, total_results=0
             )
@@ -329,6 +331,6 @@ class TMDBService:
 
             return details if details else None
 
-        except Exception as e:
-            logger.exception(f"Failed to search and match title '{title}': {e}")
+        except Exception:
+            logger.exception("Failed to search and match title '%s'", title)
             return None

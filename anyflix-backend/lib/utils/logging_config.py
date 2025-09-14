@@ -149,7 +149,7 @@ def log_function_call(func_name: str, *args, **kwargs) -> None:
         arg_strs.extend([f"{k}={v!r}" for k, v in kwargs.items()])
 
     args_str = ", ".join(arg_strs)
-    logger.debug(f"Calling {func_name}({args_str})")
+    logger.debug("Calling %s(%s)", func_name, args_str)
 
 
 def log_performance(func_name: str, duration: float, success: bool = True) -> None:
@@ -163,7 +163,7 @@ def log_performance(func_name: str, duration: float, success: bool = True) -> No
     logger = get_logger("performance")
 
     status = "SUCCESS" if success else "FAILED"
-    logger.info(f"{func_name} - {status} - {duration:.3f}s")
+    logger.info("%s - %s - %.3fs", func_name, status, duration)
 
 
 class LoggingContext:
@@ -185,7 +185,7 @@ class LoggingContext:
         import time
 
         self.start_time = time.time()
-        self.logger.info(f"Starting {self.operation}")
+        self.logger.info("Starting %s", self.operation)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -195,7 +195,7 @@ class LoggingContext:
         duration = time.time() - self.start_time
 
         if exc_type is None:
-            self.logger.info(f"Completed {self.operation} in {duration:.3f}s")
+            self.logger.info("Completed %s in %.3fs", self.operation, duration)
         else:
             self.logger.error(
                 f"Failed {self.operation} after {duration:.3f}s: {exc_val}"

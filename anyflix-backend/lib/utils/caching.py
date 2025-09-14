@@ -62,7 +62,7 @@ class PydanticSerializer:
         try:
             data = pickle.loads(value)
         except Exception as e:
-            logger.warning(f"Failed to unpickle data: {e}")
+            logger.warning("Failed to unpickle data: %s", e)
             return None
 
         if isinstance(data, dict) and "_pydantic_class" in data:
@@ -133,7 +133,9 @@ def initialize_cache(
             f"Redis cache initialized successfully at {redis_host}:{redis_port}"
         )
     except Exception as e:
-        logger.warning(f"Failed to initialize Redis cache, falling back to memory: {e}")
+        logger.warning(
+            "Failed to initialize Redis cache, falling back to memory: %s", e
+        )
         # Fallback to memory cache if Redis is not available
         fallback_config = {
             "default": {
@@ -295,7 +297,7 @@ def _make_readable_arg(arg) -> str:
             return f"[{','.join(readable_items)}]"
         # Show first few items for large lists
         readable_items = [_make_readable_arg(item) for item in arg[:2]]
-        return f"[{','.join(readable_items)}_and_{len(arg)-2}_more]"
+        return f"[{','.join(readable_items)}_and_{len(arg) - 2}_more]"
     if isinstance(arg, dict):
         if len(arg) == 0:
             return "empty_dict"
@@ -306,7 +308,7 @@ def _make_readable_arg(arg) -> str:
         # Show first few items for large dicts
         items = sorted(arg.items())[:2]
         readable_items = [f"{k}={_make_readable_arg(v)}" for k, v in items]
-        return f"{{{','.join(readable_items)}_and_{len(arg)-2}_more}}"
+        return f"{{{','.join(readable_items)}_and_{len(arg) - 2}_more}}"
     if hasattr(arg, "__dict__"):
         # For objects, use class name and key attributes
         class_name = arg.__class__.__name__
@@ -373,7 +375,7 @@ def cached(
                 try:
                     cached_result = await cache.get(cache_key)
                     if cached_result is not None:
-                        logger.debug(f"Cache hit for key: {cache_key}")
+                        logger.debug("Cache hit for key: %s", cache_key)
                         return cached_result
                 except Exception as cache_get_error:
                     logger.warning(
@@ -381,7 +383,7 @@ def cached(
                     )
                     # Continue to execute function if cache retrieval fails
 
-                logger.debug(f"Cache miss for key: {cache_key}")
+                logger.debug("Cache miss for key: %s", cache_key)
 
                 # Execute function and cache result
                 result = await func(*args, **kwargs)
@@ -400,12 +402,12 @@ def cached(
                         )
                         # Don't fail the request if caching fails
                 else:
-                    logger.debug(f"Skipping cache for None result: {cache_key}")
+                    logger.debug("Skipping cache for None result: %s", cache_key)
 
                 return result
 
-            except Exception as e:
-                logger.exception(f"Cache error for key {cache_key}: {e}")
+            except Exception:
+                logger.exception("Cache error for key %s", cache_key)
                 if skip_cache_on_error:
                     # Execute function without caching on error
                     return await func(*args, **kwargs)
@@ -472,8 +474,8 @@ class CacheManager:
                 logger.info("Cleared all cache entries (memory cache)")
                 return 1  # Return 1 to indicate some action was taken
 
-        except Exception as e:
-            logger.exception(f"Failed to clear cache prefix {prefix}: {e}")
+        except Exception:
+            logger.exception("Failed to clear cache prefix %s", prefix)
             return 0
 
     async def clear_endpoint(self, endpoint_path: str) -> int:
@@ -564,7 +566,7 @@ class CacheManager:
                         stats["namespaces"] = namespace_counts
 
                     except Exception as e:
-                        logger.warning(f"Failed to get key statistics: {e}")
+                        logger.warning("Failed to get key statistics: %s", e)
                         stats["total_keys"] = "unknown"
                         stats["namespaces"] = {}
 
@@ -572,7 +574,7 @@ class CacheManager:
                     await self.cache.release_conn(conn)
 
                 except Exception as e:
-                    logger.exception(f"Failed to get Redis stats: {e}")
+                    logger.exception("Failed to get Redis stats: %s", e)
                     stats = {"cache_type": "redis", "error": str(e)}
 
             else:
@@ -584,7 +586,7 @@ class CacheManager:
 
             return stats
         except Exception as e:
-            logger.exception(f"Failed to get cache stats: {e}")
+            logger.exception("Failed to get cache stats: %s", e)
             return {"error": str(e)}
 
     async def flush_all(self) -> bool:
@@ -598,7 +600,7 @@ class CacheManager:
             logger.info("Flushed all cache entries")
             return True
         except Exception as e:
-            logger.exception(f"Failed to flush cache: {e}")
+            logger.exception("Failed to flush cache: %s", e)
             return False
 
 

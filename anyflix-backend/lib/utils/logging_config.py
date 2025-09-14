@@ -4,6 +4,7 @@ import logging
 import logging.handlers
 import sys
 from pathlib import Path
+from typing import Any, ClassVar
 
 from app.config import settings
 
@@ -12,7 +13,7 @@ class ColorFormatter(logging.Formatter):
     """Custom formatter with colors for different log levels."""
 
     # Color codes
-    COLORS = {
+    COLORS: ClassVar[dict[str, str]] = {
         "DEBUG": "\033[36m",  # Cyan
         "INFO": "\033[32m",  # Green
         "WARNING": "\033[33m",  # Yellow
@@ -102,7 +103,10 @@ def setup_logging(
     configure_third_party_loggers(numeric_level)
 
     logging.info(
-        f"Logging configured - Level: {level}, Console: {enable_console}, File: {enable_file}"
+        "Logging configured - Level: %s, Console: %s, File: %s",
+        level,
+        enable_console,
+        enable_file,
     )
 
 
@@ -131,7 +135,7 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 
-def log_function_call(func_name: str, *args, **kwargs) -> None:
+def log_function_call(func_name: str, *args: Any, **kwargs: Any) -> None:
     """Log function calls for debugging.
 
     Args:
@@ -198,14 +202,16 @@ class LoggingContext:
             self.logger.info("Completed %s in %.3fs", self.operation, duration)
         else:
             self.logger.error(
-                f"Failed {self.operation} after {duration:.3f}s: {exc_val}"
+                "Failed %s after %.3fs: %s", self.operation, duration, exc_val
             )
 
         return False  # Don't suppress exceptions
 
 
 # Convenience function for timing operations
-def timed_operation(operation: str, logger: logging.Logger | None = None):
+def timed_operation(
+    operation: str, logger: logging.Logger | None = None
+) -> LoggingContext:
     """Decorator or context manager for timing operations.
 
     Args:

@@ -41,13 +41,13 @@ def build_youtube_url(trailer_data: dict, source: str = "unknown") -> str | None
             return f"https://www.youtube.com/watch?v={video_id}"
 
         logger.warning(
-            f"Unable to build YouTube URL from {source} trailer data: {trailer_data}"
+            "Unable to build YouTube URL from %s trailer data: %s", source, trailer_data
         )
-        return None
 
     except (ValueError, KeyError, AttributeError):
         logger.exception("Error building YouTube URL from %s data", source)
         return None
+    return None
 
 
 def extract_trailer_info(

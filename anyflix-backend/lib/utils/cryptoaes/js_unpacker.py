@@ -1,5 +1,6 @@
 import re
 from collections.abc import Iterator
+from typing import ClassVar
 
 
 class JsUnpacker:
@@ -120,7 +121,7 @@ class JsUnpacker:
 class Unbaser:
     """Helper class for converting from different number bases."""
 
-    _ALPHABET: dict[int, str] = {
+    _ALPHABET: ClassVar[dict[int, str]] = {
         52: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP",
         54: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQR",
         62: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",

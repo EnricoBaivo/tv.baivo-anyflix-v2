@@ -25,7 +25,7 @@ from lib.providers.serienstream import SerienStreamProvider
 from lib.services.tmdb_service import TMDBService
 
 
-async def main() -> None:
+async def simple_test() -> None:
     """Main demo function."""
     print("🚀 BULLET/BULLET Anime Demo - Fetching from Multiple Sources")
     print("=" * 80)
@@ -140,6 +140,18 @@ async def main() -> None:
     else:
         print("No match found")
     print("=" * 80)
+
+
+async def test_popular_anime() -> None:
+    """Test popular anime."""
+    async with AniWorldProvider() as aniworld_provider:
+        popular_anime = await aniworld_provider.get_popular()
+        print(popular_anime.model_dump_json(indent=2))
+
+
+async def main() -> None:
+    """Main function."""
+    await test_popular_anime()
 
 
 if __name__ == "__main__":

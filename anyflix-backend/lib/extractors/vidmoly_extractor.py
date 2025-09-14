@@ -3,6 +3,8 @@
 import logging
 import re
 
+import httpx
+
 from lib.extractors.m3u8_extractor import m3u8_extractor
 from lib.models.base import VideoSource
 from lib.utils.caching import ServiceCacheConfig, cached
@@ -59,8 +61,8 @@ async def vidmoly_extractor(
         for source in video_sources:
             source.requires_proxy = True
 
-        return video_sources
-
-    except Exception as e:
-        logging.exception(f"Failed to extract video sources: {e}")
+    except (httpx.HTTPError, ValueError, KeyError):
+        logging.exception("Failed to extract video sources")
         return []
+    else:
+        return video_sources

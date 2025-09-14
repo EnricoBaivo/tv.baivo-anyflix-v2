@@ -537,7 +537,7 @@ class AniListService:
                 response = MediaPageResponse(**data)
                 result_count = len(response.Page.media) if response.Page.media else 0
                 self.logger.info(
-                    f"Found {result_count} media results for search: '{search}'"
+                    "Found %d media results for search: '%s'", result_count, search
                 )
                 return response.Page
 

@@ -35,7 +35,9 @@ class SharedPreferences(BaseModel):
             ],
         }
 
-    def get(self, key: str, default: Any = None) -> Any:
+    def get(
+        self, key: str, default: str | list[str] | None = None
+    ) -> str | list[str] | None:
         """Get preference value.
 
         Args:
@@ -47,7 +49,7 @@ class SharedPreferences(BaseModel):
         """
         return self._prefs.get(key, default)
 
-    def set(self, key: str, value: Any) -> None:
+    def set(self, key: str, value: str | list[str]) -> None:
         """Set preference value.
 
         Args:

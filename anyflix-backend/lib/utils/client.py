@@ -91,13 +91,12 @@ class HTTPClient:
                 # Try with enhanced headers
                 return await self._get_with_enhanced_headers(url, headers, params)
 
-            return client_response
-
         except Exception:
             if self.use_cloudscraper:
                 # Try cloudscraper as fallback
                 return await self._get_with_cloudscraper(url, headers, params)
             raise
+        return client_response
 
     async def post(
         self,

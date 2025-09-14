@@ -2,6 +2,8 @@
 
 import re
 
+import httpx
+
 from lib.models.base import VideoSource
 from lib.utils.client import HTTPClient
 from lib.utils.helpers import abs_url
@@ -61,7 +63,7 @@ async def m3u8_extractor(
         if response.status_code != 200:
             print(f"Failed to fetch M3U8 content: {response.status_code}")
             return []
-    except Exception as e:
+    except (httpx.HTTPError, ValueError, KeyError) as e:
         print(f"Failed to fetch M3U8 content: {e}")
         return []
 

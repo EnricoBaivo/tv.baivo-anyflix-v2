@@ -55,31 +55,28 @@ class CryptoAES:
         Returns:
             Decrypted plain text
         """
-        try:
-            encrypted_bytes_with_salt = base64.b64decode(encrypted.strip())
+        encrypted_bytes_with_salt = base64.b64decode(encrypted.strip())
 
-            # Extract encrypted bytes and salt
-            encrypted_bytes = encrypted_bytes_with_salt[
-                16:
-            ]  # Skip "Salted__" (8) + salt (8)
-            salt = encrypted_bytes_with_salt[8:16]  # Extract salt
+        # Extract encrypted bytes and salt
+        encrypted_bytes = encrypted_bytes_with_salt[
+            16:
+        ]  # Skip "Salted__" (8) + salt (8)
+        salt = encrypted_bytes_with_salt[8:16]  # Extract salt
 
-            key, iv = CryptoAES._derive_key_and_iv(passphrase.strip(), salt)
+        key, iv = CryptoAES._derive_key_and_iv(passphrase.strip(), salt)
 
-            # Create cipher
-            cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
-            decryptor = cipher.decryptor()
+        # Create cipher
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+        decryptor = cipher.decryptor()
 
-            # Decrypt
-            padded_data = decryptor.update(encrypted_bytes) + decryptor.finalize()
+        # Decrypt
+        padded_data = decryptor.update(encrypted_bytes) + decryptor.finalize()
 
-            # Remove PKCS7 padding
-            unpadder = padding.PKCS7(128).unpadder()
-            plain_data = unpadder.update(padded_data) + unpadder.finalize()
+        # Remove PKCS7 padding
+        unpadder = padding.PKCS7(128).unpadder()
+        plain_data = unpadder.update(padded_data) + unpadder.finalize()
 
-            return plain_data.decode("utf-8")
-        except Exception:
-            raise
+        return plain_data.decode("utf-8")
 
     @staticmethod
     def _derive_key_and_iv(passphrase: str, salt: bytes) -> tuple[bytes, bytes]:

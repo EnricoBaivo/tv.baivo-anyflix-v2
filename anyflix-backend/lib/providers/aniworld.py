@@ -7,7 +7,11 @@ from typing import Any
 import httpx
 
 from lib.extractors.extract_any import extract_any
-from lib.models.base import MediaInfo, MediaSource, SearchResult, SourcePreference
+from lib.models.base import (
+    MediaSource,
+    SearchResult,
+    SourcePreference,
+)
 from lib.models.responses import (
     LatestResponse,
     PopularResponse,
@@ -76,7 +80,7 @@ class AniWorldProvider(BaseProvider):
         self.logger.info("Initialized AniWorld provider: %s", source.base_url)
         self.type = "anime"  # anime
 
-    def _parse_anime_list_elements(self, elements) -> list[SearchResult]:
+    def _parse_anime_list_elements(self, elements: list) -> list[SearchResult]:
         """Parse anime list elements into SearchResult objects.
 
         Args:
@@ -146,7 +150,7 @@ class AniWorldProvider(BaseProvider):
             return base_url + path
         return f"{base_url}/{path}"
 
-    def _safe_extract_text(self, element, default: str = "") -> str:
+    def _safe_extract_text(self, element: Any, default: str = "") -> str:
         """Safely extract text from an element.
 
         Args:
@@ -160,7 +164,9 @@ class AniWorldProvider(BaseProvider):
             return element.text or default
         return default
 
-    def _safe_extract_attr(self, element, attr_name: str, default: str = "") -> str:
+    def _safe_extract_attr(
+        self, element: Any, attr_name: str, default: str = ""
+    ) -> str:
         """Safely extract attribute from an element.
 
         Args:
@@ -212,7 +218,9 @@ class AniWorldProvider(BaseProvider):
         # For any other filter, assume available
         return True
 
-    def _extract_extended_metadata(self, document: Document, base_url: str):
+    def _extract_extended_metadata(
+        self, document: Document, _base_url: str
+    ) -> dict[str, Any]:
         """Extract extended metadata from seriesContentBox.
 
         Args:
@@ -384,7 +392,7 @@ class AniWorldProvider(BaseProvider):
 
         return metadata
 
-    async def parse_episodes_from_series(self, element) -> list[dict[str, Any]]:
+    async def parse_episodes_from_series(self, element: Any) -> list[dict[str, Any]]:
         """Parse episodes from a season.
 
         Args:
@@ -407,7 +415,7 @@ class AniWorldProvider(BaseProvider):
         # Process episodes with concurrency limit
         return await self.async_pool(13, episode_elements, self.episode_from_element)
 
-    async def episode_from_element(self, element) -> dict[str, Any]:
+    async def episode_from_element(self, element: Any) -> dict[str, Any]:
         """Create episode from table row element.
 
         Args:
@@ -431,7 +439,6 @@ class AniWorldProvider(BaseProvider):
             return {
                 "name": f"Film {film_num} : {episode_title}",
                 "url": url,
-                "date_upload": None,
                 "kind": "movie",
                 "number": film_num,
                 "title": episode_title,
@@ -446,9 +453,9 @@ class AniWorldProvider(BaseProvider):
             return {
                 "name": name,
                 "url": url,
-                "date_upload": None,
                 "season": season_num,
                 "episode": episode_num,
+                "kind": "series",
                 "title": episode_title,
             }
         # Fallback: try to extract from episode_season_id and URL
@@ -466,9 +473,9 @@ class AniWorldProvider(BaseProvider):
         return {
             "name": name,
             "url": url,
-            "date_upload": None,
             "season": season_num,
             "episode": episode_num,
+            "kind": "series",
             "title": episode_title,
         }
 
@@ -481,8 +488,13 @@ class AniWorldProvider(BaseProvider):
         all_anime = self._parse_anime_list_elements(elements)
         paginated_anime, has_next_page = self._apply_pagination(all_anime, page)
 
+        anime_list_extended_metadata = await self.async_pool(
+            13, paginated_anime, self.enrich_with_details
+        )
         return PopularResponse(
-            type=self.response_type, list=paginated_anime, has_next_page=has_next_page
+            type=self.response_type,
+            list=anime_list_extended_metadata,
+            has_next_page=has_next_page,
         )
 
     @cached(ttl=ServiceCacheConfig.PROVIDER_LATEST_TTL, key_prefix="aniworld_latest")
@@ -493,14 +505,18 @@ class AniWorldProvider(BaseProvider):
 
         all_anime = self._parse_anime_list_elements(elements)
         paginated_anime, has_next_page = self._apply_pagination(all_anime, page)
-
+        anime_list_extended_metadata = await self.async_pool(
+            13, paginated_anime, self.enrich_with_details
+        )
         return LatestResponse(
-            type=self.response_type, list=paginated_anime, has_next_page=has_next_page
+            type=self.response_type,
+            list=anime_list_extended_metadata,
+            has_next_page=has_next_page,
         )
 
     @cached(ttl=ServiceCacheConfig.PROVIDER_SEARCH_TTL, key_prefix="aniworld_search")
     async def search(
-        self, query: str, page: int = 1, lang: str | None = None
+        self, query: str, page: int = 1, _lang: str | None = None
     ) -> SearchResponse:
         """Search for anime with pagination."""
 
@@ -520,50 +536,14 @@ class AniWorldProvider(BaseProvider):
         paginated_results, has_next_page = self._apply_pagination(
             filtered_results, page
         )
+        anime_list_extended_metadata = await self.async_pool(
+            13, paginated_results, self.enrich_with_details
+        )
         return SearchResponse(
-            type=self.response_type, list=paginated_results, has_next_page=has_next_page
+            type=self.response_type,
+            list=anime_list_extended_metadata,
+            has_next_page=has_next_page,
         )
-
-    @cached(ttl=ServiceCacheConfig.PROVIDER_DETAIL_TTL, key_prefix="aniworld_detail")
-    async def get_detail(self, url: str):
-        """Get anime details from AniWorld.
-
-        Args:
-            url: Anime URL
-
-        Returns:
-            DetailResponse with anime details
-        """
-        # Use robust URL normalization
-        full_url = normalize_url(self.source.base_url, url)
-
-        self.logger.debug("Fetching anime detail from: %s", full_url)
-        res = await self.client.get(full_url)
-        document = Document(res.body)
-
-        # Extract extended metadata (includes basic info)
-        extended_metadata = self._extract_extended_metadata(
-            document, self.source.base_url
-        )
-
-        # Extract episodes
-        seasons_elements = document.select("#stream > ul:nth-child(1) > li > a")
-
-        # Process seasons with concurrency limit
-        episodes_arrays = await self.async_pool(
-            2, seasons_elements, self.parse_episodes_from_series
-        )
-
-        # Flatten and reverse episodes
-        episodes = []
-        for ep_array in episodes_arrays:
-            episodes.extend(ep_array)
-        episodes.reverse()
-
-        # Add episodes to the metadata and create MediaInfo
-        extended_metadata["episodes"] = episodes
-
-        return MediaInfo(**extended_metadata)
 
     @cached(ttl=ServiceCacheConfig.PROVIDER_VIDEOS_TTL, key_prefix="aniworld_videos")
     async def get_video_list(
@@ -581,7 +561,7 @@ class AniWorldProvider(BaseProvider):
         base_url = self.source.base_url
         if lang_filter and lang_filter != "all":
             self.logger.info(
-                f"Getting video list for {url} with language filter: {lang_filter}"
+                "Getting video list for %s with language filter: %s", url, lang_filter
             )
         else:
             lang_filter = None
@@ -632,7 +612,7 @@ class AniWorldProvider(BaseProvider):
             lang_code = _map_language_to_code(lang)
             if lang_filter and lang_code != lang_filter:
                 self.logger.info(
-                    f"Skipping {lang} {type_str} {host} (filter: {lang_filter})"
+                    "Skipping %s %s %s (filter: %s)", lang, type_str, host, lang_filter
                 )
                 continue
 
@@ -695,7 +675,9 @@ class AniWorldProvider(BaseProvider):
                 location = redirect_response.headers.get("location")
                 if not location:
                     self.logger.warning(
-                        f"No location header for {host}. Status: {redirect_response.status_code}"
+                        "No location header for %s. Status: %d",
+                        host,
+                        redirect_response.status_code,
                     )
                     return []
 
@@ -750,9 +732,9 @@ class AniWorldProvider(BaseProvider):
         ]
 
         language_filters = []
-        for lang in language_values:
-            for type_val in types:
-                language_filters.append(f"{lang} {type_val}")
+        language_filters.extend(
+            [f"{lang} {type_val}" for lang in language_values for type_val in types]
+        )
 
         return [
             SourcePreference(

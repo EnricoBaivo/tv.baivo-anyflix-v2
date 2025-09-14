@@ -445,10 +445,11 @@ class MatchingService:
             return 0.0
 
         # Convert TMDB genre IDs to names
-        target_genres = []
-        for genre_id in target_genre_ids:
-            if genre_id in tmdb_genre_map:
-                target_genres.append(tmdb_genre_map[genre_id])
+        target_genres = [
+            tmdb_genre_map[genre_id]
+            for genre_id in target_genre_ids
+            if genre_id in tmdb_genre_map
+        ]
 
         # Use the same logic as AniList genre bonus
         return MatchingService._calculate_genre_bonus_anilist(

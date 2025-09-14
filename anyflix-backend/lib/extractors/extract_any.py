@@ -67,12 +67,12 @@ async def extract_any(
         video_sources = await extractor_func(url, headers)
 
         logger.info("Extractor returned %d videos", len(video_sources))
-        return video_sources
-
-    except Exception as e:
+    except Exception:
         # If extraction fails, return empty list
-        logger.exception("Extraction failed for %s: %s", method, e)
+        logger.exception("Extraction failed for %s", method)
         return []
+    else:
+        return video_sources
 
 
 # No wrapper needed - voe_extractor is already async

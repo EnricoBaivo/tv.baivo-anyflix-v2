@@ -3,6 +3,8 @@
 import re
 import time
 
+import httpx
+
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
 from lib.models.base import VideoSource
 from lib.utils.caching import ServiceCacheConfig, cached
@@ -12,7 +14,7 @@ from lib.utils.helpers import get_random_string
 
 @cached(ttl=ServiceCacheConfig.EXTRACTOR_TTL, key_prefix="dood_extract")
 async def dood_extractor(
-    url: str, headers: dict[str, str] | None = None
+    url: str, _headers: dict[str, str] | None = None
 ) -> list[VideoSource]:
     """
     Extract video sources from Doodstream.
@@ -85,5 +87,5 @@ async def dood_extractor(
             )
         ]
 
-    except Exception:
+    except (httpx.HTTPError, ValueError, KeyError):
         return []

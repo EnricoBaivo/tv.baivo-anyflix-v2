@@ -2,6 +2,8 @@
 
 import re
 
+import httpx
+
 from lib.extractors.jwplayer_extractor import jwplayer_extractor
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
 from lib.models.base import VideoSource
@@ -50,5 +52,5 @@ async def luluvdo_extractor(
         # Extract video sources using JWPlayer extractor
         return await jwplayer_extractor(response.body, request_headers, host="luluvdo")
 
-    except Exception:
+    except (httpx.HTTPError, ValueError, KeyError):
         return []

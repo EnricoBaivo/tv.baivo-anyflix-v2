@@ -11,7 +11,14 @@ from .anilist import (
 )
 
 # Base models
-from .base import Episode, MediaInfo, SearchResult, SourcePreference, VideoSource
+from .base import (
+    Episode,
+    MatchSource,
+    MediaInfo,
+    SearchResult,
+    SourcePreference,
+    VideoSource,
+)
 
 # Response models
 from .responses import (
@@ -41,6 +48,7 @@ __all__ = [
     # Response models
     "EpisodeResponse",
     "LatestResponse",
+    "MatchSource",
     # AniList models
     "Media",
     # Base models
@@ -54,7 +62,6 @@ __all__ = [
     "PageResponse",
     "PopularResponse",
     "SearchResponse",
-    "SearchResult",
     "SeasonResponse",
     "SeasonsResponse",
     "SeriesDetailResponse",

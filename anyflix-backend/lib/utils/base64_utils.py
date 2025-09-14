@@ -18,7 +18,7 @@ class Base64Utils:
         """
         try:
             return base64.b64decode(b64_str)
-        except Exception:
+        except (ValueError, TypeError):
             # Custom implementation for compatibility
             m = [-1] * 128
             # Base64 character mapping

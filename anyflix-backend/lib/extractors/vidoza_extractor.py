@@ -2,6 +2,8 @@
 
 import re
 
+import httpx
+
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
 from lib.models.base import VideoSource
 from lib.utils.caching import ServiceCacheConfig, cached
@@ -42,6 +44,6 @@ async def vidoza_extractor(
             )
         ]
 
-    except Exception as e:
+    except (httpx.HTTPError, ValueError, KeyError) as e:
         print(f"Failed to extract video sources: {e}")
         return []

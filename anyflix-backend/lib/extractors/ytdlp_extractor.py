@@ -4,7 +4,7 @@ from lib.models.base import VideoSource
 from lib.utils.caching import ServiceCacheConfig, cached
 
 
-def _get_quality_score(video_source) -> int:
+def _get_quality_score(video_source: VideoSource) -> int:
     """
     Calculate quality score for sorting video sources.
     Higher score = better quality.
@@ -180,6 +180,6 @@ async def ytdlp_extractor(url: str) -> list[VideoSource]:
     except yt_dlp.DownloadError as e:
         print(f"yt-dlp download error: {e}")
         return []
-    except Exception as e:
+    except (ValueError, RuntimeError, OSError) as e:
         print(f"yt-dlp extraction failed: {e}")
         return []

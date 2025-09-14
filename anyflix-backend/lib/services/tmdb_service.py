@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 
 import httpx
 
@@ -21,7 +22,7 @@ class TMDBService:
     """Service for interacting with The Movie Database API."""
 
     def __init__(
-        self, api_key: str, base_url: str = "https://api.themoviedb.org/3"
+        self, api_key: str | None = None, base_url: str = "https://api.themoviedb.org/3"
     ) -> None:
         """Initialize TMDB service.
 
@@ -29,11 +30,11 @@ class TMDBService:
             api_key: TMDB API key
             base_url: TMDB API base URL
         """
-        self.api_key = api_key
+        self.api_key = os.getenv("TMDB_API_KEY") if api_key is None else api_key.strip()
         self.base_url = base_url
         self.client = HTTPClient()
         self._configuration: TMDBConfiguration | None = None
-        self._api_available = bool(api_key.strip())
+        self._api_available = bool(api_key)
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -331,8 +332,7 @@ class TMDBService:
                     best_match.id, append_to_response="videos,images,external_ids"
                 )
 
-            return details if details else None
-
         except (httpx.HTTPError, ValueError, KeyError):
             logger.exception("Failed to search and match title '%s'", title)
             return None
+        return details if details else None

@@ -8,7 +8,8 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any, TypeVar
 
-from aiocache import caches, redis
+import redis
+from aiocache import caches
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ class PydanticSerializer:
 
         try:
             data = pickle.loads(value)
-        except Exception as e:
+        except (pickle.PickleError, ValueError, TypeError) as e:
             logger.warning("Failed to unpickle data: %s", e)
             return None
 
@@ -77,9 +78,9 @@ class PydanticSerializer:
 
                 # Reconstruct the Pydantic model
                 return model_class(**data["_pydantic_data"])
-            except Exception as e:
+            except (pickle.PickleError, ValueError, TypeError) as e:
                 logger.warning(
-                    f"Failed to reconstruct Pydantic model {class_path}: {e}"
+                    "Failed to reconstruct Pydantic model %s: %s", class_path, e
                 )
                 # Return None to force cache miss and re-execution
                 logger.info("Invalidating cache entry due to deserialization failure")
@@ -130,9 +131,9 @@ def initialize_cache(
     try:
         caches.set_config(CACHE_CONFIG)
         logger.info(
-            f"Redis cache initialized successfully at {redis_host}:{redis_port}"
+            "Redis cache initialized successfully at %s:%d", redis_host, redis_port
         )
-    except Exception as e:
+    except (ImportError, RuntimeError, ValueError) as e:
         logger.warning(
             "Failed to initialize Redis cache, falling back to memory: %s", e
         )
@@ -148,7 +149,7 @@ def initialize_cache(
 
 
 # Cache key generation
-def generate_cache_key(prefix: str, *args, **kwargs) -> str:
+def generate_cache_key(prefix: str, *args: Any, **kwargs: Any) -> str:
     """Generate a human-readable cache key from function arguments with endpoint-based namespacing.
 
     Args:
@@ -264,7 +265,7 @@ def _get_endpoint_namespace(prefix: str) -> str:
     return endpoint_mappings.get(prefix, f"cache:{prefix}")
 
 
-def _make_readable_arg(arg) -> str:
+def _make_readable_arg(arg: Any) -> str:
     """Convert an argument to a readable string for cache keys.
 
     Args:
@@ -351,15 +352,17 @@ def cached(
 
                 if not settings.enable_caching:
                     logger.debug(
-                        f"Caching disabled globally, executing function directly: {func.__name__}"
+                        "Caching disabled globally, executing function directly: %s",
+                        func.__name__,
                     )
                     return await func(*args, **kwargs)
                 logger.debug(
-                    f"Caching enabled globally, executing function with caching: {func.__name__}"
+                    "Caching enabled globally, executing function with caching: %s",
+                    func.__name__,
                 )
-            except ImportError:
+            except ImportError as e:
                 logger.warning(
-                    f"Failed to import settings: {e}, continuing with caching"
+                    "Failed to import settings: %s, continuing with caching", e
                 )
                 # If we can't import settings, assume caching is enabled (backward compatibility)
 
@@ -377,9 +380,15 @@ def cached(
                     if cached_result is not None:
                         logger.debug("Cache hit for key: %s", cache_key)
                         return cached_result
-                except Exception as cache_get_error:
+                except (
+                    redis.RedisError,
+                    pickle.PickleError,
+                    ValueError,
+                ) as cache_get_error:
                     logger.warning(
-                        f"Failed to retrieve from cache for key {cache_key}: {cache_get_error}"
+                        "Failed to retrieve from cache for key %s: %s",
+                        cache_key,
+                        cache_get_error,
                     )
                     # Continue to execute function if cache retrieval fails
 
@@ -394,11 +403,17 @@ def cached(
                         # Store in cache (serializer will handle Pydantic models automatically)
                         await cache.set(cache_key, result, ttl=ttl)
                         logger.debug(
-                            f"Cached result for key: {cache_key} (TTL: {ttl}s)"
+                            "Cached result for key: %s (TTL: %ds)", cache_key, ttl
                         )
-                    except Exception as cache_set_error:
+                    except (
+                        redis.RedisError,
+                        pickle.PickleError,
+                        ValueError,
+                    ) as cache_set_error:
                         logger.warning(
-                            f"Failed to cache result for key {cache_key}: {cache_set_error}"
+                            "Failed to cache result for key %s: %s",
+                            cache_key,
+                            cache_set_error,
                         )
                         # Don't fail the request if caching fails
                 else:
@@ -456,7 +471,9 @@ class CacheManager:
                     if keys:
                         deleted = await conn.client.delete(*keys)
                         logger.info(
-                            f"Cleared {deleted} cache keys matching pattern: {search_pattern}"
+                            "Cleared %d cache keys matching pattern: %s",
+                            deleted,
+                            search_pattern,
                         )
                         await self.cache.release_conn(conn)
                         return deleted
@@ -565,7 +582,7 @@ class CacheManager:
                                     )
                         stats["namespaces"] = namespace_counts
 
-                    except Exception as e:
+                    except (pickle.PickleError, ValueError, TypeError) as e:
                         logger.warning("Failed to get key statistics: %s", e)
                         stats["total_keys"] = "unknown"
                         stats["namespaces"] = {}
@@ -573,8 +590,8 @@ class CacheManager:
                     # Release connection
                     await self.cache.release_conn(conn)
 
-                except Exception as e:
-                    logger.exception("Failed to get Redis stats: %s", e)
+                except (pickle.PickleError, ValueError, TypeError) as e:
+                    logger.exception("Failed to get Redis stats")
                     stats = {"cache_type": "redis", "error": str(e)}
 
             else:
@@ -584,10 +601,10 @@ class CacheManager:
                     "note": "Limited statistics available for non-Redis cache",
                 }
 
-            return stats
-        except Exception as e:
-            logger.exception("Failed to get cache stats: %s", e)
+        except (pickle.PickleError, ValueError, TypeError) as e:
+            logger.exception("Failed to get cache stats")
             return {"error": str(e)}
+        return stats
 
     async def flush_all(self) -> bool:
         """Flush all cache entries.
@@ -598,10 +615,11 @@ class CacheManager:
         try:
             await self.cache.clear()
             logger.info("Flushed all cache entries")
-            return True
-        except Exception as e:
-            logger.exception("Failed to flush cache: %s", e)
+
+        except (pickle.PickleError, ValueError, TypeError):
+            logger.exception("Failed to flush cache")
             return False
+        return True
 
 
 # Specific cache configurations for different data types

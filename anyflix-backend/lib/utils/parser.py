@@ -96,7 +96,7 @@ class HTMLElement:
         """Alias for get_src to match JS API."""
         return self.get_src
 
-    def filter(self, condition) -> list["HTMLElement"]:
+    def filter(self, condition: callable) -> list["HTMLElement"]:
         """Filter elements based on condition.
 
         Args:

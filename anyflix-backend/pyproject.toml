@@ -201,7 +201,8 @@ ignore = [
     "T201",   # Print found
     "COM812", # Trailing comma missing (conflicts with black)
     "ISC001", # Implicitly concatenated string literals (conflicts with black),
-    "E501", # Ignore Line too long
+    "E501", # Ignore Line too long,
+    "SLF001" # Ignore Private member accessed: 
 ]
 
 [tool.ruff.per-file-ignores]

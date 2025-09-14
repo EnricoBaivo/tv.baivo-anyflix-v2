@@ -5,13 +5,9 @@ from __future__ import annotations
 from enum import Enum
 
 # Import external data types for union typing
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from pydantic import BaseModel, Field
-
-if TYPE_CHECKING:
-    from .anilist import Media
-    from .tmdb import TMDBMovieDetail, TMDBTVDetail
 
 
 class MediaSource(BaseModel):
@@ -39,15 +35,29 @@ class MovieKind(str, Enum):
     SPECIAL = "special"
 
 
+class MatchSource(str, Enum):
+    """Match source enumeration."""
+
+    TMDB = "tmdb"
+    ANILIST = "anilist"
+
+
 class Episode(BaseModel):
     """Episode information."""
 
-    season: int
-    episode: int
+    # For regular episodes
+    season: int | None = None
+    episode: int | None = None
+
+    # For movies/specials
+    kind: str | None = None  # "series", "movie", "ova", "special"
+    number: int | None = None  # Film number for movies
+
+    # Common fields
     title: str
+    name: str | None = None
     url: str
-    date_upload: str | None = None
-    tags: list[str] = Field(default_factory=list)
+    tags: list[str] | None = Field(default_factory=list)
 
 
 class Season(BaseModel):
@@ -85,8 +95,8 @@ class MediaInfo(BaseModel):
     description: str
     author: str = ""
     genres: list[str] = Field(default_factory=list)
-    episodes: list[dict[str, Any]] = Field(default_factory=list)  # Internal use only
-
+    episodes: list[Episode] = Field(default_factory=list)  # Internal use only
+    seasons_length: int | None = Field(None, description="Number of episodes")
     # Extended metadata fields from seriesContentBox
     alternative_titles: list[str] = Field(
         default_factory=list, description="Alternative titles in different languages"
@@ -117,49 +127,10 @@ class SearchResult(BaseModel):
     image_url: str
     link: str
 
-    # Basic metadata from provider (lightweight for search results)
-    year: int | None = Field(None, description="Release/start year")
-    main_genre: str | None = Field(None, description="Primary genre")
-    country_of_origin: str | None = Field(None, description="Country of origin")
-
-    # External metadata fields with improved documentation
-    tmdb_data: TMDBMovieDetail | TMDBTVDetail | None = Field(
-        None,
-        description="TMDB metadata (movie or TV show details)",
-        example={
-            "media_type": "movie",
-            "id": 12345,
-            "title": "Example Movie",
-            "overview": "An example movie description",
-            "poster_path": "/example.jpg",
-            "release_date": "2023-01-01",
-            "vote_average": 8.5,
-            "genres": [{"id": 28, "name": "Action"}],
-        },
-    )
-    anilist_data: Media | None = Field(
-        None,
-        description="AniList metadata (anime/manga details)",
-        example={
-            "id": 67890,
-            "title": {
-                "userPreferred": "Example Anime",
-                "romaji": "Example Anime",
-                "english": "Example Anime",
-            },
-            "description": "An example anime description",
-            "coverImage": {"large": "https://example.com/cover.jpg"},
-            "episodes": 24,
-            "averageScore": 85,
-            "genres": ["Action", "Adventure"],
-        },
-    )
-    match_confidence: float | None = Field(
-        None,
-        description="Confidence score of the metadata match (0.0 to 1.0)",
-        ge=0.0,
-        le=1.0,
-    )
+    media_info: MediaInfo | None = None
+    best_match: Any | None = None
+    best_match_source: MatchSource | None = None
+    confidence: float | None = None
 
 
 class VideoSource(BaseModel):
@@ -183,3 +154,9 @@ class SourcePreference(BaseModel):
     key: str
     list_preference: dict[str, Any] | None = None
     multi_select_list_preference: dict[str, Any] | None = None
+
+
+# Rebuild models with forward references after all models are defined
+def rebuild_models() -> None:
+    """Rebuild models with forward references."""
+    SearchResult.model_rebuild()

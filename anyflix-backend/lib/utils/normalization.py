@@ -9,7 +9,7 @@ def normalize_series_detail(flat_data: dict, slug: str | None = None) -> SeriesD
     """Normalize flat episodes data into hierarchical SeriesDetail structure.
 
     Args:
-        flat_data: Dictionary with 'episodes' key containing list of episode dicts
+        flat_data: Dictionary with 'episodes' key containing list of Episode objects or dicts
         slug: Optional slug override, if not provided will try to extract from URLs
 
     Returns:
@@ -24,9 +24,17 @@ def normalize_series_detail(flat_data: dict, slug: str | None = None) -> SeriesD
     movies_list: list[Movie] = []
 
     for ep_data in episodes_data:
-        name = ep_data.get("name", "")
-        url = ep_data.get("url", "")
-        date_upload = ep_data.get("date_upload")
+        # Handle both Episode objects and dictionaries
+        if hasattr(ep_data, "name"):
+            # Episode object
+            name = ep_data.name or ""
+            url = ep_data.url or ""
+            date_upload = getattr(ep_data, "date_upload", None)
+        else:
+            # Dictionary
+            name = ep_data.get("name", "")
+            url = ep_data.get("url", "")
+            date_upload = ep_data.get("date_upload")
 
         if not name or not url:
             continue
@@ -58,10 +66,12 @@ def normalize_series_detail(flat_data: dict, slug: str | None = None) -> SeriesD
     return SeriesDetail(slug=slug, seasons=seasons, movies=movies_list)
 
 
-def _extract_slug_from_episodes(episodes_data: list[dict]) -> str:
+def _extract_slug_from_episodes(episodes_data: list) -> str:
     """Extract slug from episode URLs."""
     for ep in episodes_data:
-        url = ep.get("url", "")
+        # Handle both Episode objects and dictionaries
+        url = ep.url or "" if hasattr(ep, "url") else ep.get("url", "")
+
         if url:
             # Extract from URL pattern like /anime/stream/attack-on-titan/staffel-4/episode-30
             match = re.search(r"/anime/stream/([^/]+)/", url)
@@ -156,9 +166,7 @@ def _parse_movie_name(name: str, url: str, date_upload: str | None) -> Movie | N
     tag_pattern = r"\[([^\]]+)\]"
     tag_matches = re.findall(tag_pattern, title)
     if tag_matches:
-        for tag in tag_matches:
-            if tag.lower() not in ["ova", "movie"]:
-                tags.append(tag)
+        tags.extend([tag for tag in tag_matches if tag.lower() not in ["ova", "movie"]])
         # Remove all tags from title
         title = re.sub(tag_pattern, "", title).strip()
 

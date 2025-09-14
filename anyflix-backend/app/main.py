@@ -5,16 +5,19 @@ import logging
 # Import logging setup function
 import sys
 import time
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 from .config import settings
 from .internal import admin
-from .routers import sources
+from .routers import series, sources
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -22,7 +25,7 @@ try:
     from lib.utils.logging_config import setup_logging
 except ImportError:
     # Fallback if logging_config not available
-    def setup_logging(**kwargs):
+    def setup_logging(**_kwargs: Any) -> None:
         logging.basicConfig(
             level=getattr(logging, settings.log_level.upper(), logging.INFO)
         )
@@ -31,11 +34,11 @@ except ImportError:
 class DebugMiddleware(BaseHTTPMiddleware):
     """Middleware for debugging requests and responses."""
 
-    def __init__(self, app, logger_name: str = "debug_middleware") -> None:
+    def __init__(self, app: FastAPI, logger_name: str = "debug_middleware") -> None:
         super().__init__(app)
         self.logger = logging.getLogger(logger_name)
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Log request
         start_time = time.time()
         self.logger.info("🔵 %s %s", request.method, request.url)
@@ -52,30 +55,38 @@ class DebugMiddleware(BaseHTTPMiddleware):
             # Log response
             process_time = time.time() - start_time
             self.logger.info(
-                f"🟢 {request.method} {request.url} -> {response.status_code} ({process_time:.3f}s)"
+                "🟢 %s %s -> %d (%.3fs)",
+                request.method,
+                request.url,
+                response.status_code,
+                process_time,
             )
 
             # Log error responses with more detail
             if response.status_code >= 400:
                 self.logger.error(
-                    f"❌ Error response: {response.status_code} for {request.method} {request.url}"
+                    "❌ Error response: %d for %s %s",
+                    response.status_code,
+                    request.method,
+                    request.url,
                 )
                 if hasattr(response, "body"):
                     self.logger.debug("Error response body: %s", response.body)
 
-            return response
-
-        except Exception as e:
+        except Exception:
             process_time = time.time() - start_time
-            self.logger.error(
-                f"🔴 {request.method} {request.url} -> EXCEPTION ({process_time:.3f}s): {e!s}",
-                exc_info=True,
+            self.logger.exception(
+                "🔴 %s %s -> EXCEPTION (%.3fs)",
+                request.method,
+                request.url,
+                process_time,
             )
             raise
+        return response
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage application lifespan events."""
     # Startup: Configure logging
     setup_logging(
@@ -106,7 +117,7 @@ async def lifespan(app: FastAPI):
                 redis_password=settings.redis_password,
             )
             logger.info("✅ Cache initialized successfully")
-        except Exception as e:
+        except (ImportError, RuntimeError, ValueError) as e:
             logger.warning("⚠️ Failed to initialize cache: %s", e)
     else:
         logger.info("🚫 Caching disabled in configuration")
@@ -266,4 +277,5 @@ async def health_check():
 
 # Include routers
 app.include_router(sources.router)
+app.include_router(series.router)
 app.include_router(admin.router)

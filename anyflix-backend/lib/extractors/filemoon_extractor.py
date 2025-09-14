@@ -2,6 +2,8 @@
 
 import re
 
+import httpx
+
 from lib.extractors.jwplayer_extractor import jwplayer_extractor
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
 from lib.models.base import VideoSource
@@ -70,6 +72,6 @@ async def filemoon_extractor(
         # Extract video sources using JWPlayer extractor
         return await jwplayer_extractor(response.body, headers, host="filemoon")
 
-    except Exception as e:
+    except (httpx.HTTPError, ValueError, KeyError) as e:
         print(f"Failed to extract video sources: {e}")
         return []

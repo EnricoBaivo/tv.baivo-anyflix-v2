@@ -2,6 +2,8 @@
 
 import re
 
+import httpx
+
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
 from lib.models.base import VideoSource
 from lib.utils.base64_utils import Base64Utils
@@ -92,5 +94,5 @@ async def speedfiles_extractor(
             VideoSource(url=video_url, original_url=video_url, quality="", headers=None)
         ]
 
-    except Exception:
+    except (httpx.HTTPError, ValueError, KeyError):
         return []

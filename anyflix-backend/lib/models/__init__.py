@@ -18,6 +18,7 @@ from .base import (
     SearchResult,
     SourcePreference,
     VideoSource,
+    rebuild_models,
 )
 
 # Response models
@@ -42,6 +43,9 @@ from .tmdb import (
     TMDBSearchResult,
     TMDBTVDetail,
 )
+
+# Rebuild models with forward references after all imports
+rebuild_models()
 
 __all__ = [
     "Episode",

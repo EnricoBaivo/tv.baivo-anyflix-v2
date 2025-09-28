@@ -273,13 +273,13 @@ const AnimeDemo: React.FC = () => {
 
                           {/* Enhanced metadata display */}
                           <div className="space-y-2">
-                            {anime.anilist_data && (
+                            {anime.best_match_source=== "anilist" && anime.best_match && (
                               <div className="flex items-center gap-3 text-xs">
-                                {anime.anilist_data.averageScore && (
+                                {anime.best_match && (
                                   <div className="flex items-center gap-1">
                                     <Star className="h-3 w-3 text-yellow-500" />
                                     <span className="font-medium">
-                                      {anime.anilist_data.averageScore}%
+                                      {anime.best_match.averageScore}%
                                     </span>
                                   </div>
                                 )}

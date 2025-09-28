@@ -164,6 +164,35 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sources/trailer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 🎬 Extract Streamable Trailer URL
+         * @description Extract streamable URL from AniList or TMDB trailer data.
+         *
+         *     Takes trailer information from AniList or TMDB responses, builds the full YouTube URL,
+         *     and uses ytdlp_extractor to get the actual streamable URL.
+         *
+         *     Args:
+         *         request: TrailerRequest containing either anilist_trailer or tmdb_trailer data
+         *
+         *     Returns:
+         *         TrailerResponse with streamable URL and metadata
+         */
+        post: operations["extract_trailer_url_sources_trailer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/sources/{source}/series": {
         parameters: {
             query?: never;
@@ -278,35 +307,6 @@ export interface paths {
         get: operations["get_series_movie_sources__source__series_movies__movie_num__get"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/sources/trailer": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * 🎬 Extract Streamable Trailer URL
-         * @description Extract streamable URL from AniList or TMDB trailer data.
-         *
-         *     Takes trailer information from AniList or TMDB responses, builds the full YouTube URL,
-         *     and uses ytdlp_extractor to get the actual streamable URL.
-         *
-         *     Args:
-         *         request: TrailerRequest containing either anilist_trailer or tmdb_trailer data
-         *
-         *     Returns:
-         *         TrailerResponse with streamable URL and metadata
-         */
-        post: operations["extract_trailer_url_sources_trailer_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -542,17 +542,21 @@ export interface components {
          */
         Episode: {
             /** Season */
-            season: number;
+            season?: number | null;
             /** Episode */
-            episode: number;
+            episode?: number | null;
+            /** Kind */
+            kind?: string | null;
+            /** Number */
+            number?: number | null;
             /** Title */
             title: string;
+            /** Name */
+            name?: string | null;
             /** Url */
             url: string;
-            /** Date Upload */
-            date_upload?: string | null;
             /** Tags */
-            tags?: string[];
+            tags?: string[] | null;
         };
         /**
          * EpisodeResponse
@@ -602,6 +606,12 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * MatchSource
+         * @description Match source enumeration.
+         * @enum {string}
+         */
+        MatchSource: "tmdb" | "anilist";
         /**
          * Media
          * @description Main media model.
@@ -746,6 +756,92 @@ export interface components {
          * @enum {string}
          */
         MediaFormat: "TV" | "TV_SHORT" | "MOVIE" | "SPECIAL" | "OVA" | "ONA" | "MUSIC" | "MANGA" | "NOVEL" | "ONE_SHOT";
+        /**
+         * MediaInfo
+         * @description Detailed Media information.
+         */
+        MediaInfo: {
+            /** Name */
+            name: string;
+            /** Cover Image Url */
+            cover_image_url: string;
+            /** Description */
+            description: string;
+            /**
+             * Author
+             * @default
+             */
+            author: string;
+            /** Genres */
+            genres?: string[];
+            /** Episodes */
+            episodes?: components["schemas"]["Episode"][];
+            /**
+             * Seasons Length
+             * @description Number of episodes
+             */
+            seasons_length?: number | null;
+            /**
+             * Alternative Titles
+             * @description Alternative titles in different languages
+             */
+            alternative_titles?: string[];
+            /**
+             * Start Year
+             * @description Start year of the series
+             */
+            start_year?: number | null;
+            /**
+             * End Year
+             * @description End year of the series
+             */
+            end_year?: number | null;
+            /**
+             * Fsk Rating
+             * @description FSK age rating (German rating system)
+             */
+            fsk_rating?: number | null;
+            /**
+             * Imdb Id
+             * @description IMDB ID (e.g., 'tt36469298')
+             */
+            imdb_id?: string | null;
+            /**
+             * Country Of Origin
+             * @description Country of origin
+             */
+            country_of_origin?: string | null;
+            /**
+             * Main Genre
+             * @description Primary genre classification
+             */
+            main_genre?: string | null;
+            /**
+             * Directors
+             * @description List of directors
+             */
+            directors?: string[];
+            /**
+             * Actors
+             * @description List of main actors
+             */
+            actors?: string[];
+            /**
+             * Producers
+             * @description List of production companies
+             */
+            producers?: string[];
+            /**
+             * Backdrop Url
+             * @description Backdrop/banner image URL
+             */
+            backdrop_url?: string | null;
+            /**
+             * Series Id
+             * @description Internal series ID from the provider
+             */
+            series_id?: string | null;
+        };
         /**
          * MediaListEntry
          * @description Media list entry model.
@@ -1107,53 +1203,12 @@ export interface components {
             image_url: string;
             /** Link */
             link: string;
-            /**
-             * Tmdb Data
-             * @description TMDB metadata (movie or TV show details)
-             * @example {
-             *       "genres": [
-             *         {
-             *           "id": 28,
-             *           "name": "Action"
-             *         }
-             *       ],
-             *       "id": 12345,
-             *       "media_type": "movie",
-             *       "overview": "An example movie description",
-             *       "poster_path": "/example.jpg",
-             *       "release_date": "2023-01-01",
-             *       "title": "Example Movie",
-             *       "vote_average": 8.5
-             *     }
-             */
-            tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            /**
-             * @description AniList metadata (anime/manga details)
-             * @example {
-             *       "averageScore": 85,
-             *       "coverImage": {
-             *         "large": "https://example.com/cover.jpg"
-             *       },
-             *       "description": "An example anime description",
-             *       "episodes": 24,
-             *       "genres": [
-             *         "Action",
-             *         "Adventure"
-             *       ],
-             *       "id": 67890,
-             *       "title": {
-             *         "english": "Example Anime",
-             *         "romaji": "Example Anime",
-             *         "userPreferred": "Example Anime"
-             *       }
-             *     }
-             */
-            anilist_data?: components["schemas"]["Media"] | null;
-            /**
-             * Match Confidence
-             * @description Confidence score of the metadata match (0.0 to 1.0)
-             */
-            match_confidence?: number | null;
+            media_info?: components["schemas"]["MediaInfo"] | null;
+            /** Best Match */
+            best_match?: components["schemas"]["TMDBSearchResult"] | components["schemas"]["Media"] | null;
+            best_match_source?: components["schemas"]["MatchSource"] | null;
+            /** Confidence */
+            confidence?: number | null;
         };
         /**
          * Season
@@ -1593,6 +1648,63 @@ export interface components {
             iso_3166_1: string;
             /** Name */
             name: string;
+        };
+        /**
+         * TMDBSearchResult
+         * @description TMDB search result model.
+         */
+        TMDBSearchResult: {
+            /** Id */
+            id: number;
+            /** Media Type */
+            media_type: string;
+            /** Adult */
+            adult?: boolean | null;
+            /** Backdrop Path */
+            backdrop_path?: string | null;
+            /** Poster Path */
+            poster_path?: string | null;
+            /**
+             * Popularity
+             * @default 0
+             */
+            popularity: number;
+            /** Vote Average */
+            vote_average?: number | null;
+            /** Vote Count */
+            vote_count?: number | null;
+            /** Overview */
+            overview?: string | null;
+            /** Genre Ids */
+            genre_ids?: number[];
+            /** Original Language */
+            original_language?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Original Title */
+            original_title?: string | null;
+            /** Release Date */
+            release_date?: string | null;
+            /** Video */
+            video?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** Original Name */
+            original_name?: string | null;
+            /** First Air Date */
+            first_air_date?: string | null;
+            /** Origin Country */
+            origin_country?: string[];
+            /** Profile Path */
+            profile_path?: string | null;
+            /** Known For */
+            known_for?: {
+                [key: string]: unknown;
+            }[];
+            /** Known For Department */
+            known_for_department?: string | null;
+            /** Gender */
+            gender?: number | null;
         };
         /**
          * TMDBSeason
@@ -2254,6 +2366,53 @@ export interface operations {
             };
         };
     };
+    extract_trailer_url_sources_trailer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrailerRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrailerResponse"];
+                };
+            };
+            /** @description Source not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     get_series_detail_sources__source__series_get: {
         parameters: {
             query: {
@@ -2513,53 +2672,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MovieResponse"];
-                };
-            };
-            /** @description Source not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    extract_trailer_url_sources_trailer_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TrailerRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TrailerResponse"];
                 };
             };
             /** @description Source not found */

@@ -3,11 +3,21 @@
 from __future__ import annotations
 
 from enum import Enum
-
-# Import external data types for union typing
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from lib.models.anilist import Media  # noqa: F401
+    from lib.models.tmdb import TMDBSearchResult  # noqa: F401
+
+# Type alias using string annotations for runtime compatibility
+# This approach provides several benefits:
+# 1. Avoids circular import issues at runtime
+# 2. Keeps type checking accurate during development
+# 3. Allows for cleaner dependency separation
+# 4. Maintains backward compatibility
+BestMatchType = "TMDBSearchResult | Media | None"
 
 
 class MediaSource(BaseModel):
@@ -128,7 +138,7 @@ class SearchResult(BaseModel):
     link: str
 
     media_info: MediaInfo | None = None
-    best_match: Any | None = None
+    best_match: BestMatchType = None
     best_match_source: MatchSource | None = None
     confidence: float | None = None
 
@@ -159,4 +169,23 @@ class SourcePreference(BaseModel):
 # Rebuild models with forward references after all models are defined
 def rebuild_models() -> None:
     """Rebuild models with forward references."""
+    # Import the actual classes for rebuilding
+    import sys
+
+    from lib.models.anilist import Media
+    from lib.models.tmdb import TMDBSearchResult
+
+    # Add the types to the global namespace for proper resolution
+    module = sys.modules[__name__]
+    module.Media = Media  # type: ignore[attr-defined]
+    module.TMDBSearchResult = TMDBSearchResult  # type: ignore[attr-defined]
+
+    # Rebuild the base model first
     SearchResult.model_rebuild()
+    
+    # Also rebuild dependent models that use SearchResult
+    try:
+        from lib.models.responses import PaginatedResponse
+        PaginatedResponse.model_rebuild()
+    except ImportError:
+        pass  # responses module might not be available in all contexts

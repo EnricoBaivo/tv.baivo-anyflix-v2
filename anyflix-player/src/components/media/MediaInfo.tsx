@@ -9,16 +9,10 @@ interface MediaInfoProps {
 const MediaInfo = ({ media }: MediaInfoProps) => {
   // Use actual genres from media object with fallback
   const genres = media.genres || [];
-  
+
   // Determine content type and duration info
   const getContentInfo = () => {
-    if (media.episodes) {
-      return `${media.episodes} Episodes`;
-    }
-    if (media.dataSource === 'tmdb') {
-      return media.video ? 'Movie' : 'Series';
-    }
-    return 'Series';
+    return "Series";
   };
 
   // Get rating info
@@ -54,7 +48,7 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
                 <span>{getRatingInfo()}</span>
               </>
             )}
-            {(media.dataSource === 'anilist' || media.dataSource === 'hybrid') && media.rankings?.highestRated && (
+            {media.rankings?.highestRated && (
               <>
                 <span>•</span>
                 <span>#{media.rankings.highestRated} Rated</span>
@@ -68,12 +62,12 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
             )}
           </div>
         </MetadataText>
-        
+
         {genres.length > 0 && (
           <MetadataText>
             <div className="flex items-center space-x-4 mb-6 flex-wrap">
               {genres.slice(0, 5).map((genre, index) => (
-                <Badge 
+                <Badge
                   key={index}
                   variant="secondary"
                   className="px-3 py-2 bg-gray-600 hover:bg-gray-500 text-sm font-medium"
@@ -84,13 +78,11 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
             </div>
           </MetadataText>
         )}
-        
+
         {media.overview && (
           <div className="mt-2">
             <DescriptionText>
-              <span className="line-clamp-3 block">
-                {media.overview}
-              </span>
+              <span className="line-clamp-3 block">{media.overview}</span>
             </DescriptionText>
           </div>
         )}

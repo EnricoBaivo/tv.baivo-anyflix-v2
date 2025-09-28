@@ -8,9 +8,11 @@ from fastapi import APIRouter, HTTPException, Path, Query
 
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
 from lib.models.responses import (
-    LatestResponse,
+    LatestMediaSpotlightResponse,
+    PopularMediaSpotlightResponse,
     PopularResponse,
     PreferencesResponse,
+    SearchMediaSpotlightResponse,
     SearchResponse,
     SourcesResponse,
     TrailerRequest,
@@ -21,6 +23,7 @@ from lib.providers.aniworld import AniWorldProvider
 from lib.providers.base import BaseProvider
 from lib.providers.serienstream import SerienStreamProvider
 from lib.services.anilist_service import AniListService
+from lib.services.response_converter import convert_to_media_spotlight
 from lib.services.tmdb_service import TMDBService
 from lib.utils.trailer_utils import extract_trailer_info
 
@@ -86,45 +89,77 @@ async def get_source_preferences(source: str = Path(...)) -> PreferencesResponse
 
 @router.get(
     "/{source}/popular",
-    response_model=PopularResponse,
+    response_model=PopularMediaSpotlightResponse,
     summary="🔍 Get Popular Content",
 )
 async def get_popular(
     source: str = Path(...),
     page: int = Query(1, ge=1),
-) -> PopularResponse:
+) -> PopularMediaSpotlightResponse:
     """Get popular content with optional metadata enrichment."""
     provider = get_provider(source)
     async with provider:
-        return await provider.get_popular(page)
+        popular_response = await provider.get_popular(page=page)
+        media_spotlight_list = [
+            convert_to_media_spotlight(media_item)
+            for media_item in popular_response.list
+        ]
+        return PopularMediaSpotlightResponse(
+            list=media_spotlight_list,
+            type=popular_response.type,
+            has_next_page=popular_response.has_next_page,
+        )
 
 
 @router.get(
-    "/{source}/latest", response_model=LatestResponse, summary="🔍 Get Latest Updates"
+    "/{source}/latest",
+    response_model=LatestMediaSpotlightResponse,
+    summary="🔍 Get Latest Updates",
 )
 async def get_latest_updates(
     source: str = Path(...),
     page: int = Query(1, ge=1),
-) -> LatestResponse:
+) -> LatestMediaSpotlightResponse:
     """Get latest updates with optional metadata enrichment."""
     provider = get_provider(source)
     async with provider:
-        return await provider.get_latest_updates(page)
+        latest_updates_response = await provider.get_latest_updates(page=page)
+        media_spotlight_list = [
+            convert_to_media_spotlight(media_item)
+            for media_item in latest_updates_response.list
+        ]
+
+        return LatestMediaSpotlightResponse(
+            list=media_spotlight_list,
+            type=latest_updates_response.type,
+            has_next_page=latest_updates_response.has_next_page,
+        )
 
 
 @router.get(
-    "/{source}/search", response_model=SearchResponse, summary="🔍 Search Content"
+    "/{source}/search",
+    response_model=SearchMediaSpotlightResponse,
+    summary="🔍 Search Content",
 )
 async def search_content(
     source: str = Path(...),
     q: str = Query(..., min_length=1),
     page: int = Query(1, ge=1),
     lang: str = Query(None),
-) -> SearchResponse:
+) -> SearchMediaSpotlightResponse:
     """Search for content with optional metadata enrichment."""
     provider = get_provider(source)
     async with provider:
-        return await provider.search(q, page, lang)
+        search_response = await provider.search(q, page, lang)
+        media_spotlight_list = [
+            convert_to_media_spotlight(media_item)
+            for media_item in search_response.list
+        ]
+        return SearchMediaSpotlightResponse(
+            list=media_spotlight_list,
+            type=search_response.type,
+            has_next_page=search_response.has_next_page,
+        )
 
 
 @router.get(

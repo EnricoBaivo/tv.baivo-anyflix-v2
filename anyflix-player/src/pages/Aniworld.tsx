@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Media, convertAnimeListToMedia } from "@/types/media";
+import { Media, unifyMediaList } from "@/types/media";
 import Hero from "@/components/Hero";
 import MediaRow from "@/components/media/MediaRow";
 import { useToast } from "@/hooks/use-toast";
@@ -32,9 +32,8 @@ const Aniworld = () => {
     const latestList = latestData?.list || [];
 
     // Convert anime data to unified Media format
-    const popularUnified = convertAnimeListToMedia(popularList);
-    const latestUnified = convertAnimeListToMedia(latestList);
-
+    const popularUnified = unifyMediaList(popularList);
+    const latestUnified = unifyMediaList(latestList);
     return {
       heroMedia: popularUnified.length > 0 ? popularUnified[0] : null,
       popularMedia: popularUnified,
@@ -57,8 +56,6 @@ const Aniworld = () => {
 
   const handleMediaClick = (media: Media) => {
     console.log("Anime clicked:", media);
-    console.log("Data source:", media.dataSource);
-    console.log("Original data:", media.originalData);
     // TODO: Navigate to anime detail page or open modal
   };
 

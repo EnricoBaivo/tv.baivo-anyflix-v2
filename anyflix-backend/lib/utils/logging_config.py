@@ -201,8 +201,25 @@ class LoggingContext:
         if exc_type is None:
             self.logger.info("Completed %s in %.3fs", self.operation, duration)
         else:
+            # Extract filename without full path for cleaner logs
+            filename = exc_tb.tb_frame.f_code.co_filename
+            if "/" in filename:
+                filename = filename.split("/")[-1]
+
             self.logger.error(
-                "Failed %s after %.3fs: %s", self.operation, duration, exc_val
+                "Failed %s after %.3fs: %s (%s) at %s:%s",
+                self.operation,
+                duration,
+                exc_type.__name__,
+                str(exc_val),
+                filename,
+                exc_tb.tb_lineno,
+            )
+            # Log full stack trace for debugging
+            self.logger.debug(
+                "Full traceback for %s:",
+                self.operation,
+                exc_info=(exc_type, exc_val, exc_tb),
             )
 
         return False  # Don't suppress exceptions

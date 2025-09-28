@@ -127,7 +127,7 @@ const MediaCard = ({
             )}
 
             {/* AniList Rankings */}
-            {(media.dataSource === 'anilist' || media.dataSource === 'hybrid') && media.rankings && (
+            {media.rankings && (
               <div className="flex flex-wrap gap-1 text-xs">
                 {media.rankings.highestRated && (
                   <span className="px-2 py-1 bg-yellow-600/80 rounded text-white font-medium">

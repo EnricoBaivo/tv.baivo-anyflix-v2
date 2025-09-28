@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
+from lib.models.tmdb import TMDBMovieDetail, TMDBTVDetail
+
 if TYPE_CHECKING:
     from lib.models.anilist import Media  # noqa: F401
     from lib.models.tmdb import TMDBSearchResult  # noqa: F401
@@ -17,7 +19,6 @@ if TYPE_CHECKING:
 # 2. Keeps type checking accurate during development
 # 3. Allows for cleaner dependency separation
 # 4. Maintains backward compatibility
-BestMatchType = "TMDBSearchResult | Media | None"
 
 
 class MediaSource(BaseModel):
@@ -46,7 +47,7 @@ class MovieKind(str, Enum):
 
 
 class MatchSource(str, Enum):
-    """Match source enumeration."""
+    """Match source enumeration. Can be TMDB, ANILIST or both."""
 
     TMDB = "tmdb"
     ANILIST = "anilist"
@@ -130,6 +131,13 @@ class MediaInfo(BaseModel):
     )
 
 
+class TMDBMediaResult(BaseModel):
+    """TMDB media result model."""
+
+    media_result: TMDBSearchResult
+    media_info: TMDBMovieDetail | TMDBTVDetail
+
+
 class SearchResult(BaseModel):
     """Search result item."""
 
@@ -138,9 +146,13 @@ class SearchResult(BaseModel):
     link: str
 
     media_info: MediaInfo | None = None
-    best_match: BestMatchType = None
+    anilist_media_info: Media | None = None
+    tmdb_media_info: TMDBMediaResult | None = None
     best_match_source: MatchSource | None = None
     confidence: float | None = None
+    is_anime: bool = Field(
+        default=False, description="Is currently detecting with provider"
+    )
 
 
 class VideoSource(BaseModel):
@@ -182,10 +194,11 @@ def rebuild_models() -> None:
 
     # Rebuild the base model first
     SearchResult.model_rebuild()
-    
+
     # Also rebuild dependent models that use SearchResult
     try:
         from lib.models.responses import PaginatedResponse
+
         PaginatedResponse.model_rebuild()
     except ImportError:
         pass  # responses module might not be available in all contexts

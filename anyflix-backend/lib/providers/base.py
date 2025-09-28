@@ -2,12 +2,14 @@
 
 from abc import ABC, abstractmethod
 
+from lib.models.anilist import MediaType
 from lib.models.base import (
     MatchSource,
     MediaInfo,
     MediaSource,
     SearchResult,
     SourcePreference,
+    TMDBMediaResult,
 )
 from lib.models.responses import (
     LatestResponse,
@@ -15,6 +17,7 @@ from lib.models.responses import (
     SearchResponse,
     VideoListResponse,
 )
+from lib.models.tmdb import TMDBSearchResult
 from lib.services.anilist_service import AniListService
 from lib.services.matching_service import MatchingService
 from lib.services.tmdb_service import TMDBService
@@ -169,33 +172,67 @@ class BaseProvider(ABC):
     async def enrich_with_details(self, search_result: SearchResult) -> SearchResult:
         """Enrich SearchResult with detailed MediaInfo."""
         media_info = await self.get_detail(search_result.link, episodes=False)
+        confident_anime_source = False
+        best_match_anilist = None
+        best_match_tmdb = None
+        best_match_source = None
+        confidence = 0
         async with TMDBService() as tmdb_service:
             tmdb_media_info = await tmdb_service.search_multi(query=search_result.name)
-            best_match, confidence = MatchingService.calculate_match_confidence(
+            best_match_tmdb, confidence = MatchingService.calculate_match_confidence(
                 media_info, tmdb_media_info
             )
-            best_match_source = MatchSource.TMDB
-        if confidence < 0.7:
+            if best_match_tmdb:
+                # Get detailed information
+                if best_match_tmdb.media_type == "movie":
+                    details = await tmdb_service.get_movie_details(
+                        best_match_tmdb.id,
+                        append_to_response="videos,images,external_ids,status",
+                    )
+                else:
+                    details = await tmdb_service.get_tv_details(
+                        best_match_tmdb.id,
+                        append_to_response="videos,images,external_ids,status",
+                    )
+                if confidence >= 0.9:
+                    best_match_source = MatchSource.TMDB
+        if self.is_anime_source or confidence < 0.7:
             async with AniListService() as anilist_service:
                 anilist_media_info = await anilist_service.search_anime(
-                    query=search_result.name
+                    query=search_result.name,
+                    alternative_titles=media_info.alternative_titles,
                 )
-                best_match_anilist, confidence = (
-                    MatchingService.calculate_match_confidence(
-                        media_info, anilist_media_info
+
+                if anilist_media_info is not None:
+                    best_match_anilist, confidence = (
+                        MatchingService.calculate_match_confidence(
+                            media_info, anilist_media_info
+                        )
                     )
-                )
-                if confidence > 0.9:
-                    best_match = best_match_anilist
-                best_match_source = MatchSource.ANILIST
+                    if best_match_anilist:
+                        confident_anime_source = (
+                            best_match_anilist.type == MediaType.ANIME
+                        )
+
+                    if confidence > 0.9:
+                        best_match_source = MatchSource.ANILIST
+
+            # final result
         return SearchResult(
             name=search_result.name,
             image_url=search_result.image_url,
             link=search_result.link,
             media_info=media_info,
-            best_match=best_match,
+            anilist_media_info=best_match_anilist,
+            tmdb_media_info=TMDBMediaResult(
+                media_result=best_match_tmdb,
+                media_info=details,
+            )
+            if best_match_tmdb
+            else None,
             best_match_source=best_match_source,
             confidence=confidence,
+            is_anime=confident_anime_source or self.is_anime_source,
         )
 
     async def async_pool(

@@ -4,6 +4,8 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
+from lib.models.media import MediaSpotlight
+
 from .anilist import Media
 from .base import (
     Episode,
@@ -32,6 +34,10 @@ class PaginatedResponse(BaseModel, Generic[T]):
 PopularResponse = PaginatedResponse[SearchResult]
 LatestResponse = PaginatedResponse[SearchResult]
 SearchResponse = PaginatedResponse[SearchResult]
+
+PopularMediaSpotlightResponse = PaginatedResponse[MediaSpotlight]
+LatestMediaSpotlightResponse = PaginatedResponse[MediaSpotlight]
+SearchMediaSpotlightResponse = PaginatedResponse[MediaSpotlight]
 
 
 # Single item responses

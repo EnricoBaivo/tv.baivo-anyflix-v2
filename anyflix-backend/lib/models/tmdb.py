@@ -1,5 +1,6 @@
 """TMDB (The Movie Database) models."""
 
+from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -36,6 +37,22 @@ class TMDBSpokenLanguage(BaseModel):
     name: str
 
 
+class TMDBVideoType(str, Enum):
+    """TMDB video type enumeration."""
+
+    TRAILER = "Trailer"
+    CLIP = "Clip"
+    TEASER = "Teaser"
+    OPENING_CREDITS = "Opening Credits"
+    ENDING_CREDITS = "Ending Credits"
+
+
+class TMDBVideoSite(str, Enum):
+    """TMDB video site enumeration."""
+
+    YOUTUBE = "YouTube"
+
+
 class TMDBVideo(BaseModel):
     """TMDB video model."""
 
@@ -43,12 +60,18 @@ class TMDBVideo(BaseModel):
     iso_3166_1: str
     name: str
     key: str
-    site: str
+    site: str | TMDBVideoSite
     size: int
-    type: str
+    type: TMDBVideoType | str | None = None
     official: bool
     published_at: str
     id: str
+
+
+class TMDBVideoResult(BaseModel):
+    """TMDB video result model."""
+
+    results: list[TMDBVideo] = Field(default_factory=list)
 
 
 class TMDBImage(BaseModel):
@@ -165,7 +188,7 @@ class TMDBMovieDetail(BaseModel):
     vote_count: int
 
     # Additional fields when requested
-    videos: dict[str, list[TMDBVideo]] | None = None
+    videos: TMDBVideoResult | None = None
     images: TMDBImages | None = None
     external_ids: TMDBExternalIds | None = None
 
@@ -207,7 +230,7 @@ class TMDBTVDetail(BaseModel):
     vote_count: int
 
     # Additional fields when requested
-    videos: dict[str, list[TMDBVideo]] | None = None
+    videos: TMDBVideoResult | None = None
     images: TMDBImages | None = None
     external_ids: TMDBExternalIds | None = None
 
@@ -260,3 +283,116 @@ class TMDBConfiguration(BaseModel):
 
     images: dict[str, Any]
     change_keys: list[str] = Field(default_factory=list)
+
+
+# TMDB Movie Genres
+TMDB_MOVIE_GENRES = {
+    28: "Action",
+    12: "Adventure",
+    16: "Animation",
+    35: "Comedy",
+    80: "Crime",
+    99: "Documentary",
+    18: "Drama",
+    10751: "Family",
+    14: "Fantasy",
+    36: "History",
+    27: "Horror",
+    10402: "Music",
+    9648: "Mystery",
+    10749: "Romance",
+    878: "Science Fiction",
+    10770: "TV Movie",
+    53: "Thriller",
+    10752: "War",
+    37: "Western",
+}
+
+# TMDB TV Genres
+TMDB_TV_GENRES = {
+    10759: "Action & Adventure",
+    16: "Animation",
+    35: "Comedy",
+    80: "Crime",
+    99: "Documentary",
+    18: "Drama",
+    10751: "Family",
+    10762: "Kids",
+    9648: "Mystery",
+    10763: "News",
+    10764: "Reality",
+    10765: "Sci-Fi & Fantasy",
+    10766: "Soap",
+    10767: "Talk",
+    10768: "War & Politics",
+    37: "Western",
+}
+
+# Combined genre mapping for comprehensive lookup
+TMDB_ALL_GENRES = {
+    **TMDB_MOVIE_GENRES,
+    **TMDB_TV_GENRES,
+}
+
+
+def get_genre_name(genre_id: int, media_type: str = "all") -> str | None:
+    """
+    Get genre name by ID.
+
+    Args:
+        genre_id: The TMDB genre ID
+        media_type: Type of media ("movie", "tv", or "all")
+
+    Returns:
+        Genre name if found, None otherwise
+    """
+    if media_type == "movie":
+        return TMDB_MOVIE_GENRES.get(genre_id)
+    if media_type == "tv":
+        return TMDB_TV_GENRES.get(genre_id)
+    return TMDB_ALL_GENRES.get(genre_id)
+
+
+def get_genres_by_ids(genre_ids: list[int], media_type: str = "all") -> list[str]:
+    """
+    Get genre names by list of IDs.
+
+    Args:
+        genre_ids: List of TMDB genre IDs
+        media_type: Type of media ("movie", "tv", or "all")
+
+    Returns:
+        List of genre names (excludes None values)
+    """
+    genres = []
+    for genre_id in genre_ids:
+        genre_name = get_genre_name(genre_id, media_type)
+        if genre_name:
+            genres.append(genre_name.lower())
+    return genres
+
+
+def find_genre_id(genre_name: str, media_type: str = "all") -> int | None:
+    """
+    Find genre ID by name (case-insensitive).
+
+    Args:
+        genre_name: The genre name to search for
+        media_type: Type of media ("movie", "tv", or "all")
+
+    Returns:
+        Genre ID if found, None otherwise
+    """
+    genre_name_lower = genre_name.lower()
+
+    search_dict = TMDB_ALL_GENRES
+    if media_type == "movie":
+        search_dict = TMDB_MOVIE_GENRES
+    elif media_type == "tv":
+        search_dict = TMDB_TV_GENRES
+
+    for genre_id, name in search_dict.items():
+        if name.lower() == genre_name_lower:
+            return genre_id
+
+    return None

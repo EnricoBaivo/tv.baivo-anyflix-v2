@@ -613,13 +613,68 @@ class CacheManager:
             True if successful, False otherwise
         """
         try:
-            await self.cache.clear()
-            logger.info("Flushed all cache entries")
+            # Check if this is a Redis cache
+            if self.cache.__class__.__name__ == "RedisCache":
+                # Get Redis connection
+                conn = self.cache.get_connection()
 
-        except (pickle.PickleError, ValueError, TypeError):
+                try:
+                    # Use Redis FLUSHDB to clear all keys in current database
+                    await conn.client.flushdb()
+                    logger.info("Flushed all cache entries (Redis)")
+                    await self.cache.release_conn(conn)
+                    return True
+
+                except (redis.RedisError, pickle.PickleError, ValueError):
+                    await self.cache.release_conn(conn)
+                    raise
+
+            else:
+                # For memory cache, use clear
+                await self.cache.clear()
+                logger.info("Flushed all cache entries (memory cache)")
+                return True
+
+        except Exception:
             logger.exception("Failed to flush cache")
             return False
-        return True
+
+    async def clear_all(self) -> int:
+        """Clear all cache entries and return count.
+
+        Returns:
+            Number of keys cleared
+        """
+        try:
+            # Check if this is a Redis cache
+            if self.cache.__class__.__name__ == "RedisCache":
+                # Get Redis connection
+                conn = self.cache.get_connection()
+
+                try:
+                    # Get all keys first to count them
+                    keys = await conn.client.keys("*")
+                    key_count = len(keys) if keys else 0
+
+                    # Use Redis FLUSHDB to clear all keys in current database
+                    await conn.client.flushdb()
+                    logger.info("Cleared all %d cache keys (Redis)", key_count)
+                    await self.cache.release_conn(conn)
+                    return key_count
+
+                except (redis.RedisError, pickle.PickleError, ValueError):
+                    await self.cache.release_conn(conn)
+                    raise
+
+            else:
+                # For memory cache, use clear
+                await self.cache.clear()
+                logger.info("Cleared all cache entries (memory cache)")
+                return 1  # Return 1 to indicate action was taken
+
+        except Exception:
+            logger.exception("Failed to clear all cache entries")
+            return 0
 
 
 # Specific cache configurations for different data types

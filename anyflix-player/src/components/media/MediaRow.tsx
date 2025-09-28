@@ -89,7 +89,7 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
   // Initialize first media as selected
   useEffect(() => {
     if (media.length > 0 && !selectedMedia) {
-      setSelectedMedia(media[0]);
+      setSelectedMedia(media.at(0));
       setSelectedIndex(0);
     }
   }, [media, selectedMedia]);
@@ -117,42 +117,46 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
           ref={scrollRef}
           className="flex space-x-8 overflow-x-auto overflow-y-visible scrollbar-hide px-8 pt-6 pb-12 group-hover:opacity-100 opacity-90 transition-all duration-300"
         >
-          {media.map((item, index) => (
-            <div
-              key={item.id}
-              className={`flex-none transition-all duration-300 overflow-visible relative ${
-                selectedIndex === index
-                  ? "w-movie-2xl h-movie-2xl"
-                  : "w-movie-md h-movie-2xl"
-              } ${
-                hoveredIndex === index || selectedIndex === index
-                  ? "z-50"
-                  : "z-10"
-              }`}
-            >
-              <MediaCard
-                media={item}
-                index={index}
-                isSelected={selectedIndex === index}
-                isHovered={hoveredIndex === index}
-                isAnyHovered={isRowHovered}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                onFocus={() => {
-                  setSelectedIndex(index);
-                  setSelectedMedia(item);
-                  scrollToSelected(index);
-                  onMediaClick?.(item);
-                }}
-                onClick={() => {
-                  setSelectedIndex(index);
-                  setSelectedMedia(item);
-                  scrollToSelected(index);
-                  onMediaClick?.(item);
-                }}
-              />
-            </div>
-          ))}
+          {media.map((item, index) =>
+            item?.id ? (
+              <div
+                key={item.id}
+                className={`flex-none transition-all duration-300 overflow-visible relative ${
+                  selectedIndex === index
+                    ? "w-movie-2xl h-movie-2xl"
+                    : "w-movie-md h-movie-2xl"
+                } ${
+                  hoveredIndex === index || selectedIndex === index
+                    ? "z-50"
+                    : "z-10"
+                }`}
+              >
+                <MediaCard
+                  media={item}
+                  index={index}
+                  isSelected={selectedIndex === index}
+                  isHovered={hoveredIndex === index}
+                  isAnyHovered={isRowHovered}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                  onFocus={() => {
+                    setSelectedIndex(index);
+                    setSelectedMedia(item);
+                    scrollToSelected(index);
+                    onMediaClick?.(item);
+                  }}
+                  onClick={() => {
+                    setSelectedIndex(index);
+                    setSelectedMedia(item);
+                    scrollToSelected(index);
+                    onMediaClick?.(item);
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="text-white">{item?.id}</div>
+            )
+          )}
         </div>
 
         {/* Right navigation button */}

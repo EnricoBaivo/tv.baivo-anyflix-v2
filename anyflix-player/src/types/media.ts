@@ -1,3 +1,39 @@
+import type { components } from "@/lib/api/types";
+import { z } from "zod";
+// If codegen exists:
+// import { schemas as S } from "./openapi.zod.gen"; // e.g., S.TMDBSearchResult, S.Media, S.MediaInfo
+type MediaInfo = components["schemas"]["MediaInfo"];
+const MediaInfoSchema = z.custom<MediaInfo>();
+// Minimal base (swap in your generated schemas if you have them)
+const Base = z.object({
+  name: z.string(),
+  image_url: z.string().nullable().optional(),
+  link: z.string(),
+  media_info: MediaInfoSchema, // or your S.MediaInfo.nullish()
+  confidence: z.number().nullable().optional(),
+});
+
+// If you have generated schemas:
+// const Tmdb = S.TMDBSearchResult;
+// const Ani  = S.Media;
+
+// If you only have TS types, but still want inference (no structural checks):
+type TmdbMatch = components["schemas"]["TMDBSearchResult"];
+type AniListMatch = components["schemas"]["Media"];
+const Tmdb = z.custom<TmdbMatch>();
+const Ani = z.custom<AniListMatch>();
+
+export const SearchResultSchema = z.union([
+  Base.extend({ best_match_source: z.literal("tmdb"), best_match: Tmdb }),
+  Base.extend({ best_match_source: z.literal("anilist"), best_match: Ani }),
+  Base.extend({
+    best_match_source: z.union([z.null(), z.undefined()]),
+    best_match: z.union([z.null(), z.undefined()]),
+  }),
+]);
+
+export type SearchResult = z.infer<typeof SearchResultSchema>;
+
 export interface Media {
   id: number;
   title: string;
@@ -25,13 +61,6 @@ export interface Media {
     highestRated?: number; // Rank in highest rated all time
     mostPopular?: number; // Rank in most popular all time
   };
-  // Metadata to track data source
-  dataSource?: 'tmdb' | 'anilist' | 'hybrid';
-  // Original data for debugging/advanced use
-  originalData?: {
-    tmdb?: Record<string, unknown>;
-    anilist?: Record<string, unknown>;
-  };
 }
 
 export interface MediaResponse {
@@ -46,186 +75,141 @@ export interface Genre {
   name: string;
 }
 
-// Anime-specific interfaces for API data
-export interface AnimeItem {
-  name: string;
-  image_url: string;
-  link: string;
-  tmdb_data?: Record<string, unknown>;
-  anilist_data?: Record<string, unknown>;
-  match_confidence?: number;
-}
+// Helper functions for extracting rankings from AniList data
+const extractRankingByType = (
+  rankings: unknown[] | undefined,
+  type: string
+): number | undefined => {
+  if (!Array.isArray(rankings)) return undefined;
+  return (rankings as { type: string; rank: number }[])?.find(
+    (ranking) => ranking.type === type
+  )?.rank;
+};
 
-// Utility functions to convert anime data to unified Media format
-export function convertAnimeToMedia(anime: AnimeItem, index: number = 0): Media {
-  const { tmdb_data, anilist_data } = anime;
-  
-  // Determine primary data source
-  const hasAnilist = anilist_data && Object.keys(anilist_data).length > 0;
-  const hasTmdb = tmdb_data && Object.keys(tmdb_data).length > 0;
-  
-  let dataSource: 'tmdb' | 'anilist' | 'hybrid' = 'anilist';
-  if (hasTmdb && hasAnilist) dataSource = 'hybrid';
-  else if (hasTmdb) dataSource = 'tmdb';
+const getAniListRankings = (rankings: unknown[] | undefined) => ({
+  highestRated: extractRankingByType(rankings, "RATED"),
+  mostPopular: extractRankingByType(rankings, "POPULAR"),
+});
 
-  // Extract title with fallbacks
-  const getTitle = (): string => {
-    const anilistTitle = anilist_data?.title as { userPreferred?: string; english?: string; romaji?: string } | undefined;
-    if (anilistTitle?.userPreferred) return anilistTitle.userPreferred;
-    if (anilistTitle?.english) return anilistTitle.english;
-    if (anilistTitle?.romaji) return anilistTitle.romaji;
-    if (tmdb_data?.title) return tmdb_data.title as string;
-    if (tmdb_data?.name) return tmdb_data.name as string;
-    return anime.name;
-  };
+// Helper function to convert AniList date format to string
+const formatAniListDate = (date: unknown): string => {
+  if (!date || typeof date !== "object") return "";
+  const dateObj = date as { year?: number; month?: number; day?: number };
+  if (!dateObj.year) return "";
 
-  // Extract overview/description with fallbacks
-  const getOverview = (): string => {
-    if (anilist_data?.description) {
-      return (anilist_data.description as string).replace(/<[^>]*>/g, ''); // Strip HTML tags
-    }
-    if (tmdb_data?.overview) return tmdb_data.overview as string;
-    return '';
-  };
+  const year = dateObj.year;
+  const month = dateObj.month ? String(dateObj.month).padStart(2, "0") : "01";
+  const day = dateObj.day ? String(dateObj.day).padStart(2, "0") : "01";
 
-  // Extract images with fallbacks - prioritize TMDB over AniList
-  const getPosterPath = (): string => {
-    // Prioritize TMDB poster first
-    if (tmdb_data?.poster_path) return tmdb_data.poster_path as string;
-    
-    // Fallback to AniList images (highest quality first)
-    const coverImage = anilist_data?.coverImage as { 
-      extraLarge?: string; 
-      large?: string; 
-      medium?: string; 
-      color?: string; 
-    } | undefined;
-    
-    if (coverImage?.extraLarge) return coverImage.extraLarge;
-    if (coverImage?.large) return coverImage.large;
-    if (coverImage?.medium) return coverImage.medium;
-    
-    // Final fallback to original image
-    return anime.image_url || '';
-  };
+  return `${year}-${month}-${day}`;
+};
 
-  const getBackdropPath = (): string => {
-    // Prioritize TMDB backdrop first (usually higher quality for movies/series)
-    if (tmdb_data?.backdrop_path) return tmdb_data.backdrop_path as string;
-    
-    // Fallback to AniList banner (good for anime)
-    if (anilist_data?.bannerImage) return anilist_data.bannerImage as string;
-    
-    // Last resort: use cover image (prefer highest quality)
-    const coverImage = anilist_data?.coverImage as { 
-      extraLarge?: string; 
-      large?: string; 
-      medium?: string; 
-    } | undefined;
-    if (coverImage?.extraLarge) return coverImage.extraLarge;
-    if (coverImage?.large) return coverImage.large;
-    if (coverImage?.medium) return coverImage.medium;
-    
-    return anime.image_url || '';
-  };
+// Convert AniList data to unified Media format
+const convertAniListToMedia = (
+  aniListData: AniListMatch,
+  mediaInfo: MediaInfo
+): Media => ({
+  // Core media fields
+  id: aniListData.id,
+  title: aniListData.title?.userPreferred || mediaInfo.name || "",
+  overview: aniListData.description || "",
+  poster_path: aniListData.coverImage?.large || mediaInfo.cover_image_url || "",
+  backdrop_path: aniListData.bannerImage || "",
+  release_date: formatAniListDate(aniListData.startDate),
 
-  // Extract release date with fallbacks
-  const getReleaseDate = (): string => {
-    if (tmdb_data?.release_date) return tmdb_data.release_date as string;
-    if (tmdb_data?.first_air_date) return tmdb_data.first_air_date as string;
-    const startDate = anilist_data?.startDate as { year?: number; month?: number; day?: number } | undefined;
-    if (startDate?.year) {
-      const monthStr = startDate.month ? String(startDate.month).padStart(2, '0') : '01';
-      const dayStr = startDate.day ? String(startDate.day).padStart(2, '0') : '01';
-      return `${startDate.year}-${monthStr}-${dayStr}`;
-    }
-    return '';
-  };
+  // Rating and popularity
+  vote_average: aniListData.averageScore || 0,
+  vote_count: aniListData.meanScore || 0,
+  popularity: aniListData.popularity || 0,
 
-  // Extract rating with fallbacks
-  const getVoteAverage = (): number => {
-    if (tmdb_data?.vote_average) return tmdb_data.vote_average as number;
-    if (anilist_data?.averageScore) return (anilist_data.averageScore as number) / 10; // Convert 0-100 to 0-10
-    return 0;
-  };
+  // Basic metadata
+  genre_ids: [0], // AniList uses string genres, not IDs
+  adult: aniListData.isAdult || false,
+  original_language: aniListData.countryOfOrigin || "",
+  original_title: aniListData.title?.native || "",
+  video: Boolean(aniListData.trailer?.site),
 
-  // Extract genres with fallbacks
-  const getGenres = (): string[] => {
-    if (anilist_data?.genres) return anilist_data.genres as string[];
-    if (tmdb_data?.genres) {
-      return (tmdb_data.genres as unknown[]).map((g: unknown) => 
-        typeof g === 'string' ? g : (g as { name: string }).name
-      );
-    }
-    return [];
-  };
+  // AniList-specific fields
+  genres: aniListData.genres || [],
+  episodes: aniListData.episodes,
+  status: aniListData.status,
+  averageScore: aniListData.averageScore,
+  bannerImage: aniListData.bannerImage,
+  coverImage: aniListData.coverImage?.large,
+  rankings: getAniListRankings(aniListData.rankings),
+});
 
-  // Extract AniList rankings
-  const getRankings = (): { highestRated?: number; mostPopular?: number } | undefined => {
-    const rankings = anilist_data?.rankings as Array<{
-      rank?: number;
-      type?: string;
-      allTime?: boolean;
-      context?: string;
-    }> | undefined;
+// Convert TMDB data to unified Media format
+const convertTMDBToMedia = (
+  tmdbData: TmdbMatch,
+  mediaInfo: MediaInfo
+): Media => ({
+  // Core media fields
+  id: tmdbData.id,
+  title: tmdbData.title || mediaInfo.name || "",
+  overview: tmdbData.overview || "",
+  poster_path: tmdbData.poster_path || mediaInfo.cover_image_url || "",
+  backdrop_path: tmdbData.backdrop_path || "",
+  release_date: tmdbData.release_date || "",
 
-    if (!rankings || !Array.isArray(rankings)) return undefined;
+  // Rating and popularity
+  vote_average: tmdbData.vote_average || 0,
+  vote_count: tmdbData.vote_count || 0,
+  popularity: tmdbData.popularity || 0,
 
-    const result: { highestRated?: number; mostPopular?: number } = {};
+  // Basic metadata
+  genre_ids: tmdbData.genre_ids || [],
+  adult: tmdbData.adult || false,
+  original_language: tmdbData.original_language || "",
+  original_title: tmdbData.original_title || "",
+  video: tmdbData.video || false,
 
-    rankings.forEach(ranking => {
-      if (ranking.allTime && ranking.rank) {
-        if (ranking.type === 'RATED') {
-          result.highestRated = ranking.rank;
-        } else if (ranking.type === 'POPULAR') {
-          result.mostPopular = ranking.rank;
-        }
-      }
-    });
-
-    return Object.keys(result).length > 0 ? result : undefined;
-  };
-
-  // Create unified Media object
-  const anilistTitle = anilist_data?.title as { native?: string } | undefined;
-  const coverImage = anilist_data?.coverImage as { 
-    extraLarge?: string; 
-    large?: string; 
-    medium?: string; 
-  } | undefined;
-  
-  return {
-    id: (anilist_data?.id as number) || (tmdb_data?.id as number) || index,
-    title: getTitle(),
-    overview: getOverview(),
-    poster_path: getPosterPath(),
-    backdrop_path: getBackdropPath(),
-    release_date: getReleaseDate(),
-    vote_average: getVoteAverage(),
-    vote_count: (tmdb_data?.vote_count as number) || 0,
-    genre_ids: (tmdb_data?.genre_ids as number[]) || [],
-    adult: (tmdb_data?.adult as boolean) || false,
-    original_language: (tmdb_data?.original_language as string) || (anilist_data?.countryOfOrigin as string) || 'ja',
-    original_title: (tmdb_data?.original_title as string) || anilistTitle?.native || anime.name,
-    popularity: (tmdb_data?.popularity as number) || (anilist_data?.popularity as number) || 0,
-    video: (tmdb_data?.video as boolean) || false,
-    // Extended anime fields
-    genres: getGenres(),
-    episodes: anilist_data?.episodes as number | undefined,
-    status: anilist_data?.status as string | undefined,
-    averageScore: anilist_data?.averageScore as number | undefined,
-    bannerImage: anilist_data?.bannerImage as string | undefined,
-    coverImage: coverImage?.extraLarge || coverImage?.large || coverImage?.medium,
-    rankings: getRankings(),
-    dataSource,
-    originalData: {
-      tmdb: tmdb_data,
-      anilist: anilist_data,
-    },
-  };
-}
+  // Map TMDB fields to anime-like structure for consistency
+  averageScore: tmdbData.vote_average,
+  bannerImage: tmdbData.backdrop_path,
+  coverImage: tmdbData.poster_path,
+  rankings: {
+    highestRated: tmdbData.vote_average,
+    mostPopular: tmdbData.popularity,
+  },
+});
 
 // Convert array of anime items to Media array
-export function convertAnimeListToMedia(animeList: AnimeItem[]): Media[] {
-  return animeList.map((anime, index) => convertAnimeToMedia(anime, index));
+export function unifyMediaList(
+  mediaList: {
+    name: string;
+    image_url: string;
+    link: string;
+    media_info?: components["schemas"]["MediaInfo"] | null;
+    best_match?:
+      | components["schemas"]["TMDBSearchResult"]
+      | components["schemas"]["Media"]
+      | null;
+    best_match_source?: components["schemas"]["MatchSource"] | null;
+    confidence?: number | null;
+  }[]
+): Media[] {
+  return mediaList
+    .map((media, index) => {
+      const { best_match, best_match_source, media_info } =
+        media as SearchResult;
+
+      // Handle null/undefined cases for best_match data (media_info is always present)
+      if (!best_match || !best_match_source) {
+        return null;
+      }
+
+      // Route to appropriate converter based on source
+      switch (best_match_source) {
+        case "anilist":
+          return convertAniListToMedia(best_match, media_info);
+
+        case "tmdb":
+          return convertTMDBToMedia(best_match, media_info);
+
+        default:
+          return null;
+      }
+    })
+    .filter((media): media is Media => media !== null);
 }

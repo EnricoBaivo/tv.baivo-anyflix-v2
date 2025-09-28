@@ -1,5 +1,7 @@
 """AniList API service for GraphQL queries."""
 
+import asyncio
+import time
 from typing import Any
 
 import aiohttp
@@ -399,6 +401,12 @@ class AniListService:
         self.logger = get_logger(__name__)
         self.session: aiohttp.ClientSession | None = None
 
+        # Rate limiting state
+        self._rate_limit_remaining: int | None = None
+        self._rate_limit_reset: int | None = None
+        self._rate_limit_limit: int | None = None
+        self._last_request_time: float | None = None
+
     async def __aenter__(self):
         """Async context manager entry."""
         self.session = aiohttp.ClientSession()
@@ -409,20 +417,87 @@ class AniListService:
         if self.session:
             await self.session.close()
 
+    def _update_rate_limit_info(self, headers: dict[str, Any]) -> None:
+        """Update rate limit information from response headers.
+
+        Args:
+            headers: Response headers containing rate limit info
+        """
+        if "X-RateLimit-Limit" in headers:
+            self._rate_limit_limit = int(headers["X-RateLimit-Limit"])
+
+        if "X-RateLimit-Remaining" in headers:
+            self._rate_limit_remaining = int(headers["X-RateLimit-Remaining"])
+
+        if "X-RateLimit-Reset" in headers:
+            self._rate_limit_reset = int(headers["X-RateLimit-Reset"])
+
+        self._last_request_time = time.time()
+
+        self.logger.debug(
+            "Rate limit info updated - Limit: %s, Remaining: %s, Reset: %s",
+            self._rate_limit_limit,
+            self._rate_limit_remaining,
+            self._rate_limit_reset,
+        )
+
+    async def _wait_for_rate_limit_reset(self, retry_after: int | None = None) -> None:
+        """Wait for rate limit to reset.
+
+        Args:
+            retry_after: Seconds to wait from Retry-After header, if available
+        """
+        if retry_after is not None:
+            wait_time = retry_after
+            self.logger.warning(
+                "Rate limited by AniList API. Waiting %d seconds (from Retry-After header).",
+                wait_time,
+            )
+        elif self._rate_limit_reset is not None:
+            current_time = int(time.time())
+            wait_time = max(0, self._rate_limit_reset - current_time)
+            self.logger.warning(
+                "Rate limited by AniList API. Waiting %d seconds until reset.",
+                wait_time,
+            )
+        else:
+            # Fallback to default wait time if no timing info available
+            wait_time = 60  # Default 1 minute wait
+            self.logger.warning(
+                "Rate limited by AniList API. Waiting %d seconds (fallback).",
+                wait_time,
+            )
+
+        if wait_time > 0:
+            await asyncio.sleep(wait_time)
+
+    def _raise_graphql_error(self, errors: list[dict[str, Any]]) -> None:
+        """Raise a ValueError for GraphQL errors.
+
+        Args:
+            errors: List of GraphQL errors
+
+        Raises:
+            ValueError: Always raises with formatted GraphQL errors
+        """
+        error_msg = f"GraphQL errors: {errors}"
+        raise ValueError(error_msg)
+
     async def _make_request(
-        self, query: str, variables: dict[str, Any] | None = None
+        self, query: str, variables: dict[str, Any] | None = None, max_retries: int = 3
     ) -> dict[str, Any]:
-        """Make a GraphQL request to AniList API.
+        """Make a GraphQL request to AniList API with rate limiting and retry logic.
 
         Args:
             query: GraphQL query string
             variables: Query variables
+            max_retries: Maximum number of retry attempts
 
         Returns:
             Response data
 
         Raises:
-            aiohttp.ClientError: If request fails
+            aiohttp.ClientError: If request fails after all retries
             ValueError: If response contains errors
         """
         if not self.session:
@@ -438,18 +513,115 @@ class AniListService:
 
         self.logger.debug("Making AniList API request with variables: %s", variables)
 
-        async with self.session.post(
-            self.BASE_URL, json=payload, headers=headers
-        ) as response:
-            response.raise_for_status()
-            data = await response.json()
+        last_exception = None
 
-            if "errors" in data:
-                error_msg = f"GraphQL errors: {data['errors']}"
-                self.logger.error(error_msg)
-                raise ValueError(error_msg)
+        for attempt in range(max_retries + 1):
+            try:
+                # Check if we need to wait before making the request
+                if (
+                    self._rate_limit_remaining is not None
+                    and self._rate_limit_remaining <= 1
+                    and self._rate_limit_reset is not None
+                ):
+                    current_time = int(time.time())
+                    if current_time < self._rate_limit_reset:
+                        await self._wait_for_rate_limit_reset()
 
-            return data.get("data", {})
+                async with self.session.post(
+                    self.BASE_URL, json=payload, headers=headers
+                ) as response:
+                    self.logger.debug(
+                        "AniList API response status: %s", response.status
+                    )
+
+                    # Update rate limit info from headers
+                    self._update_rate_limit_info(response.headers)
+
+                    # Handle rate limiting
+                    if response.status == 429:
+                        retry_after = None
+                        if "Retry-After" in response.headers:
+                            retry_after = int(response.headers["Retry-After"])
+
+                        self.logger.warning(
+                            "Rate limited (attempt %d/%d). Status: %d",
+                            attempt + 1,
+                            max_retries + 1,
+                            response.status,
+                        )
+
+                        if attempt < max_retries:
+                            await self._wait_for_rate_limit_reset(retry_after)
+                            continue
+                        response.raise_for_status()  # Will raise ClientResponseError
+
+                    # Handle other HTTP errors
+                    response.raise_for_status()
+                    data = await response.json()
+
+                    if "errors" in data:
+                        self.logger.error(
+                            "AniList API GraphQL errors: %s", data["errors"]
+                        )
+                        self.logger.debug("AniList API request payload: %s", payload)
+                        # Don't retry on GraphQL errors as they're likely permanent
+                        self._raise_graphql_error(data["errors"])
+
+                    return data.get("data", {})
+
+            except aiohttp.ClientResponseError as e:
+                last_exception = e
+                if e.status == 429:
+                    # Already handled above, but just in case
+                    if attempt < max_retries:
+                        retry_after = None
+                        if "Retry-After" in e.headers:
+                            retry_after = int(e.headers["Retry-After"])
+                        await self._wait_for_rate_limit_reset(retry_after)
+                        continue
+                else:
+                    # Don't retry on other client errors (4xx)
+                    self.logger.debug(
+                        "AniList API request details - URL: %s, payload: %s",
+                        self.BASE_URL,
+                        payload,
+                    )
+                    raise
+
+            except (TimeoutError, aiohttp.ClientError) as e:
+                last_exception = e
+                if attempt < max_retries:
+                    wait_time = min(2**attempt, 30)  # Exponential backoff, max 30s
+                    self.logger.warning(
+                        "Request failed (attempt %d/%d), retrying in %d seconds: %s",
+                        attempt + 1,
+                        max_retries + 1,
+                        wait_time,
+                        str(e),
+                    )
+                    await asyncio.sleep(wait_time)
+                    continue
+                self.logger.debug(
+                    "AniList API request details - URL: %s, payload: %s",
+                    self.BASE_URL,
+                    payload,
+                )
+                raise
+
+            except Exception as e:
+                last_exception = e
+                self.logger.debug(
+                    "AniList API request details - URL: %s, payload: %s",
+                    self.BASE_URL,
+                    payload,
+                )
+                raise
+
+        # If we get here, all retries failed
+        if last_exception:
+            raise last_exception
+        msg = f"Request failed after {max_retries + 1} attempts"
+        raise aiohttp.ClientError(msg)
 
     @cached(ttl=ServiceCacheConfig.ANILIST_MEDIA_TTL, key_prefix="anilist_media_by_id")
     async def get_media_by_id(
@@ -468,7 +640,7 @@ class AniListService:
         Returns:
             Media object or None if not found
         """
-        with timed_operation(f"get_media_by_id({media_id})", self.logger):
+        with timed_operation(f"anilist_get_media_by_id({media_id})", self.logger):
             variables = MediaByIdVariables(id=media_id, type=media_type).model_dump(
                 exclude_none=True
             )
@@ -489,7 +661,6 @@ class AniListService:
                     "Retrieved media: %s",
                     response.media.title.userPreferred if response.media else "Unknown",
                 )
-                return response.media
 
             except ValidationError:
                 self.logger.exception("Failed to parse media response")
@@ -497,6 +668,8 @@ class AniListService:
             except (aiohttp.ClientError, ValueError, KeyError):
                 self.logger.exception("Failed to get media by ID %s", media_id)
                 raise
+            else:
+                return response.media
 
     @cached(
         ttl=ServiceCacheConfig.ANILIST_SEARCH_TTL, key_prefix="anilist_search_media"
@@ -507,6 +680,7 @@ class AniListService:
         media_type: MediaType | None = None,
         page: int = 1,
         per_page: int = 20,
+        alternative_titles: list[str] | None = None,
         **kwargs: str | int | bool | list[str] | None,
     ) -> PageResponse | None:
         """Search for media.
@@ -521,38 +695,63 @@ class AniListService:
         Returns:
             PageResponse with search results
         """
-        with timed_operation(f"search_media('{search}', {media_type})", self.logger):
+        with timed_operation(
+            f"anilist_search_media('{search}', {media_type})", self.logger
+        ):
             # Build variables from parameters
             variables = MediaSearchVariables(
-                search=search, type=media_type, page=page, perPage=per_page, **kwargs
+                search=search,
+                type=media_type,
+                page=page,
+                perPage=per_page,
+                **kwargs,
             ).model_dump(exclude_none=True)
 
-            try:
-                data = await self._make_request(self.MEDIA_SEARCH_QUERY, variables)
+            self.logger.debug("AniList search variables: %s", variables)
+            data = await self._make_request(self.MEDIA_SEARCH_QUERY, variables)
 
-                if not data.get("Page"):
-                    self.logger.warning("No search results for query: %s", search)
-                    return None
-
-                response = MediaPageResponse(**data)
-                result_count = len(response.Page.media) if response.Page.media else 0
-                self.logger.info(
-                    "Found %d media results for search: '%s'", result_count, search
+            if not data.get("Page"):
+                self.logger.warning(
+                    "No search results for query: '%s' (type: %s)",
+                    search,
+                    media_type,
                 )
-                return response.Page
+                return None
 
-            except ValidationError:
-                self.logger.exception("Failed to parse search response")
-                raise
-            except (aiohttp.ClientError, ValueError, KeyError):
-                self.logger.exception("Failed to search media")
-                raise
+            response = MediaPageResponse(**data)
+            result_count = len(response.Page.media) if response.Page.media else 0
+            self.logger.info(
+                "Found %d media results for search: '%s' (type: %s)",
+                result_count,
+                search,
+                media_type,
+            )
+            if not response.Page.media and alternative_titles:
+                alternative_title = alternative_titles[0]
+                self.logger.warning(
+                    "Empty media results for query: '%s' (type: %s) retrying with title %s and alternative titles %s",
+                    search,
+                    media_type,
+                    alternative_title,
+                    alternative_titles,
+                )
+                return await self.search_media(
+                    search=alternative_title,
+                    media_type=media_type,
+                    page=page,
+                    per_page=per_page,
+                    alternative_titles=alternative_titles[1:],
+                )
+            return response.Page
 
     @cached(
         ttl=ServiceCacheConfig.ANILIST_TRENDING_TTL, key_prefix="anilist_trending_anime"
     )
     async def get_trending_anime(
-        self, page: int = 1, per_page: int = 20
+        self,
+        page: int = 1,
+        per_page: int = 20,
+        alternative_titles: list[str] | None = None,
     ) -> PageResponse | None:
         """Get trending anime.
 
@@ -568,13 +767,17 @@ class AniListService:
             page=page,
             per_page=per_page,
             sort=["TRENDING_DESC", "POPULARITY_DESC"],
+            alternative_titles=alternative_titles,
         )
 
     @cached(
         ttl=ServiceCacheConfig.ANILIST_TRENDING_TTL, key_prefix="anilist_popular_anime"
     )
     async def get_popular_anime(
-        self, page: int = 1, per_page: int = 20
+        self,
+        page: int = 1,
+        per_page: int = 20,
+        alternative_titles: list[str] | None = None,
     ) -> PageResponse | None:
         """Get popular anime.
 
@@ -590,10 +793,14 @@ class AniListService:
             page=page,
             per_page=per_page,
             sort=["POPULARITY_DESC"],
+            alternative_titles=alternative_titles,
         )
 
     async def get_top_rated_anime(
-        self, page: int = 1, per_page: int = 20
+        self,
+        page: int = 1,
+        per_page: int = 20,
+        alternative_titles: list[str] | None = None,
     ) -> PageResponse | None:
         """Get top rated anime.
 
@@ -609,10 +816,16 @@ class AniListService:
             page=page,
             per_page=per_page,
             sort=["SCORE_DESC"],
+            alternative_titles=alternative_titles,
         )
 
     async def get_seasonal_anime(
-        self, season: str, year: int, page: int = 1, per_page: int = 20
+        self,
+        season: str,
+        year: int,
+        page: int = 1,
+        per_page: int = 20,
+        alternative_titles: list[str] | None = None,
     ) -> PageResponse | None:
         """Get seasonal anime.
 
@@ -632,10 +845,14 @@ class AniListService:
             page=page,
             per_page=per_page,
             sort=["POPULARITY_DESC"],
+            alternative_titles=alternative_titles,
         )
 
     async def get_upcoming_anime(
-        self, page: int = 1, per_page: int = 20
+        self,
+        page: int = 1,
+        per_page: int = 20,
+        alternative_titles: list[str] | None = None,
     ) -> PageResponse | None:
         """Get upcoming anime.
 
@@ -652,18 +869,24 @@ class AniListService:
             page=page,
             per_page=per_page,
             sort=["POPULARITY_DESC"],
+            alternative_titles=alternative_titles,
         )
 
     @cached(
         ttl=ServiceCacheConfig.ANILIST_SEARCH_TTL, key_prefix="anilist_search_anime"
     )
     async def search_anime(
-        self, query: str, page: int = 1, per_page: int = 20
+        self,
+        query: str,
+        alternative_titles: list[str] | None = None,
+        page: int = 1,
+        per_page: int = 20,
     ) -> PageResponse | None:
         """Search anime by title.
 
         Args:
             query: Search query
+            alternative_titles: Alternative titles
             page: Page number
             per_page: Items per page
 
@@ -671,16 +894,25 @@ class AniListService:
             PageResponse with search results
         """
         return await self.search_media(
-            search=query, media_type=MediaType.ANIME, page=page, per_page=per_page
+            search=query,
+            media_type=MediaType.ANIME,
+            page=page,
+            per_page=per_page,
+            alternative_titles=alternative_titles,
         )
 
     async def search_manga(
-        self, query: str, page: int = 1, per_page: int = 20
+        self,
+        query: str,
+        alternative_titles: list[str] | None = None,
+        page: int = 1,
+        per_page: int = 20,
     ) -> PageResponse | None:
         """Search manga by title.
 
         Args:
             query: Search query
+            alternative_titles: Alternative titles
             page: Page number
             per_page: Items per page
 
@@ -688,7 +920,11 @@ class AniListService:
             PageResponse with search results
         """
         return await self.search_media(
-            search=query, media_type=MediaType.MANGA, page=page, per_page=per_page
+            search=query,
+            media_type=MediaType.MANGA,
+            page=page,
+            per_page=per_page,
+            alternative_titles=alternative_titles,
         )
 
     async def get_media_relations(self, media_id: int) -> Media | None:

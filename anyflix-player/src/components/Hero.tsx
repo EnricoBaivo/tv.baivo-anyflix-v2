@@ -45,13 +45,11 @@ const Hero = ({ media }: HeroProps) => {
           {/* Metadata */}
           <div className="flex items-center space-x-4 text-sm text-white mb-4">
             <span className="bg-red-600 text-white px-2 py-1 text-xs font-bold">
-              {media.dataSource === "anilist" || media.dataSource === "hybrid"
-                ? `${media.averageScore || "N/A"}% Score`
-                : `#${Math.floor(Math.random() * 10) + 1} in TV Shows`}
+              `${media.averageScore || "N/A"}% Score`
             </span>
             <span className="flex items-center">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-              {media.dataSource === "anilist" || media.dataSource === "hybrid"
+              {media.episodes
                 ? `${media.episodes || "Unknown"} Episodes`
                 : `Starring ${
                     media.vote_average > 7 ? "Award Winners" : "Popular Actors"
@@ -60,28 +58,25 @@ const Hero = ({ media }: HeroProps) => {
           </div>
 
           {/* AniList Rankings */}
-          {(media.dataSource === "anilist" || media.dataSource === "hybrid") &&
-            media.rankings && (
-              <div className="flex items-center space-x-4 text-sm text-white/90 mb-4">
-                {media.rankings.highestRated && (
-                  <span className="bg-yellow-600/80 text-white px-3 py-1 text-xs font-bold rounded">
-                    #{media.rankings.highestRated} Highest Rated All Time
-                  </span>
-                )}
-                {media.rankings.mostPopular && (
-                  <span className="bg-purple-600/80 text-white px-3 py-1 text-xs font-bold rounded">
-                    #{media.rankings.mostPopular} Most Popular All Time
-                  </span>
-                )}
-              </div>
-            )}
+          {media.rankings && (
+            <div className="flex items-center space-x-4 text-sm text-white/90 mb-4">
+              {media.rankings.highestRated && (
+                <span className="bg-yellow-600/80 text-white px-3 py-1 text-xs font-bold rounded">
+                  #{media.rankings.highestRated} Highest Rated All Time
+                </span>
+              )}
+              {media.rankings.mostPopular && (
+                <span className="bg-purple-600/80 text-white px-3 py-1 text-xs font-bold rounded">
+                  #{media.rankings.mostPopular} Most Popular All Time
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Additional metadata */}
           <div className="flex items-center space-x-3 text-white/70 text-sm mb-6">
             <span className="text-green-500 font-semibold">
-              {media.dataSource === "anilist" || media.dataSource === "hybrid"
-                ? "Anime"
-                : "Family Time TV"}
+              {media.genre_ids.includes(0) ? "Anime" : "Family Time TV"}
             </span>
             {media.release_date && (
               <>
@@ -89,16 +84,12 @@ const Hero = ({ media }: HeroProps) => {
                 <span>{new Date(media.release_date).getFullYear()}</span>
               </>
             )}
-            {media.status &&
-              (media.dataSource === "anilist" ||
-                media.dataSource === "hybrid") && (
-                <>
-                  <span>•</span>
-                  <span className="capitalize">
-                    {media.status.toLowerCase()}
-                  </span>
-                </>
-              )}
+            {media.status && (
+              <>
+                <span>•</span>
+                <span className="capitalize">{media.status.toLowerCase()}</span>
+              </>
+            )}
             {!media.status && (
               <>
                 <span>•</span>

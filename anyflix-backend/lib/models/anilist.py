@@ -35,8 +35,8 @@ class MediaStatus(str, Enum):
 
     FINISHED = "FINISHED"
     RELEASING = "RELEASING"
-    NOT_YET_RELEASED = "NOT_YET_RELEASED"
     CANCELLED = "CANCELLED"
+    NOT_YET_RELEASED = "NOT_YET_RELEASED"
     HIATUS = "HIATUS"
 
 
@@ -193,6 +193,14 @@ class MediaTag(BaseModel):
     userId: int | None = None
 
 
+class MediaRankingContext(Enum):
+    """Media ranking context enumeration."""
+
+    HIGHEST_RATED_ALL_TIME = "highest rated all time"
+    HIGHEST_RATED = "highest rated"
+    MOST_POPULAR = "most popular"
+
+
 class MediaRanking(BaseModel):
     """Media ranking model."""
 
@@ -203,7 +211,7 @@ class MediaRanking(BaseModel):
     year: int | None = None
     season: MediaSeason | None = None
     allTime: bool | None = None
-    context: str
+    context: str | MediaRankingContext
 
 
 class StatusDistribution(BaseModel):

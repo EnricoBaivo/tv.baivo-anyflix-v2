@@ -15,6 +15,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
+from lib.utils.caching import CacheManager
+
 from .config import settings
 from .internal import admin
 from .routers import series, sources
@@ -85,6 +87,9 @@ class DebugMiddleware(BaseHTTPMiddleware):
         return response
 
 
+cache_manager = CacheManager()
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage application lifespan events."""
@@ -117,6 +122,9 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
                 redis_password=settings.redis_password,
             )
             logger.info("✅ Cache initialized successfully")
+            await cache_manager.clear_all()
+            logger.info("✅ Cache flushed successfully")
+
         except (ImportError, RuntimeError, ValueError) as e:
             logger.warning("⚠️ Failed to initialize cache: %s", e)
     else:

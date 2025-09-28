@@ -207,6 +207,7 @@ class SerienStreamProvider(BaseProvider):
 
         all_series = self._parse_series_list_elements(elements)
         paginated_series, has_next_page = self._apply_pagination(all_series, page)
+        print("paginated_series", paginated_series)
         series_list_extended_metadata = await self.async_pool(
             13, paginated_series, self.enrich_with_details
         )

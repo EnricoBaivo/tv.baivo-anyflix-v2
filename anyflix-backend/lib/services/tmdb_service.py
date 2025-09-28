@@ -58,48 +58,15 @@ class TMDBService:
         if self._configuration:
             return self._configuration
 
-        try:
-            url = f"{self.base_url}/configuration"
-            params = {"api_key": self.api_key}
+        url = f"{self.base_url}/configuration"
+        params = {"api_key": self.api_key}
 
-            response = await self.client.get(
-                url, params=params, headers=self._get_headers()
-            )
-            response_data = json.loads(response.body)
-            self._configuration = TMDBConfiguration(**response_data)
-            return self._configuration
-
-        except (httpx.HTTPError, ValueError, KeyError):
-            logger.exception("Failed to get TMDB configuration")
-            # Return default configuration
-            return TMDBConfiguration(
-                images={
-                    "base_url": "https://image.tmdb.org/t/p/",
-                    "secure_base_url": "https://image.tmdb.org/t/p/",
-                    "backdrop_sizes": ["w300", "w780", "w1280", "original"],
-                    "logo_sizes": [
-                        "w45",
-                        "w92",
-                        "w154",
-                        "w185",
-                        "w300",
-                        "w500",
-                        "original",
-                    ],
-                    "poster_sizes": [
-                        "w92",
-                        "w154",
-                        "w185",
-                        "w342",
-                        "w500",
-                        "w780",
-                        "original",
-                    ],
-                    "profile_sizes": ["w45", "w185", "h632", "original"],
-                    "still_sizes": ["w92", "w185", "w300", "original"],
-                },
-                change_keys=[],
-            )
+        response = await self.client.get(
+            url, params=params, headers=self._get_headers()
+        )
+        response_data = json.loads(response.body)
+        self._configuration = TMDBConfiguration(**response_data)
+        return self._configuration
 
     @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_search_multi")
     async def search_multi(self, query: str, page: int = 1) -> TMDBSearchResponse:
@@ -125,7 +92,31 @@ class TMDBService:
                 url, params=params, headers=self._get_headers()
             )
             response_data = json.loads(response.body)
-            return TMDBSearchResponse(**response_data)
+
+            # Check if TMDB returned an error response
+            if "success" in response_data and not response_data["success"]:
+                logger.warning(
+                    "TMDB API error: %s (status_code: %s)",
+                    response_data.get("status_message", "Unknown error"),
+                    response_data.get("status_code", "Unknown"),
+                )
+                return TMDBSearchResponse(
+                    page=page, results=[], total_pages=0, total_results=0
+                )
+
+            try:
+                return TMDBSearchResponse(**response_data)
+            except (ValueError, TypeError, KeyError) as e:
+                logger.exception(
+                    "Pydantic validation error in search_multi for query '%s'", query
+                )
+                logger.debug(
+                    "Response data that caused validation error: %s", response_data
+                )
+                # Return empty response instead of crashing
+                return TMDBSearchResponse(
+                    page=page, results=[], total_pages=0, total_results=0
+                )
 
         except (httpx.HTTPError, ValueError, KeyError):
             logger.exception("Failed to search TMDB")
@@ -252,87 +243,3 @@ class TMDBService:
         config = await self.get_configuration()
         base_url = config.images.get("secure_base_url", "https://image.tmdb.org/t/p/")
         return f"{base_url}{size}{path}"
-
-    @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_search_and_match")
-    async def search_and_match(
-        self, title: str, year: int | None = None, media_type: str | None = None
-    ) -> TMDBMovieDetail | TMDBTVDetail | None:
-        """Search and find the best match for a title.
-
-        Args:
-            title: Title to search for
-            year: Release year for better matching
-            media_type: Preferred media type ("movie" or "tv")
-
-        Returns:
-            Best match details or None
-        """
-        if not self._api_available:
-            logger.warning("TMDB API key not available, skipping search")
-            return None
-
-        try:
-            # Search for the title
-            search_results = await self.search_multi(title)
-
-            if not search_results.results:
-                return None
-
-            # Find best match
-            best_match = None
-            best_score = 0
-
-            for result in search_results.results:
-                # Skip person results - we only want movies and TV shows
-                if result.media_type == "person":
-                    continue
-
-                score = 0
-
-                # Title similarity (basic check)
-                result_title = result.title or result.name or ""
-                if (
-                    title.lower() in result_title.lower()
-                    or result_title.lower() in title.lower()
-                ):
-                    score += 50
-
-                # Year matching
-                if year:
-                    result_year = None
-                    if result.release_date:
-                        result_year = int(result.release_date[:4])
-                    elif result.first_air_date:
-                        result_year = int(result.first_air_date[:4])
-
-                    if result_year and abs(result_year - year) <= 1:
-                        score += 30
-
-                # Media type preference
-                if media_type and result.media_type == media_type:
-                    score += 20
-
-                # Popularity bonus
-                score += min((result.popularity or 0) / 100, 10)
-
-                if score > best_score:
-                    best_score = score
-                    best_match = result
-
-            if not best_match:
-                return None
-
-            # Get detailed information
-            if best_match.media_type == "movie":
-                details = await self.get_movie_details(
-                    best_match.id, append_to_response="videos,images,external_ids"
-                )
-            else:
-                details = await self.get_tv_details(
-                    best_match.id, append_to_response="videos,images,external_ids"
-                )
-
-        except (httpx.HTTPError, ValueError, KeyError):
-            logger.exception("Failed to search and match title '%s'", title)
-            return None
-        return details if details else None

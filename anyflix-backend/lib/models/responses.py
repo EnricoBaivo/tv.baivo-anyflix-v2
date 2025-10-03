@@ -31,13 +31,8 @@ class PaginatedResponse(BaseModel, Generic[T]):
 
 
 # Type aliases using generics for common patterns
-PopularResponse = PaginatedResponse[SearchResult]
-LatestResponse = PaginatedResponse[SearchResult]
-SearchResponse = PaginatedResponse[SearchResult]
-
-PopularMediaSpotlightResponse = PaginatedResponse[MediaSpotlight]
-LatestMediaSpotlightResponse = PaginatedResponse[MediaSpotlight]
-SearchMediaSpotlightResponse = PaginatedResponse[MediaSpotlight]
+PaginatedSearchResultResponse = PaginatedResponse[SearchResult]
+PaginatedMediaSpotlightResponse = PaginatedResponse[MediaSpotlight]
 
 
 # Single item responses
@@ -129,7 +124,6 @@ class TrailerResponse(BaseModel):
     original_url: str
     streamable_url: str | None = None
     quality: str | None = None
-    site: str | None = None
     error: str | None = None
 
 

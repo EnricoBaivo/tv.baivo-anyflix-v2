@@ -127,8 +127,8 @@ async def ytdlp_extractor(url: str) -> list[VideoSource]:
     """Extract video info using yt-dlp Python library."""
     try:
         ydl_opts = {
-            "quiet": True,
-            "no_warnings": True,
+            "quiet": False,
+            "no_warnings": False,
             "extract_flat": False,
             "format": "best",
         }

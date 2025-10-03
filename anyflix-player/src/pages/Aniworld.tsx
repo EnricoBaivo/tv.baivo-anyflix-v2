@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import MediaRow from "@/components/media/MediaRow";
 import { useToast } from "@/hooks/use-toast";
 import { usePopular, useLatest } from "@/lib/api/hooks";
+import { components } from "@/lib/api/types";
 
 const Aniworld = () => {
   const { toast } = useToast();
@@ -30,14 +31,10 @@ const Aniworld = () => {
   const { heroMedia, popularMedia, latestMedia } = useMemo(() => {
     const popularList = popularData?.list || [];
     const latestList = latestData?.list || [];
-
-    // Convert anime data to unified Media format
-    const popularUnified = unifyMediaList(popularList);
-    const latestUnified = unifyMediaList(latestList);
     return {
-      heroMedia: popularUnified.length > 0 ? popularUnified[0] : null,
-      popularMedia: popularUnified,
-      latestMedia: latestUnified,
+      heroMedia: popularList.length > 0 ? popularList[0] : null,
+      popularMedia: popularList,
+      latestMedia: latestList,
     };
   }, [popularData, latestData]);
 
@@ -54,7 +51,7 @@ const Aniworld = () => {
     });
   }
 
-  const handleMediaClick = (media: Media) => {
+  const handleMediaClick = (media: components["schemas"]["MediaSpotlight"]) => {
     console.log("Anime clicked:", media);
     // TODO: Navigate to anime detail page or open modal
   };

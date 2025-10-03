@@ -2,21 +2,23 @@ import { useRef, useState, useEffect, useCallback } from "react";
 // No longer need these imports as they're handled in NavigationButton
 import { Media } from "@/types/media";
 import MediaCard from "./MediaCard";
-import { cn } from "@/lib/utils";
 import { SectionTitle } from "../typography";
 import MediaInfo from "./MediaInfo";
 import MediaRowNavigationButton from "./MediaRowNavigationButton";
+import { components } from "@/lib/api/types";
 
 interface MediaRowProps {
   title: string;
-  media: Media[];
-  onMediaClick?: (media: Media) => void;
+  media: components["schemas"]["MediaSpotlight"][];
+  onMediaClick?: (media: components["schemas"]["MediaSpotlight"]) => void;
 }
 
 const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<
+    components["schemas"]["MediaSpotlight"] | null
+  >(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isRowHovered, setIsRowHovered] = useState<boolean>(false);

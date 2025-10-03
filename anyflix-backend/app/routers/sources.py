@@ -3,19 +3,13 @@
 import logging
 import os
 
-import httpx
 from fastapi import APIRouter, HTTPException, Path, Query
 
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
 from lib.models.responses import (
-    LatestMediaSpotlightResponse,
-    PopularMediaSpotlightResponse,
-    PopularResponse,
+    PaginatedMediaSpotlightResponse,
     PreferencesResponse,
-    SearchMediaSpotlightResponse,
-    SearchResponse,
     SourcesResponse,
-    TrailerRequest,
     TrailerResponse,
     VideoListResponse,
 )
@@ -25,7 +19,6 @@ from lib.providers.serienstream import SerienStreamProvider
 from lib.services.anilist_service import AniListService
 from lib.services.response_converter import convert_to_media_spotlight
 from lib.services.tmdb_service import TMDBService
-from lib.utils.trailer_utils import extract_trailer_info
 
 logger = logging.getLogger(__name__)
 
@@ -89,13 +82,13 @@ async def get_source_preferences(source: str = Path(...)) -> PreferencesResponse
 
 @router.get(
     "/{source}/popular",
-    response_model=PopularMediaSpotlightResponse,
+    response_model=PaginatedMediaSpotlightResponse,
     summary="🔍 Get Popular Content",
 )
 async def get_popular(
     source: str = Path(...),
     page: int = Query(1, ge=1),
-) -> PopularMediaSpotlightResponse:
+) -> PaginatedMediaSpotlightResponse:
     """Get popular content with optional metadata enrichment."""
     provider = get_provider(source)
     async with provider:
@@ -104,7 +97,7 @@ async def get_popular(
             convert_to_media_spotlight(media_item)
             for media_item in popular_response.list
         ]
-        return PopularMediaSpotlightResponse(
+        return PaginatedMediaSpotlightResponse(
             list=media_spotlight_list,
             type=popular_response.type,
             has_next_page=popular_response.has_next_page,
@@ -113,13 +106,13 @@ async def get_popular(
 
 @router.get(
     "/{source}/latest",
-    response_model=LatestMediaSpotlightResponse,
+    response_model=PaginatedMediaSpotlightResponse,
     summary="🔍 Get Latest Updates",
 )
 async def get_latest_updates(
     source: str = Path(...),
     page: int = Query(1, ge=1),
-) -> LatestMediaSpotlightResponse:
+) -> PaginatedMediaSpotlightResponse:
     """Get latest updates with optional metadata enrichment."""
     provider = get_provider(source)
     async with provider:
@@ -129,7 +122,7 @@ async def get_latest_updates(
             for media_item in latest_updates_response.list
         ]
 
-        return LatestMediaSpotlightResponse(
+        return PaginatedMediaSpotlightResponse(
             list=media_spotlight_list,
             type=latest_updates_response.type,
             has_next_page=latest_updates_response.has_next_page,
@@ -138,7 +131,7 @@ async def get_latest_updates(
 
 @router.get(
     "/{source}/search",
-    response_model=SearchMediaSpotlightResponse,
+    response_model=PaginatedMediaSpotlightResponse,
     summary="🔍 Search Content",
 )
 async def search_content(
@@ -146,7 +139,7 @@ async def search_content(
     q: str = Query(..., min_length=1),
     page: int = Query(1, ge=1),
     lang: str = Query(None),
-) -> SearchMediaSpotlightResponse:
+) -> PaginatedMediaSpotlightResponse:
     """Search for content with optional metadata enrichment."""
     provider = get_provider(source)
     async with provider:
@@ -155,7 +148,7 @@ async def search_content(
             convert_to_media_spotlight(media_item)
             for media_item in search_response.list
         ]
-        return SearchMediaSpotlightResponse(
+        return PaginatedMediaSpotlightResponse(
             list=media_spotlight_list,
             type=search_response.type,
             has_next_page=search_response.has_next_page,
@@ -178,12 +171,12 @@ async def get_video_sources(
         return await provider.get_video_list(url, lang)
 
 
-@router.post(
+@router.get(
     "/trailer",
     response_model=TrailerResponse,
     summary="🎬 Extract Streamable Trailer URL",
 )
-async def extract_trailer_url(request: TrailerRequest) -> TrailerResponse:
+async def extract_trailer_url(youtube_url: str) -> TrailerResponse:
     """
     Extract streamable URL from AniList or TMDB trailer data.
 
@@ -196,73 +189,37 @@ async def extract_trailer_url(request: TrailerRequest) -> TrailerResponse:
     Returns:
         TrailerResponse with streamable URL and metadata
     """
-    try:
-        youtube_url = None
-        site = None
-        source_type = None
-
-        # Process AniList trailer data
-        if request.anilist_trailer:
-            youtube_url, site = extract_trailer_info(request.anilist_trailer, "anilist")
-            source_type = "anilist"
-            logger.info("Processing AniList trailer: %s", request.anilist_trailer)
-
-        # Process TMDB trailer data
-        elif request.tmdb_trailer:
-            youtube_url, site = extract_trailer_info(request.tmdb_trailer, "tmdb")
-            source_type = "tmdb"
-            logger.info("Processing TMDB trailer: %s", request.tmdb_trailer)
-
-        else:
-            return TrailerResponse(
-                success=False,
-                original_url="",
-                error="No trailer data provided. Please provide either anilist_trailer or tmdb_trailer.",
-            )
-
-        if not youtube_url:
-            return TrailerResponse(
-                success=False,
-                original_url="",
-                error=f"Unable to build YouTube URL from {source_type} trailer data",
-            )
-
-        logger.info("Built YouTube URL: %s", youtube_url)
-
-        # Use ytdlp_extractor to get streamable URL
-        try:
-            video_sources = await ytdlp_extractor(youtube_url)
-
-            if not video_sources:
-                return TrailerResponse(
-                    success=False,
-                    original_url=youtube_url,
-                    site=site,
-                    error="No streamable URLs found for this trailer",
-                )
-
-            # Get the best quality source (first one from ytdlp - now sorted by quality)
-            best_source = video_sources[0]
-
-            return TrailerResponse(
-                success=True,
-                original_url=youtube_url,
-                streamable_url=best_source.url,
-                quality=best_source.quality,
-                site=site,
-            )
-
-        except Exception as extraction_error:
-            logger.exception("ytdlp extraction failed for %s", youtube_url)
-            return TrailerResponse(
-                success=False,
-                original_url=youtube_url,
-                site=site,
-                error=f"Failed to extract streamable URL: {extraction_error!s}",
-            )
-
-    except (httpx.HTTPError, ValueError, RuntimeError) as e:
-        logger.exception("Trailer extraction error")
+    if not youtube_url.startswith("https://www.youtube.com/watch?v="):
         return TrailerResponse(
-            success=False, original_url="", error=f"Internal error: {e!s}"
+            success=False,
+            original_url=youtube_url,
+            error="Invalid YouTube URL",
+        )
+    # Use ytdlp_extractor to get streamable URL
+    try:
+        video_sources = await ytdlp_extractor(youtube_url)
+
+        if not video_sources:
+            return TrailerResponse(
+                success=False,
+                original_url=youtube_url,
+                error="No streamable URLs found for this trailer",
+            )
+
+        # Get the best quality source (first one from ytdlp - now sorted by quality)
+        best_source = video_sources[0]
+
+        return TrailerResponse(
+            success=True,
+            original_url=youtube_url,
+            streamable_url=best_source.url,
+            quality=best_source.quality,
+        )
+
+    except Exception as extraction_error:
+        logger.exception("ytdlp extraction failed for %s", youtube_url)
+        return TrailerResponse(
+            success=False,
+            original_url=youtube_url,
+            error=f"Failed to extract streamable URL: {extraction_error!s}",
         )

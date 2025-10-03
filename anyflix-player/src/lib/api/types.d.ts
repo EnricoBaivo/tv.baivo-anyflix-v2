@@ -171,8 +171,6 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
         /**
          * 🎬 Extract Streamable Trailer URL
          * @description Extract streamable URL from AniList or TMDB trailer data.
@@ -186,7 +184,9 @@ export interface paths {
          *     Returns:
          *         TrailerResponse with streamable URL and metadata
          */
-        post: operations["extract_trailer_url_sources_trailer_post"];
+        get: operations["extract_trailer_url_sources_trailer_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -608,7 +608,7 @@ export interface components {
         };
         /**
          * MatchSource
-         * @description Match source enumeration.
+         * @description Match source enumeration. Can be TMDB, ANILIST or both.
          * @enum {string}
          */
         MatchSource: "tmdb" | "anilist";
@@ -757,92 +757,6 @@ export interface components {
          */
         MediaFormat: "TV" | "TV_SHORT" | "MOVIE" | "SPECIAL" | "OVA" | "ONA" | "MUSIC" | "MANGA" | "NOVEL" | "ONE_SHOT";
         /**
-         * MediaInfo
-         * @description Detailed Media information.
-         */
-        MediaInfo: {
-            /** Name */
-            name: string;
-            /** Cover Image Url */
-            cover_image_url: string;
-            /** Description */
-            description: string;
-            /**
-             * Author
-             * @default
-             */
-            author: string;
-            /** Genres */
-            genres?: string[];
-            /** Episodes */
-            episodes?: components["schemas"]["Episode"][];
-            /**
-             * Seasons Length
-             * @description Number of episodes
-             */
-            seasons_length?: number | null;
-            /**
-             * Alternative Titles
-             * @description Alternative titles in different languages
-             */
-            alternative_titles?: string[];
-            /**
-             * Start Year
-             * @description Start year of the series
-             */
-            start_year?: number | null;
-            /**
-             * End Year
-             * @description End year of the series
-             */
-            end_year?: number | null;
-            /**
-             * Fsk Rating
-             * @description FSK age rating (German rating system)
-             */
-            fsk_rating?: number | null;
-            /**
-             * Imdb Id
-             * @description IMDB ID (e.g., 'tt36469298')
-             */
-            imdb_id?: string | null;
-            /**
-             * Country Of Origin
-             * @description Country of origin
-             */
-            country_of_origin?: string | null;
-            /**
-             * Main Genre
-             * @description Primary genre classification
-             */
-            main_genre?: string | null;
-            /**
-             * Directors
-             * @description List of directors
-             */
-            directors?: string[];
-            /**
-             * Actors
-             * @description List of main actors
-             */
-            actors?: string[];
-            /**
-             * Producers
-             * @description List of production companies
-             */
-            producers?: string[];
-            /**
-             * Backdrop Url
-             * @description Backdrop/banner image URL
-             */
-            backdrop_url?: string | null;
-            /**
-             * Series Id
-             * @description Internal series ID from the provider
-             */
-            series_id?: string | null;
-        };
-        /**
          * MediaListEntry
          * @description Media list entry model.
          */
@@ -904,8 +818,14 @@ export interface components {
             /** Alltime */
             allTime?: boolean | null;
             /** Context */
-            context: string;
+            context: string | components["schemas"]["MediaRankingContext"];
         };
+        /**
+         * MediaRankingContext
+         * @description Media ranking context enumeration.
+         * @enum {string}
+         */
+        MediaRankingContext: "highest rated all time" | "highest rated" | "most popular";
         /**
          * MediaRecommendation
          * @description Media recommendation model.
@@ -936,6 +856,84 @@ export interface components {
          */
         MediaSource: "ORIGINAL" | "MANGA" | "LIGHT_NOVEL" | "VISUAL_NOVEL" | "VIDEO_GAME" | "OTHER" | "NOVEL" | "DOUJINSHI" | "ANIME" | "WEB_NOVEL" | "LIVE_ACTION" | "GAME" | "COMIC" | "MULTIMEDIA_PROJECT" | "PICTURE_BOOK";
         /**
+         * MediaSourceEnum
+         * @description Source media type. series or movie.
+         * @enum {string}
+         */
+        MediaSourceEnum: "series" | "movie" | "ova" | "special";
+        /**
+         * MediaSpotlight
+         * @description Media spotlight model.
+         */
+        MediaSpotlight: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** @default series */
+            media_source_type: components["schemas"]["MediaSourceEnum"];
+            /** Image Cover Url */
+            image_cover_url: string;
+            /** Image Backdrop Url */
+            image_backdrop_url?: string | null;
+            /** Color */
+            color?: string | null;
+            /** Logo Urls */
+            logo_urls?: string[] | null;
+            /** Release Year */
+            release_year: number;
+            /**
+             * Average Rating
+             * @default 0
+             */
+            average_rating: number;
+            /**
+             * Popularity
+             * @default 0
+             */
+            popularity: number;
+            /**
+             * Votes
+             * @default 0
+             */
+            votes: number;
+            /** @description Best ranking for the media only available for anime sources */
+            best_ranking?: components["schemas"]["MediaRanking"] | null;
+            media_status: components["schemas"]["MediaStatusEnum"];
+            /** Genres */
+            genres: string[];
+            /** Seasons Count */
+            seasons_count?: number | null;
+            /** Episodes Count */
+            episodes_count?: number | null;
+            /** Fsk Rating */
+            fsk_rating?: number | null;
+            /** @description Media format for the media only available for anime sources */
+            media_format?: components["schemas"]["MediaFormat"];
+            source?: components["schemas"]["MatchSource"] | null;
+            /** Provider Url */
+            provider_url: string;
+            /** Provider */
+            provider: string;
+            /**
+             * Trailers
+             * @description Trailers for the media as a youtube url
+             */
+            trailers?: string[] | null;
+            /**
+             * Clips
+             * @description Clips for the media as a youtube url
+             */
+            clips?: string[] | null;
+            /**
+             * Teasers
+             * @description Teasers for the media as a youtube url
+             */
+            teasers?: string[] | null;
+        };
+        /**
          * MediaStats
          * @description Media statistics model.
          */
@@ -950,7 +948,13 @@ export interface components {
          * @description Media status enumeration.
          * @enum {string}
          */
-        MediaStatus: "FINISHED" | "RELEASING" | "NOT_YET_RELEASED" | "CANCELLED" | "HIATUS";
+        MediaStatus: "FINISHED" | "RELEASING" | "CANCELLED" | "NOT_YET_RELEASED" | "HIATUS";
+        /**
+         * MediaStatusEnum
+         * @description Media status type.
+         * @enum {string}
+         */
+        MediaStatusEnum: "completed" | "continuing" | "released";
         /**
          * MediaTag
          * @description Media tag model.
@@ -1075,12 +1079,12 @@ export interface components {
             /** Hasnextpage */
             hasNextPage?: boolean | null;
         };
-        /** PaginatedResponse[SearchResult] */
-        PaginatedResponse_SearchResult_: {
+        /** PaginatedResponse[MediaSpotlight] */
+        PaginatedResponse_MediaSpotlight_: {
             /** Type */
             type: string;
             /** List */
-            list: components["schemas"]["SearchResult"][];
+            list: components["schemas"]["MediaSpotlight"][];
             /**
              * Has Next Page
              * @default false
@@ -1191,24 +1195,6 @@ export interface components {
             score?: number | null;
             /** Amount */
             amount?: number | null;
-        };
-        /**
-         * SearchResult
-         * @description Search result item.
-         */
-        SearchResult: {
-            /** Name */
-            name: string;
-            /** Image Url */
-            image_url: string;
-            /** Link */
-            link: string;
-            media_info?: components["schemas"]["MediaInfo"] | null;
-            /** Best Match */
-            best_match?: components["schemas"]["TMDBSearchResult"] | components["schemas"]["Media"] | null;
-            best_match_source?: components["schemas"]["MatchSource"] | null;
-            /** Confidence */
-            confidence?: number | null;
         };
         /**
          * Season
@@ -1604,10 +1590,7 @@ export interface components {
             vote_average: number;
             /** Vote Count */
             vote_count: number;
-            /** Videos */
-            videos?: {
-                [key: string]: components["schemas"]["TMDBVideo"][];
-            } | null;
+            videos?: components["schemas"]["TMDBVideoResult"] | null;
             images?: components["schemas"]["TMDBImages"] | null;
             external_ids?: components["schemas"]["TMDBExternalIds"] | null;
         };
@@ -1648,63 +1631,6 @@ export interface components {
             iso_3166_1: string;
             /** Name */
             name: string;
-        };
-        /**
-         * TMDBSearchResult
-         * @description TMDB search result model.
-         */
-        TMDBSearchResult: {
-            /** Id */
-            id: number;
-            /** Media Type */
-            media_type: string;
-            /** Adult */
-            adult?: boolean | null;
-            /** Backdrop Path */
-            backdrop_path?: string | null;
-            /** Poster Path */
-            poster_path?: string | null;
-            /**
-             * Popularity
-             * @default 0
-             */
-            popularity: number;
-            /** Vote Average */
-            vote_average?: number | null;
-            /** Vote Count */
-            vote_count?: number | null;
-            /** Overview */
-            overview?: string | null;
-            /** Genre Ids */
-            genre_ids?: number[];
-            /** Original Language */
-            original_language?: string | null;
-            /** Title */
-            title?: string | null;
-            /** Original Title */
-            original_title?: string | null;
-            /** Release Date */
-            release_date?: string | null;
-            /** Video */
-            video?: boolean | null;
-            /** Name */
-            name?: string | null;
-            /** Original Name */
-            original_name?: string | null;
-            /** First Air Date */
-            first_air_date?: string | null;
-            /** Origin Country */
-            origin_country?: string[];
-            /** Profile Path */
-            profile_path?: string | null;
-            /** Known For */
-            known_for?: {
-                [key: string]: unknown;
-            }[];
-            /** Known For Department */
-            known_for_department?: string | null;
-            /** Gender */
-            gender?: number | null;
         };
         /**
          * TMDBSeason
@@ -1807,10 +1733,7 @@ export interface components {
             vote_average: number;
             /** Vote Count */
             vote_count: number;
-            /** Videos */
-            videos?: {
-                [key: string]: components["schemas"]["TMDBVideo"][];
-            } | null;
+            videos?: components["schemas"]["TMDBVideoResult"] | null;
             images?: components["schemas"]["TMDBImages"] | null;
             external_ids?: components["schemas"]["TMDBExternalIds"] | null;
         };
@@ -1828,11 +1751,11 @@ export interface components {
             /** Key */
             key: string;
             /** Site */
-            site: string;
+            site: string | components["schemas"]["TMDBVideoSite"];
             /** Size */
             size: number;
             /** Type */
-            type: string;
+            type?: components["schemas"]["TMDBVideoType"] | string | null;
             /** Official */
             official: boolean;
             /** Published At */
@@ -1840,6 +1763,26 @@ export interface components {
             /** Id */
             id: string;
         };
+        /**
+         * TMDBVideoResult
+         * @description TMDB video result model.
+         */
+        TMDBVideoResult: {
+            /** Results */
+            results?: components["schemas"]["TMDBVideo"][];
+        };
+        /**
+         * TMDBVideoSite
+         * @description TMDB video site enumeration.
+         * @enum {string}
+         */
+        TMDBVideoSite: "YouTube";
+        /**
+         * TMDBVideoType
+         * @description TMDB video type enumeration.
+         * @enum {string}
+         */
+        TMDBVideoType: "Trailer" | "Clip" | "Teaser" | "Opening Credits" | "Ending Credits";
         /**
          * Trailer
          * @description Trailer model.
@@ -1851,20 +1794,6 @@ export interface components {
             site?: string | null;
             /** Thumbnail */
             thumbnail?: string | null;
-        };
-        /**
-         * TrailerRequest
-         * @description Request model for trailer extraction.
-         */
-        TrailerRequest: {
-            /** Anilist Trailer */
-            anilist_trailer?: {
-                [key: string]: unknown;
-            } | null;
-            /** Tmdb Trailer */
-            tmdb_trailer?: {
-                [key: string]: unknown;
-            } | null;
         };
         /**
          * TrailerResponse
@@ -1879,8 +1808,6 @@ export interface components {
             streamable_url?: string | null;
             /** Quality */
             quality?: string | null;
-            /** Site */
-            site?: string | null;
             /** Error */
             error?: string | null;
         };
@@ -2194,7 +2121,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedResponse_SearchResult_"];
+                    "application/json": components["schemas"]["PaginatedResponse_MediaSpotlight_"];
                 };
             };
             /** @description Source not found */
@@ -2241,7 +2168,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedResponse_SearchResult_"];
+                    "application/json": components["schemas"]["PaginatedResponse_MediaSpotlight_"];
                 };
             };
             /** @description Source not found */
@@ -2290,7 +2217,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedResponse_SearchResult_"];
+                    "application/json": components["schemas"]["PaginatedResponse_MediaSpotlight_"];
                 };
             };
             /** @description Source not found */
@@ -2366,18 +2293,16 @@ export interface operations {
             };
         };
     };
-    extract_trailer_url_sources_trailer_post: {
+    extract_trailer_url_sources_trailer_get: {
         parameters: {
-            query?: never;
+            query: {
+                youtube_url: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TrailerRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

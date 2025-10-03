@@ -13,9 +13,7 @@ from lib.models.base import (
     SourcePreference,
 )
 from lib.models.responses import (
-    LatestResponse,
-    PopularResponse,
-    SearchResponse,
+    PaginatedSearchResultResponse,
     VideoListResponse,
 )
 from lib.utils.caching import ServiceCacheConfig, cached
@@ -110,7 +108,12 @@ class AniWorldProvider(BaseProvider):
                 link = link_element.attr("href")
 
                 anime_list.append(
-                    SearchResult(name=name, image_url=image_url, link=link)
+                    SearchResult(
+                        name=name,
+                        image_url=image_url,
+                        link=link,
+                        provider=self.source.name,
+                    )
                 )
 
         return anime_list
@@ -480,7 +483,7 @@ class AniWorldProvider(BaseProvider):
         }
 
     @cached(ttl=ServiceCacheConfig.PROVIDER_POPULAR_TTL, key_prefix="aniworld_popular")
-    async def get_popular(self, page: int = 1) -> PopularResponse:
+    async def get_popular(self, page: int = 1) -> PaginatedSearchResultResponse:
         """Get popular anime with pagination."""
         res = await self.client.get(f"{self.source.base_url}/beliebte-animes")
         elements = Document(res.body).select("div.seriesListContainer div")
@@ -491,14 +494,14 @@ class AniWorldProvider(BaseProvider):
         anime_list_extended_metadata = await self.async_pool(
             13, paginated_anime, self.enrich_with_details
         )
-        return PopularResponse(
+        return PaginatedSearchResultResponse(
             type=self.response_type,
             list=anime_list_extended_metadata,
             has_next_page=has_next_page,
         )
 
     @cached(ttl=ServiceCacheConfig.PROVIDER_LATEST_TTL, key_prefix="aniworld_latest")
-    async def get_latest_updates(self, page: int = 1) -> LatestResponse:
+    async def get_latest_updates(self, page: int = 1) -> PaginatedSearchResultResponse:
         """Get latest anime updates from AniWorld with pagination."""
         res = await self.client.get(f"{self.source.base_url}/neu")
         elements = Document(res.body).select("div.seriesListContainer div")
@@ -508,7 +511,7 @@ class AniWorldProvider(BaseProvider):
         anime_list_extended_metadata = await self.async_pool(
             13, paginated_anime, self.enrich_with_details
         )
-        return LatestResponse(
+        return PaginatedSearchResultResponse(
             type=self.response_type,
             list=anime_list_extended_metadata,
             has_next_page=has_next_page,
@@ -517,7 +520,7 @@ class AniWorldProvider(BaseProvider):
     @cached(ttl=ServiceCacheConfig.PROVIDER_SEARCH_TTL, key_prefix="aniworld_search")
     async def search(
         self, query: str, page: int = 1, _lang: str | None = None
-    ) -> SearchResponse:
+    ) -> PaginatedSearchResultResponse:
         """Search for anime with pagination."""
 
         res = await self.client.get(f"{self.source.base_url}/animes")
@@ -530,7 +533,18 @@ class AniWorldProvider(BaseProvider):
                 name = element.text
                 if query.lower() in name.lower():
                     filtered_results.append(
-                        SearchResult(name=name, image_url="", link=element.attr("href"))
+                        SearchResult(
+                            name=name,
+                            image_url="",
+                            link=element.attr("href"),
+                            media_info=None,
+                            anilist_media_info=None,
+                            tmdb_media_info=None,
+                            best_match_source=None,
+                            confidence=None,
+                            is_anime=True,
+                            provider=self.source.name,
+                        )
                     )
 
         paginated_results, has_next_page = self._apply_pagination(
@@ -539,7 +553,7 @@ class AniWorldProvider(BaseProvider):
         anime_list_extended_metadata = await self.async_pool(
             13, paginated_results, self.enrich_with_details
         )
-        return SearchResponse(
+        return PaginatedSearchResultResponse(
             type=self.response_type,
             list=anime_list_extended_metadata,
             has_next_page=has_next_page,

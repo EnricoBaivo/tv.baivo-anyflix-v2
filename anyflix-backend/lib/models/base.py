@@ -144,7 +144,7 @@ class SearchResult(BaseModel):
     name: str
     image_url: str
     link: str
-
+    provider: str
     media_info: MediaInfo | None = None
     anilist_media_info: Media | None = None
     tmdb_media_info: TMDBMediaResult | None = None

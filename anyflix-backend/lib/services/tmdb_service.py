@@ -60,6 +60,7 @@ class TMDBService:
 
         url = f"{self.base_url}/configuration"
         params = {"api_key": self.api_key}
+        params["language"] = "de-DE"
 
         response = await self.client.get(
             url, params=params, headers=self._get_headers()
@@ -85,7 +86,8 @@ class TMDBService:
                 "api_key": self.api_key,
                 "query": query,
                 "page": page,
-                "include_adult": "false",
+                "include_adult": "true",
+                "language": "de-DE",
             }
 
             response = await self.client.get(
@@ -143,6 +145,8 @@ class TMDBService:
 
             if append_to_response:
                 params["append_to_response"] = append_to_response
+                params["include_adult"] = "true"
+                params["language"] = "de-DE"
 
             response = await self.client.get(
                 url, params=params, headers=self._get_headers()
@@ -173,6 +177,8 @@ class TMDBService:
 
             if append_to_response:
                 params["append_to_response"] = append_to_response
+                params["include_adult"] = "true"
+                params["language"] = "de-DE"
 
             response = await self.client.get(
                 url, params=params, headers=self._get_headers()
@@ -200,7 +206,8 @@ class TMDBService:
         try:
             url = f"{self.base_url}/find/{external_id}"
             params = {"api_key": self.api_key, "external_source": external_source}
-
+            params["include_adult"] = "true"
+            params["language"] = "de-DE"
             response = await self.client.get(
                 url, params=params, headers=self._get_headers()
             )

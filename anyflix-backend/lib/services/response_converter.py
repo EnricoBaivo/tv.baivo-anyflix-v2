@@ -8,7 +8,7 @@ from lib.models.anilist import (
     MediaRankingContext,
     MediaStatus,
 )
-from lib.models.base import MatchSource, SearchResult
+from lib.models.base import MatchSource, MediaInfo, SearchResult
 from lib.models.media import (
     MediaSourceEnum,
     MediaSpotlight,
@@ -20,14 +20,14 @@ from lib.models.tmdb import TMDBVideoType, get_genres_by_ids
 def get_base_information(media_item: SearchResult) -> tuple[str, str]:
     """Get base information for media spotlight."""
     title = media_item.media_info.name
-    description = media_item.media_info.description
+    description = None
     if (
         media_item.best_match_source == MatchSource.ANILIST
         and media_item.anilist_media_info is not None
     ):
-        title = media_item.anilist_media_info.title.userPreferred
+        title = media_item.anilist_media_info.title.english
         if not title:
-            title = media_item.anilist_media_info.title.romaji
+            title = media_item.anilist_media_info.title.userPreferred
         if not title:
             title = media_item.anilist_media_info.title.english
         if not title:
@@ -36,15 +36,16 @@ def get_base_information(media_item: SearchResult) -> tuple[str, str]:
             title = media_item.media_info.name
         description = media_item.anilist_media_info.description
         if not description:
-            description = media_item.media_info.description
-    elif media_item.best_match_source == MatchSource.TMDB:
+            description = media_item.anilist_media_info.description
+    if media_item.best_match_source == MatchSource.TMDB:
         title = media_item.tmdb_media_info.media_result.title
         if not title:
-            title = media_item.tmdb_media_info.media_result.original_title
-        if not title:
             title = media_item.media_info.name
+        if not title:
+            title = media_item.tmdb_media_info.media_result.original_title
         description = media_item.tmdb_media_info.media_result.overview
-
+    if not description:
+        description = media_item.media_info.description
     return title, description
 
 
@@ -281,6 +282,19 @@ def get_color(media_item: SearchResult) -> str:
     return color
 
 
+def get_seasons_and_episodes_count(media_item: SearchResult) -> tuple[int, int]:
+    """Get episodes count."""
+    media_info = media_item.media_info
+    seasons_count = None
+    episodes_count = None
+    if media_info.seasons_length is not None:
+        seasons_count = media_info.seasons_length
+    if media_info.episodes is not None:
+        episodes_count = len(media_info.episodes)
+
+    return seasons_count, episodes_count
+
+
 def get_release_year(media_item: SearchResult) -> int:
     """Get release year."""
     release_year = media_item.media_info.end_year
@@ -315,7 +329,7 @@ def get_average_rating(media_item: SearchResult) -> int:
         and media_item.tmdb_media_info.media_result
         and media_item.tmdb_media_info.media_result.vote_average is not None
     ):
-        average_rating = int(media_item.tmdb_media_info.media_result.vote_average * 10)
+        average_rating = media_item.tmdb_media_info.media_result.vote_average
     return average_rating
 
 
@@ -329,7 +343,7 @@ def get_popularity(media_item: SearchResult) -> int:
         and media_item.tmdb_media_info.media_result
         and media_item.tmdb_media_info.media_result.popularity is not None
     ):
-        popularity = int(media_item.tmdb_media_info.media_result.popularity * 10)
+        popularity = media_item.tmdb_media_info.media_result.popularity
     return popularity
 
 
@@ -498,6 +512,13 @@ def get_best_ranking(media_item: SearchResult) -> MediaRanking:
     return rankings[0] if rankings else None
 
 
+def get_fsk_rating(media_item: SearchResult) -> int:
+    """Get fsk rating."""
+    fsk_rating = media_item.media_info.fsk_rating
+
+    return fsk_rating or 16
+
+
 def convert_to_media_spotlight(media_item: SearchResult) -> MediaSpotlight:
     """Convert latest updates list to unified media spotlight list."""
     # get relevant media id based on best match source
@@ -518,6 +539,7 @@ def convert_to_media_spotlight(media_item: SearchResult) -> MediaSpotlight:
     media_format = get_media_format(media_item)
     image_cover_url = get_image_cover_url(media_item)
     image_backdrop_url = get_image_backdrop_url(media_item)
+    seasons_count, episodes_count = get_seasons_and_episodes_count(media_item)
     release_year = get_release_year(media_item)
     average_rating = get_average_rating(media_item)
     popularity = get_popularity(media_item)
@@ -528,9 +550,13 @@ def convert_to_media_spotlight(media_item: SearchResult) -> MediaSpotlight:
     clips = get_clips(media_item)
     teasers = get_teasers(media_item)
     best_ranking = get_best_ranking(media_item)
+    fsk_rating = get_fsk_rating(media_item)
     media_spotlight = MediaSpotlight(
         id=str(media_id),
         title=title,
+        fsk_rating=fsk_rating,
+        episodes_count=episodes_count,
+        seasons_count=seasons_count,
         description=description,
         media_source_type=media_source_type,
         image_cover_url=image_cover_url,
@@ -542,7 +568,8 @@ def convert_to_media_spotlight(media_item: SearchResult) -> MediaSpotlight:
         media_status=media_status,
         genres=genres,
         source=media_item.best_match_source,
-        source_url=media_item.link,
+        provider_url=media_item.link,
+        provider=media_item.provider,
         trailers=trailers,
         clips=clips,
         teasers=teasers,

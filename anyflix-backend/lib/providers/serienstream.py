@@ -9,9 +9,7 @@ import httpx
 from lib.extractors.extract_any import extract_any
 from lib.models.base import MediaSource, SearchResult, SourcePreference
 from lib.models.responses import (
-    LatestResponse,
-    PopularResponse,
-    SearchResponse,
+    PaginatedSearchResultResponse,
     VideoListResponse,
 )
 from lib.utils.caching import ServiceCacheConfig, cached
@@ -180,7 +178,7 @@ class SerienStreamProvider(BaseProvider):
     @cached(
         ttl=ServiceCacheConfig.PROVIDER_POPULAR_TTL, key_prefix="serienstream_popular"
     )
-    async def get_popular(self, page: int = 1) -> PopularResponse:
+    async def get_popular(self, page: int = 1) -> PaginatedSearchResultResponse:
         """Get popular series with pagination."""
         res = await self.client.get(f"{self.source.base_url}/beliebte-serien")
         elements = Document(res.body).select("div.seriesListContainer div")
@@ -191,7 +189,7 @@ class SerienStreamProvider(BaseProvider):
         series_list_extended_metadata = await self.async_pool(
             13, paginated_series, self.enrich_with_details
         )
-        return PopularResponse(
+        return PaginatedSearchResultResponse(
             type=self.response_type,
             list=series_list_extended_metadata,
             has_next_page=has_next_page,
@@ -200,7 +198,7 @@ class SerienStreamProvider(BaseProvider):
     @cached(
         ttl=ServiceCacheConfig.PROVIDER_LATEST_TTL, key_prefix="serienstream_latest"
     )
-    async def get_latest_updates(self, page: int = 1) -> LatestResponse:
+    async def get_latest_updates(self, page: int = 1) -> PaginatedSearchResultResponse:
         """Get latest series updates from SerienStream with pagination."""
         res = await self.client.get(f"{self.source.base_url}/neu")
         elements = Document(res.body).select("div.seriesListContainer div")
@@ -211,7 +209,7 @@ class SerienStreamProvider(BaseProvider):
         series_list_extended_metadata = await self.async_pool(
             13, paginated_series, self.enrich_with_details
         )
-        return LatestResponse(
+        return PaginatedSearchResultResponse(
             type=self.response_type,
             list=series_list_extended_metadata,
             has_next_page=has_next_page,
@@ -222,7 +220,7 @@ class SerienStreamProvider(BaseProvider):
     )
     async def search(
         self, query: str, page: int = 1, _lang: str | None = None
-    ) -> SearchResponse:
+    ) -> PaginatedSearchResultResponse:
         """Search for series with pagination."""
 
         res = await self.client.get(f"{self.source.base_url}/serien")
@@ -241,7 +239,7 @@ class SerienStreamProvider(BaseProvider):
         paginated_results, has_next_page = self._apply_pagination(
             filtered_results, page
         )
-        return SearchResponse(
+        return PaginatedSearchResultResponse(
             type=self.response_type, list=paginated_results, has_next_page=has_next_page
         )
 

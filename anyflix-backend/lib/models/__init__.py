@@ -24,11 +24,9 @@ from .base import (
 # Response models
 from .responses import (
     EpisodeResponse,
-    LatestResponse,
     MovieResponse,
     MoviesResponse,
-    PopularResponse,
-    SearchResponse,
+    PaginatedSearchResultResponse,
     SeasonResponse,
     SeasonsResponse,
     SeriesDetailResponse,
@@ -51,7 +49,6 @@ __all__ = [
     "Episode",
     # Response models
     "EpisodeResponse",
-    "LatestResponse",
     "MatchSource",
     # AniList models
     "Media",
@@ -64,8 +61,7 @@ __all__ = [
     "MovieResponse",
     "MoviesResponse",
     "PageResponse",
-    "PopularResponse",
-    "SearchResponse",
+    "PaginatedMediaSpotlightResponse",
     "SearchResult",
     "SeasonResponse",
     "SeasonsResponse",

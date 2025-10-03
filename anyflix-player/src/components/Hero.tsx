@@ -1,10 +1,9 @@
-import { Media } from "@/types/media";
-import { getImageUrl } from "@/services/tmdb";
 import { Play, Info, Star } from "lucide-react";
 import { BoldH1 } from "./typography";
+import { components } from "@/lib/api/types";
 
 interface HeroProps {
-  media: Media;
+  media: components["schemas"]["MediaSpotlight"];
 }
 
 const Hero = ({ media }: HeroProps) => {
@@ -14,13 +13,7 @@ const Hero = ({ media }: HeroProps) => {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url(${getImageUrl(
-            media.backdrop_path ||
-              media.bannerImage ||
-              media.poster_path ||
-              media.coverImage,
-            "original"
-          )})`,
+          backgroundImage: `url(${media.image_backdrop_url}})`,
         }}
       />
 
@@ -45,29 +38,27 @@ const Hero = ({ media }: HeroProps) => {
           {/* Metadata */}
           <div className="flex items-center space-x-4 text-sm text-white mb-4">
             <span className="bg-red-600 text-white px-2 py-1 text-xs font-bold">
-              `${media.averageScore || "N/A"}% Score`
+              `${media.average_rating || "N/A"}% Score`
             </span>
             <span className="flex items-center">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-              {media.episodes
-                ? `${media.episodes || "Unknown"} Episodes`
-                : `Starring ${
-                    media.vote_average > 7 ? "Award Winners" : "Popular Actors"
-                  }`}
+              {`Starring ${
+                media.average_rating > 7 ? "Award Winners" : "Popular Actors  "
+              }`}
             </span>
           </div>
 
           {/* AniList Rankings */}
-          {media.rankings && (
+          {media.best_ranking && (
             <div className="flex items-center space-x-4 text-sm text-white/90 mb-4">
-              {media.rankings.highestRated && (
+              {media.best_ranking.context === "highest Rated" && (
                 <span className="bg-yellow-600/80 text-white px-3 py-1 text-xs font-bold rounded">
-                  #{media.rankings.highestRated} Highest Rated All Time
+                  #{media.best_ranking.rank} Highest Rated All Time
                 </span>
               )}
-              {media.rankings.mostPopular && (
+              {media.best_ranking.context === "most Popular" && (
                 <span className="bg-purple-600/80 text-white px-3 py-1 text-xs font-bold rounded">
-                  #{media.rankings.mostPopular} Most Popular All Time
+                  #{media.best_ranking.rank} Most Popular All Time
                 </span>
               )}
             </div>
@@ -75,36 +66,43 @@ const Hero = ({ media }: HeroProps) => {
 
           {/* Additional metadata */}
           <div className="flex items-center space-x-3 text-white/70 text-sm mb-6">
-            <span className="text-green-500 font-semibold">
-              {media.genre_ids.includes(0) ? "Anime" : "Family Time TV"}
-            </span>
-            {media.release_date && (
+            {media.genres && (
+              <span className="text-green-500 font-semibold">
+                {media.genres.includes("Anime") ||
+                media.genres.includes("animation")
+                  ? "Anime"
+                  : "Family Time TV"}
+              </span>
+            )}
+            {media.release_year && (
               <>
                 <span>•</span>
-                <span>{new Date(media.release_date).getFullYear()}</span>
+                <span>{media.release_year}</span>
               </>
             )}
-            {media.status && (
+            {media.media_status && (
               <>
                 <span>•</span>
-                <span className="capitalize">{media.status.toLowerCase()}</span>
+                <span className="capitalize">
+                  {media.media_status.toLowerCase()}
+                </span>
               </>
             )}
-            {!media.status && (
+            {media.media_source_type && (
               <>
                 <span>•</span>
-                <span>Episodes</span>
+                <span>{media.media_source_type}</span>
               </>
             )}
             <span>•</span>
             <span className="border border-white/50 px-2 py-0.5 text-xs">
-              {media.adult ? "TV-MA" : "TV-PG"}
+              {media.media_format === "TV" ? "TV-MA" : "TV-PG"}
             </span>
           </div>
 
           {/* Description */}
           <p className="text-lg text-white/90 mb-8 leading-relaxed max-w-xl line-clamp-3">
-            {media.overview}
+            {media.description}
           </p>
 
           {/* Action Buttons */}

@@ -12,12 +12,9 @@ from lib.models.base import (
     TMDBMediaResult,
 )
 from lib.models.responses import (
-    LatestResponse,
-    PopularResponse,
-    SearchResponse,
+    PaginatedSearchResultResponse,
     VideoListResponse,
 )
-from lib.models.tmdb import TMDBSearchResult
 from lib.services.anilist_service import AniListService
 from lib.services.matching_service import MatchingService
 from lib.services.tmdb_service import TMDBService
@@ -55,31 +52,31 @@ class BaseProvider(ABC):
         await self.client.__aexit__(exc_type, exc_val, exc_tb)
 
     @abstractmethod
-    async def get_popular(self, page: int = 1) -> PopularResponse:
+    async def get_popular(self, page: int = 1) -> PaginatedSearchResultResponse:
         """Get popular anime list.
 
         Args:
             page: Page number
 
         Returns:
-            PopularResponse with anime list
+            PaginatedSearchResultResponse with anime list
         """
 
     @abstractmethod
-    async def get_latest_updates(self, page: int = 1) -> LatestResponse:
+    async def get_latest_updates(self, page: int = 1) -> PaginatedSearchResultResponse:
         """Get latest updates.
 
         Args:
             page: Page number
 
         Returns:
-            LatestResponse with anime list
+            PaginatedSearchResultResponse with anime list
         """
 
     @abstractmethod
     async def search(
         self, query: str, page: int = 1, lang: str | None = None
-    ) -> SearchResponse:
+    ) -> PaginatedSearchResultResponse:
         """Search for content.
 
         Args:
@@ -88,7 +85,7 @@ class BaseProvider(ABC):
             lang: Optional language filter (de, en, sub, all)
 
         Returns:
-            SearchResponse with search results
+            PaginatedSearchResultResponse with search results
         """
 
     @cached(ttl=ServiceCacheConfig.PROVIDER_DETAIL_TTL, key_prefix="aniworld_detail")
@@ -233,6 +230,7 @@ class BaseProvider(ABC):
             best_match_source=best_match_source,
             confidence=confidence,
             is_anime=confident_anime_source or self.is_anime_source,
+            provider=self.source.name,
         )
 
     async def async_pool(

@@ -1,9 +1,9 @@
-import { Media } from "@/types/media";
+import { components } from "@/lib/api/types";
 import { Badge } from "@/components/ui/badge";
 import { MetadataText, DescriptionText } from "../typography";
 
 interface MediaInfoProps {
-  media: Media;
+  media: components["schemas"]["MediaSpotlight"];
 }
 
 const MediaInfo = ({ media }: MediaInfoProps) => {
@@ -17,11 +17,11 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
 
   // Get rating info
   const getRatingInfo = () => {
-    if (media.averageScore) {
-      return `${media.averageScore}% Score`;
+    if (media.average_rating) {
+      return `${media.average_rating}% Score`;
     }
-    if (media.vote_average > 0) {
-      return `${media.vote_average.toFixed(1)}/10 Rating`;
+    if (media.votes > 0) {
+      return `${media.votes.toFixed(1)}/10 Rating`;
     }
     return null;
   };
@@ -35,9 +35,9 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
       <div className="absolute -top-4 left-0">
         <MetadataText>
           <div className="flex items-center space-x-4 mb-2">
-            {media.release_date && (
+            {media.release_year && (
               <>
-                <span>{new Date(media.release_date).getFullYear()}</span>
+                <span>{media.release_year}</span>
                 <span>•</span>
               </>
             )}
@@ -48,16 +48,16 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
                 <span>{getRatingInfo()}</span>
               </>
             )}
-            {media.rankings?.highestRated && (
+            {media.best_ranking?.context === "highest Rated" && (
               <>
                 <span>•</span>
-                <span>#{media.rankings.highestRated} Rated</span>
+                <span>#{media.best_ranking.rank} Rated</span>
               </>
             )}
-            {media.status && (
+            {media.media_status && (
               <>
                 <span>•</span>
-                <span className="capitalize">{media.status.toLowerCase()}</span>
+                <span className="capitalize">{media.media_status.toLowerCase()}</span>
               </>
             )}
           </div>
@@ -79,10 +79,10 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
           </MetadataText>
         )}
 
-        {media.overview && (
+        {media.description && (
           <div className="mt-2">
             <DescriptionText>
-              <span className="line-clamp-3 block">{media.overview}</span>
+              <span className="line-clamp-3 block">{media.description}</span>
             </DescriptionText>
           </div>
         )}

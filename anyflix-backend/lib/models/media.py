@@ -38,8 +38,8 @@ class MediaSpotlight(BaseModel):
     color: str | None = None
     logo_urls: list[str] | None = None
     release_year: int
-    average_rating: int = Field(default=0, ge=0, le=100)  # max 100%
-    popularity: int = Field(default=0, ge=0)  # max 100%
+    average_rating: int | float = Field(default=0, ge=0, le=100)  # max 100%
+    popularity: int | float = Field(default=0, ge=0)  # max 100%
     votes: int = Field(default=0, ge=0)
     best_ranking: MediaRanking | None = Field(
         default=None,
@@ -47,12 +47,16 @@ class MediaSpotlight(BaseModel):
     )
     media_status: MediaStatusEnum
     genres: list[str]
+    seasons_count: int | None = None
+    episodes_count: int | None = None
+    fsk_rating: int | None = None
     media_format: MediaFormat = Field(
         default=None,
         description="Media format for the media only available for anime sources",
     )
     source: MatchSource | None = None
-    source_url: str
+    provider_url: str
+    provider: str
     trailers: list[str] | None = Field(
         default=None,
         description="Trailers for the media as a youtube url",

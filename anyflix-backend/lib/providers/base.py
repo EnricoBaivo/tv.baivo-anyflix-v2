@@ -184,15 +184,16 @@ class BaseProvider(ABC):
                 if best_match_tmdb.media_type == "movie":
                     details = await tmdb_service.get_movie_details(
                         best_match_tmdb.id,
-                        append_to_response="videos,images,external_ids,status",
+                        append_to_response="external_ids,status",
                     )
                 else:
                     details = await tmdb_service.get_tv_details(
                         best_match_tmdb.id,
-                        append_to_response="videos,images,external_ids,status",
+                        append_to_response="external_ids,status",
                     )
                 if confidence >= 0.9:
                     best_match_source = MatchSource.TMDB
+
         if self.is_anime_source or confidence < 0.7:
             async with AniListService() as anilist_service:
                 anilist_media_info = await anilist_service.search_anime(

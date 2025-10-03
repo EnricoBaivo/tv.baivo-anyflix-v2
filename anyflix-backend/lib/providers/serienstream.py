@@ -104,7 +104,7 @@ class SerienStreamProvider(BaseProvider):
                 link = link_element.attr("href")
 
                 series_list.append(
-                    SearchResult(name=name, image_url=image_url, link=link)
+                    SearchResult(name=name, image_url=image_url, link=link,provider=self.source.name)
                 )
 
         return series_list

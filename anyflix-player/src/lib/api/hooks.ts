@@ -8,8 +8,16 @@ import type { paths } from "./types";
 
 // Type helpers for better IntelliSense
 type ApiPaths = paths;
-type GetEndpoint<T extends keyof ApiPaths> = ApiPaths[T] extends { get: unknown } ? T : never;
-type PostEndpoint<T extends keyof ApiPaths> = ApiPaths[T] extends { post: unknown } ? T : never;
+type GetEndpoint<T extends keyof ApiPaths> = ApiPaths[T] extends {
+  get: unknown;
+}
+  ? T
+  : never;
+type PostEndpoint<T extends keyof ApiPaths> = ApiPaths[T] extends {
+  post: unknown;
+}
+  ? T
+  : never;
 
 // =============================================
 // Source Management Hooks
@@ -64,7 +72,12 @@ export const useLatest = (source: string, page: number = 1) => {
 /**
  * Search content with query string (only searches when query is valid)
  */
-export const useSearch = (source: string, query: string, page: number = 1, lang?: string) => {
+export const useSearch = (
+  source: string,
+  query: string,
+  page: number = 1,
+  lang?: string
+) => {
   const result = useQuery("/sources/{source}/search", {
     params: {
       path: { source },
@@ -131,17 +144,20 @@ export const useSeason = (source: string, seasonNum: number, url: string) => {
  * Get specific episode details
  */
 export const useEpisode = (
-  source: string, 
-  seasonNum: number, 
-  episodeNum: number, 
+  source: string,
+  seasonNum: number,
+  episodeNum: number,
   url: string
 ) => {
-  return useQuery("/sources/{source}/series/seasons/{season_num}/episodes/{episode_num}", {
-    params: {
-      path: { source, season_num: seasonNum, episode_num: episodeNum },
-      query: { url },
-    },
-  });
+  return useQuery(
+    "/sources/{source}/series/seasons/{season_num}/episodes/{episode_num}",
+    {
+      params: {
+        path: { source, season_num: seasonNum, episode_num: episodeNum },
+        query: { url },
+      },
+    }
+  );
 };
 
 /**
@@ -188,9 +204,13 @@ export const useVideoSources = (source: string, url: string, lang?: string) => {
  * Extract streamable trailer URL (mutation)
  * TODO: Fix useMutate parameters
  */
-// export const useTrailerExtraction = () => {
-//   return useMutate("/sources/trailer");
-// };
+export const useTrailerExtraction = (youtube_url: string) => {
+  return useQuery("/sources/trailer", {
+    params: {
+      query: { youtube_url: youtube_url },
+    },
+  });
+};
 
 // =============================================
 // Admin Hooks (for development/debugging)
@@ -218,8 +238,8 @@ export const useSourcesStatus = () => {
  * Conditionally fetch popular content (useful for tabs/lazy loading)
  */
 export const usePopularConditional = (
-  source: string, 
-  page: number = 1, 
+  source: string,
+  page: number = 1,
   enabled: boolean = true
 ) => {
   const result = useQuery("/sources/{source}/popular", {
@@ -247,9 +267,9 @@ export const usePopularConditional = (
  * Conditionally search (useful for debounced search)
  */
 export const useSearchConditional = (
-  source: string, 
-  query: string, 
-  page: number = 1, 
+  source: string,
+  query: string,
+  page: number = 1,
   enabled: boolean = true,
   lang?: string
 ) => {
@@ -290,13 +310,27 @@ export const useHealthCheck = () => {
 // =============================================
 
 // Export response types for component usage
-export type SourcesResponse = NonNullable<ReturnType<typeof useSources>['data']>;
-export type PopularResponse = NonNullable<ReturnType<typeof usePopular>['data']>;
-export type SearchResponse = NonNullable<ReturnType<typeof useSearch>['data']>;
-export type SeriesDetailResponse = NonNullable<ReturnType<typeof useSeriesDetail>['data']>;
-export type VideoSourcesResponse = NonNullable<ReturnType<typeof useVideoSources>['data']>;
+export type SourcesResponse = NonNullable<
+  ReturnType<typeof useSources>["data"]
+>;
+export type PopularResponse = NonNullable<
+  ReturnType<typeof usePopular>["data"]
+>;
+export type SearchResponse = NonNullable<ReturnType<typeof useSearch>["data"]>;
+export type SeriesDetailResponse = NonNullable<
+  ReturnType<typeof useSeriesDetail>["data"]
+>;
+export type VideoSourcesResponse = NonNullable<
+  ReturnType<typeof useVideoSources>["data"]
+>;
 
 // Export individual item types
-export type SearchResult = PopularResponse extends { list: (infer T)[] } ? T : never;
-export type VideoSource = VideoSourcesResponse extends { videos: (infer T)[] } ? T : never;
-export type SeriesDetail = SeriesDetailResponse extends { series: infer T } ? T : never;
+export type SearchResult = PopularResponse extends { list: (infer T)[] }
+  ? T
+  : never;
+export type VideoSource = VideoSourcesResponse extends { videos: (infer T)[] }
+  ? T
+  : never;
+export type SeriesDetail = SeriesDetailResponse extends { series: infer T }
+  ? T
+  : never;

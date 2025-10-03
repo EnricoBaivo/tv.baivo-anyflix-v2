@@ -1,6 +1,6 @@
 import { components } from "@/lib/api/types";
 import { Badge } from "@/components/ui/badge";
-import { MetadataText, DescriptionText } from "../typography";
+import { MetadataText, DescriptionText, MediaTitle } from "../typography";
 
 interface MediaInfoProps {
   media: components["schemas"]["MediaSpotlight"];
@@ -33,6 +33,8 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
     >
       {/* Media Info Section with Netflix-style typography */}
       <div className="absolute -top-4 left-0">
+        <MediaTitle>{media.title}</MediaTitle>
+
         <MetadataText>
           <div className="flex items-center space-x-4 mb-2">
             {media.release_year && (
@@ -57,7 +59,9 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
             {media.media_status && (
               <>
                 <span>•</span>
-                <span className="capitalize">{media.media_status.toLowerCase()}</span>
+                <span className="capitalize">
+                  {media.media_status.toLowerCase()}
+                </span>
               </>
             )}
           </div>

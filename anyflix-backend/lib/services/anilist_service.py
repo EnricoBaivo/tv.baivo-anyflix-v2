@@ -580,13 +580,18 @@ class AniListService:
                         await self._wait_for_rate_limit_reset(retry_after)
                         continue
                 else:
-                    # Don't retry on other client errors (4xx)
+                    # Don't retry on other client errors (4xx) - return empty result instead of raising
+                    self.logger.warning(
+                        "AniList API request failed with status %d: %s. Returning empty result.",
+                        e.status,
+                        e.message,
+                    )
                     self.logger.debug(
                         "AniList API request details - URL: %s, payload: %s",
                         self.BASE_URL,
                         payload,
                     )
-                    raise
+                    return {}
 
             except (TimeoutError, aiohttp.ClientError) as e:
                 last_exception = e
@@ -601,27 +606,44 @@ class AniListService:
                     )
                     await asyncio.sleep(wait_time)
                     continue
+                # If all retries exhausted, return empty result instead of raising
+                self.logger.warning(
+                    "AniList API request failed after all retries: %s. Returning empty result.",
+                    str(e),
+                )
                 self.logger.debug(
                     "AniList API request details - URL: %s, payload: %s",
                     self.BASE_URL,
                     payload,
                 )
-                raise
+                return {}
 
-            except Exception as e:
+            except (ValueError, TypeError, KeyError) as e:
                 last_exception = e
+                self.logger.warning(
+                    "AniList API request failed with unexpected error: %s. Returning empty result.",
+                    str(e),
+                )
                 self.logger.debug(
                     "AniList API request details - URL: %s, payload: %s",
                     self.BASE_URL,
                     payload,
                 )
-                raise
+                return {}
 
-        # If we get here, all retries failed
+        # If we get here, all retries failed - return empty result instead of raising
         if last_exception:
-            raise last_exception
-        msg = f"Request failed after {max_retries + 1} attempts"
-        raise aiohttp.ClientError(msg)
+            self.logger.warning(
+                "AniList API request failed after %d attempts: %s. Returning empty result.",
+                max_retries + 1,
+                str(last_exception),
+            )
+        else:
+            self.logger.warning(
+                "AniList API request failed after %d attempts. Returning empty result.",
+                max_retries + 1,
+            )
+        return {}
 
     @cached(ttl=ServiceCacheConfig.ANILIST_MEDIA_TTL, key_prefix="anilist_media_by_id")
     async def get_media_by_id(
@@ -663,11 +685,18 @@ class AniListService:
                 )
 
             except ValidationError:
-                self.logger.exception("Failed to parse media response")
-                raise
-            except (aiohttp.ClientError, ValueError, KeyError):
-                self.logger.exception("Failed to get media by ID %s", media_id)
-                raise
+                self.logger.warning(
+                    "Failed to parse media response for ID %s. Returning None.",
+                    media_id,
+                )
+                return None
+            except (aiohttp.ClientError, ValueError, KeyError) as e:
+                self.logger.warning(
+                    "Failed to get media by ID %s: %s. Returning None.",
+                    media_id,
+                    str(e),
+                )
+                return None
             else:
                 return response.media
 

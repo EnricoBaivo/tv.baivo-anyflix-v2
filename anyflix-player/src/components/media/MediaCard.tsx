@@ -13,6 +13,7 @@ import { useWebOSFocus } from "@/hooks/useWebOSFocus";
 import { getFocusClasses, getWebOSProps } from "@/lib/webos-focus";
 import { MediaTitle } from "../typography";
 import { components } from "@/lib/api/types";
+import { VideoTrailer } from "../VideoTrailer";
 
 interface MediaCardProps {
   media: components["schemas"]["MediaSpotlight"];
@@ -42,7 +43,6 @@ const MediaCard = ({
     onFocus: onFocus, // Triggers selection when card receives focus
     onEnter: onClick, // Triggers click action when Enter is pressed
   });
-
   return (
     <div
       {...focusProps}
@@ -73,6 +73,9 @@ const MediaCard = ({
           className="w-full h-full object-cover origin-center transform-gpu"
           loading="lazy"
         />
+        {isSelected && media.trailers?.length > 0 && (
+          <VideoTrailer trailers={media.trailers ?? []} clips={media.clips ?? []} teasers={media.teasers ?? []} />
+        )}
         {/* Gradient overlay - only for selected */}
         {!isSelected && (
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -84,8 +87,6 @@ const MediaCard = ({
           )}
         >
           <div className="space-y-2 w-full">
-            <h2 className={"text-lg font-black truncate "}>{media.title}</h2>
-
             {/* Enhanced metadata display */}
             <div className="flex items-center gap-3 text-xs">
               {/* Year */}
@@ -158,7 +159,15 @@ const MediaCard = ({
             isSelected && "opacity-100"
           )}
         >
-          <MediaTitle>{media.title}</MediaTitle>
+          {media.logo_urls.length > 0 ? (
+            <img
+              src={media.logo_urls.at(0)}
+              alt={media.title}
+              className="w-80 p-6 m-12 object-cover origin-center transform-gpu absolute bottom-0 left-0"
+            />
+          ) : (
+            <MediaTitle>{media.title}</MediaTitle>
+          )}
         </div>
       </div>
     </div>

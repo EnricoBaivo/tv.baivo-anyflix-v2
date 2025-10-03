@@ -1,5 +1,6 @@
 """TMDB (The Movie Database) service."""
 
+import asyncio
 import json
 import logging
 import os
@@ -8,9 +9,11 @@ import httpx
 
 from lib.models.tmdb import (
     TMDBConfiguration,
+    TMDBImages,
     TMDBMovieDetail,
     TMDBSearchResponse,
     TMDBTVDetail,
+    TMDBVideoResult,
 )
 from lib.utils.caching import ServiceCacheConfig, cached
 from lib.utils.client import HTTPClient
@@ -108,7 +111,7 @@ class TMDBService:
 
             try:
                 return TMDBSearchResponse(**response_data)
-            except (ValueError, TypeError, KeyError) as e:
+            except (ValueError, TypeError, KeyError):
                 logger.exception(
                     "Pydantic validation error in search_multi for query '%s'", query
                 )
@@ -126,18 +129,72 @@ class TMDBService:
                 page=page, results=[], total_pages=0, total_results=0
             )
 
+    @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_movie_images")
+    async def get_movie_images(self, movie_id: int) -> TMDBImages | None:
+        """Get movie images by ID.
+
+        Args:
+            movie_id: TMDB movie ID
+
+        Returns:
+            Movie images or None if not found
+        """
+        try:
+            url = f"{self.base_url}/movie/{movie_id}/images"
+            params = {
+                "api_key": self.api_key,
+                "include_image_language": "en-US,de-DE,ja-JP",
+            }
+
+            response = await self.client.get(
+                url, params=params, headers=self._get_headers()
+            )
+            response_data = json.loads(response.body)
+            return TMDBImages(**response_data)
+
+        except (httpx.HTTPError, ValueError, KeyError):
+            logger.exception("Failed to get movie images for ID %s", movie_id)
+            return None
+
+    @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_movie_videos")
+    async def get_movie_videos(self, movie_id: int) -> TMDBVideoResult | None:
+        """Get movie videos by ID.
+
+        Args:
+            movie_id: TMDB movie ID
+
+        Returns:
+            Movie videos or None if not found
+        """
+        try:
+            url = f"{self.base_url}/movie/{movie_id}/videos"
+            params = {
+                "api_key": self.api_key,
+                "include_video_language": "en-US,de-DE,ja-JP",
+            }
+
+            response = await self.client.get(
+                url, params=params, headers=self._get_headers()
+            )
+            response_data = json.loads(response.body)
+            return TMDBVideoResult(**response_data)
+
+        except (httpx.HTTPError, ValueError, KeyError):
+            logger.exception("Failed to get movie videos for ID %s", movie_id)
+            return None
+
     @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_movie_details")
-    async def get_movie_details(
+    async def get_details(
         self, movie_id: int, append_to_response: str | None = None
     ) -> TMDBMovieDetail | None:
         """Get movie details by ID.
 
         Args:
             movie_id: TMDB movie ID
-            append_to_response: Additional data to append (e.g., "videos,images,external_ids")
+            append_to_response: Additional data to append (e.g., "external_ids")
 
         Returns:
-            Movie details or None if not found
+            Movie details with images and videos or None if not found
         """
         try:
             url = f"{self.base_url}/movie/{movie_id}"
@@ -148,14 +205,90 @@ class TMDBService:
                 params["include_adult"] = "true"
                 params["language"] = "de-DE"
 
+            # Fetch details, images, and videos concurrently
+            details_task = self.client.get(
+                url, params=params, headers=self._get_headers()
+            )
+            images_task = self.get_movie_images(movie_id)
+            videos_task = self.get_movie_videos(movie_id)
+
+            details_response, images, videos = await asyncio.gather(
+                details_task, images_task, videos_task, return_exceptions=True
+            )
+
+            # Handle potential exceptions
+            if isinstance(details_response, Exception):
+                raise details_response
+
+            response_data = json.loads(details_response.body)
+            movie_detail = TMDBMovieDetail(**response_data)
+
+            # Replace images with the ones from the images endpoint
+            if not isinstance(images, Exception) and images is not None:
+                movie_detail.images = images
+
+            # Replace videos with the ones from the videos endpoint
+            if not isinstance(videos, Exception) and videos is not None:
+                movie_detail.videos = videos
+
+        except (httpx.HTTPError, ValueError, KeyError):
+            logger.exception("Failed to get movie details for ID %s", movie_id)
+            return None
+        else:
+            return movie_detail
+
+    @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_tv_images")
+    async def get_tv_images(self, tv_id: int) -> TMDBImages | None:
+        """Get TV show images by ID.
+
+        Args:
+            tv_id: TMDB TV show ID
+
+        Returns:
+            TV show images or None if not found
+        """
+        try:
+            url = f"{self.base_url}/tv/{tv_id}/images"
+            params = {
+                "api_key": self.api_key,
+                "include_image_language": "en-US,de-DE,ja-JP",
+            }
+
             response = await self.client.get(
                 url, params=params, headers=self._get_headers()
             )
             response_data = json.loads(response.body)
-            return TMDBMovieDetail(**response_data)
+            return TMDBImages(**response_data)
 
         except (httpx.HTTPError, ValueError, KeyError):
-            logger.exception("Failed to get movie details for ID %s", movie_id)
+            logger.exception("Failed to get TV images for ID %s", tv_id)
+            return None
+
+    @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_tv_videos")
+    async def get_tv_videos(self, tv_id: int) -> TMDBVideoResult | None:
+        """Get TV show videos by ID.
+
+        Args:
+            tv_id: TMDB TV show ID
+
+        Returns:
+            TV show videos or None if not found
+        """
+        try:
+            url = f"{self.base_url}/tv/{tv_id}/videos"
+            params = {
+                "api_key": self.api_key,
+                "include_video_language": "en-US,de-DE,ja-JP",
+            }
+
+            response = await self.client.get(
+                url, params=params, headers=self._get_headers()
+            )
+            response_data = json.loads(response.body)
+            return TMDBVideoResult(**response_data)
+
+        except (httpx.HTTPError, ValueError, KeyError):
+            logger.exception("Failed to get TV videos for ID %s", tv_id)
             return None
 
     @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_tv_details")
@@ -166,10 +299,10 @@ class TMDBService:
 
         Args:
             tv_id: TMDB TV show ID
-            append_to_response: Additional data to append (e.g., "videos,images,external_ids")
+            append_to_response: Additional data to append (e.g., "external_ids")
 
         Returns:
-            TV show details or None if not found
+            TV show details with images and videos or None if not found
         """
         try:
             url = f"{self.base_url}/tv/{tv_id}"
@@ -180,15 +313,37 @@ class TMDBService:
                 params["include_adult"] = "true"
                 params["language"] = "de-DE"
 
-            response = await self.client.get(
+            # Fetch details, images, and videos concurrently
+            details_task = self.client.get(
                 url, params=params, headers=self._get_headers()
             )
-            response_data = json.loads(response.body)
-            return TMDBTVDetail(**response_data)
+            images_task = self.get_tv_images(tv_id)
+            videos_task = self.get_tv_videos(tv_id)
+
+            details_response, images, videos = await asyncio.gather(
+                details_task, images_task, videos_task, return_exceptions=True
+            )
+
+            # Handle potential exceptions
+            if isinstance(details_response, Exception):
+                raise details_response
+
+            response_data = json.loads(details_response.body)
+            tv_detail = TMDBTVDetail(**response_data)
+
+            # Replace images with the ones from the images endpoint
+            if not isinstance(images, Exception) and images is not None:
+                tv_detail.images = images
+
+            # Replace videos with the ones from the videos endpoint
+            if not isinstance(videos, Exception) and videos is not None:
+                tv_detail.videos = videos
 
         except (httpx.HTTPError, ValueError, KeyError):
             logger.exception("Failed to get TV details for ID %s", tv_id)
             return None
+        else:
+            return tv_detail
 
     @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_find_external")
     async def find_by_external_id(

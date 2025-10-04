@@ -1806,6 +1806,8 @@ export interface components {
             original_url: string;
             /** Streamable Url */
             streamable_url?: string | null;
+            /** M3U8 Url */
+            m3u8_url?: string | null;
             /** Quality */
             quality?: string | null;
             /** Error */
@@ -1906,8 +1908,14 @@ export interface components {
             quality: string;
             /** Language */
             language?: string | null;
-            /** Type */
-            type?: string | null;
+            /** Format */
+            format?: string | null;
+            /**
+             * Type
+             * @description Dub or Sub or original
+             * @default original
+             */
+            type: string | null;
             /** Host */
             host?: string | null;
             /**

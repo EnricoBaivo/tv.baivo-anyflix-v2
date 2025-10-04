@@ -78,7 +78,7 @@ export const DescriptionText = ({
   children: React.ReactNode;
 }) => {
   return (
-    <p className="text-sm md:text-base lg:text-lg xl:text-xl text-white leading-relaxed">
+    <p className="text-sm md:text-base lg:text-lg  text-white leading-relaxed">
       {children}
     </p>
   );

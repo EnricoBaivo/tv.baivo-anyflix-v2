@@ -1,10 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Media } from "@/types/media";
-import { useSearchMovies } from "@/hooks/useTMDB";
-import MediaInfo from "../media/MediaInfo";
 import SearchInput from "./SearchInput";
 import MediaCard from "../media/MediaCard";
 import { MediaTitle, MetadataText } from "../typography";
+import { useSearch } from "@/lib/api/hooks";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -18,12 +16,12 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Use SWR for search
-  const { data, isLoading, error } = useSearchMovies(debouncedQuery);
+  const { data, isLoading, error } = useSearch("tmdb", debouncedQuery);
 
   // Memoized results and state
   const { results, hasSearched, loading } = useMemo(() => {
     return {
-      results: data?.results || [],
+      results: data?.list || [],
       hasSearched: Boolean(debouncedQuery.trim()),
       loading: isLoading,
     };

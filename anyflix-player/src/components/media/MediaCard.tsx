@@ -21,6 +21,7 @@ interface MediaCardProps {
   isSelected?: boolean;
   isHovered?: boolean;
   isAnyHovered?: boolean;
+  allowVideoPlayback?: boolean;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   onFocus?: () => void;
@@ -33,6 +34,7 @@ const MediaCard = ({
   isSelected = false,
   isHovered = false,
   isAnyHovered = false,
+  allowVideoPlayback = false,
   onMouseEnter,
   onMouseLeave,
   onFocus,
@@ -74,7 +76,13 @@ const MediaCard = ({
           loading="lazy"
         />
         {isSelected && media.trailers?.length > 0 && (
-          <VideoTrailer trailers={media.trailers ?? []} clips={media.clips ?? []} teasers={media.teasers ?? []} />
+          <VideoTrailer
+            mediaId={media.id}
+            trailers={media.trailers ?? []}
+            clips={media.clips ?? []}
+            teasers={media.teasers ?? []}
+            shouldPlay={allowVideoPlayback}
+          />
         )}
         {/* Gradient overlay - only for selected */}
         {!isSelected && (
@@ -159,7 +167,7 @@ const MediaCard = ({
             isSelected && "opacity-100"
           )}
         >
-          {media.logo_urls.length > 0 ? (
+          {media.logo_urls?.length > 0 ? (
             <img
               src={media.logo_urls.at(0)}
               alt={media.title}

@@ -3,8 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Bell, User, Menu, X } from "lucide-react";
 import SearchModal from "./search/SearchModal";
 import { useWebOSNavigation } from "../hooks/useWebOSFocus";
-import { useSources } from "@/lib/api/hooks";
-import { useQuery } from "@/lib/api/client";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,7 +15,7 @@ const Navbar = () => {
     { name: "Home", path: "/" },
     { name: "TV Shows", path: "/tv-shows" },
     { name: "Aniworld", path: "/aniworld" },
-    { name: "My List", path: "/my-list" },
+    { name: "test", path: "/test" },
     { name: "Anime", path: "/anime" },
   ];
 
@@ -29,6 +27,7 @@ const Navbar = () => {
     onNavigate: (direction) => {
       if (direction === "down" && !isMenuOpen) {
         setIsMenuOpen(true);
+        console.log("down");
         return true; // Handled
       }
       return false; // Not handled, use default behavior

@@ -1,6 +1,4 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-// No longer need these imports as they're handled in NavigationButton
-import { Media } from "@/types/media";
 import MediaCard from "./MediaCard";
 import { SectionTitle } from "../typography";
 import MediaInfo from "./MediaInfo";
@@ -22,8 +20,9 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isRowHovered, setIsRowHovered] = useState<boolean>(false);
-
-  // WebOS focus is now handled within NavigationButton components
+  const [playbackAllowedIndex, setPlaybackAllowedIndex] = useState<
+    number | null
+  >(null);
 
   const scrollToSelected = (index: number) => {
     if (scrollRef.current && containerRef.current) {
@@ -62,6 +61,7 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
       if (newIndex !== selectedIndex) {
         setSelectedIndex(newIndex);
         setSelectedMedia(media[newIndex]);
+        setPlaybackAllowedIndex(newIndex);
         scrollToSelected(newIndex);
         onMediaClick?.(media[newIndex]);
       }
@@ -69,24 +69,17 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
     [selectedIndex, media, onMediaClick]
   );
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowRight") {
-        event.preventDefault();
-        handleKeyNavigation("right");
-      } else if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        handleKeyNavigation("left");
+  // Use WebOS navigation hook
+  const handleNavigate = useCallback(
+    (direction: "left" | "right" | "up" | "down"): boolean => {
+      if (direction === "left" || direction === "right") {
+        handleKeyNavigation(direction);
+        return true; // We handled the navigation
       }
-    };
-
-    // Add event listener to the container or document
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener("keydown", handleKeyDown);
-      return () => container.removeEventListener("keydown", handleKeyDown);
-    }
-  }, [handleKeyNavigation]);
+      return false; // Let the hook handle up/down
+    },
+    [handleKeyNavigation]
+  );
 
   // Initialize first media as selected
   useEffect(() => {
@@ -95,7 +88,7 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
       setSelectedIndex(0);
     }
   }, [media, selectedMedia]);
-
+  
   return (
     <div
       ref={containerRef}
@@ -139,17 +132,21 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
                   isSelected={selectedIndex === index}
                   isHovered={hoveredIndex === index}
                   isAnyHovered={isRowHovered}
+                  allowVideoPlayback={playbackAllowedIndex === index}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
                   onFocus={() => {
                     setSelectedIndex(index);
                     setSelectedMedia(item);
+                    setPlaybackAllowedIndex(index);
                     scrollToSelected(index);
                     onMediaClick?.(item);
+                    console.log("focus", index);
                   }}
                   onClick={() => {
                     setSelectedIndex(index);
                     setSelectedMedia(item);
+                    setPlaybackAllowedIndex(index);
                     scrollToSelected(index);
                     onMediaClick?.(item);
                   }}

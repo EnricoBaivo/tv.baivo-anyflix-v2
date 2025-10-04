@@ -84,11 +84,12 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
         )}
 
         {media.description && (
-          <div className="mt-2">
-            <DescriptionText>
-              <span className="line-clamp-3 block">{media.description}</span>
-            </DescriptionText>
-          </div>
+          <DescriptionText>
+            <span
+              dangerouslySetInnerHTML={{ __html: media.description.split("\n").at(0) }}
+              className="line-clamp-3 block text-md"
+            />
+          </DescriptionText>
         )}
       </div>
     </div>

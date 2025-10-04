@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-import { Media, unifyMediaList } from "@/types/media";
 import Hero from "@/components/Hero";
 import MediaRow from "@/components/media/MediaRow";
 import { useToast } from "@/hooks/use-toast";
@@ -12,34 +10,19 @@ const Aniworld = () => {
 
   // Fetch data from anime backend API
   const {
-    data: popularData,
+    data: popularMedia,
     error: popularError,
     isLoading: popularLoading,
   } = usePopular(source, 1);
 
   const {
-    data: latestData,
+    data: latestMedia,
     error: latestError,
     isLoading: latestLoading,
   } = useLatest(source, 1);
 
-  // Combined loading and error states
-  const isLoading = popularLoading || latestLoading;
-  const isError = popularError || latestError;
-
-  // Memoized data extraction using unified media converter
-  const { heroMedia, popularMedia, latestMedia } = useMemo(() => {
-    const popularList = popularData?.list || [];
-    const latestList = latestData?.list || [];
-    return {
-      heroMedia: popularList.length > 0 ? popularList[0] : null,
-      popularMedia: popularList,
-      latestMedia: latestList,
-    };
-  }, [popularData, latestData]);
-
   // Handle errors
-  if (isError) {
+  if (popularError || latestError) {
     console.error("Error fetching anime data:", {
       popularError,
       latestError,
@@ -56,7 +39,7 @@ const Aniworld = () => {
     // TODO: Navigate to anime detail page or open modal
   };
 
-  if (isLoading) {
+  if (popularLoading || latestLoading || !popularMedia || !latestMedia) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -70,20 +53,20 @@ const Aniworld = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      {heroMedia && <Hero media={heroMedia} />}
+      {popularMedia.list && <Hero media={popularMedia.list.at(0)} />}
 
       {/* Media Rows */}
       <div className="relative z-10 pb-16">
         {/* Default Content - only show when not searching */}
         <MediaRow
           title="Popular Anime"
-          media={popularMedia}
+          media={popularMedia.list.slice(1, -1)}
           onMediaClick={handleMediaClick}
         />
 
         <MediaRow
           title="Latest Episodes"
-          media={latestMedia}
+          media={latestMedia.list}
           onMediaClick={handleMediaClick}
         />
       </div>

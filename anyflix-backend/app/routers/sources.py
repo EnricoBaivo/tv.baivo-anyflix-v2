@@ -206,13 +206,21 @@ async def extract_trailer_url(youtube_url: str) -> TrailerResponse:
                 error="No streamable URLs found for this trailer",
             )
 
-        # Get the best quality source (first one from ytdlp - now sorted by quality)
         best_source = video_sources[0]
-
+        # find m3u8 url with best quality
+        m3u8_url = next(
+            (source.url for source in video_sources if source.format == "m3u8"), None
+        )
+        # find combined url with best quality
+        combined_url = next(
+            (source.url for source in video_sources if source.format == "combined"),
+            None,
+        )
         return TrailerResponse(
             success=True,
             original_url=youtube_url,
-            streamable_url=best_source.url,
+            streamable_url=combined_url,
+            m3u8_url=m3u8_url,
             quality=best_source.quality,
         )
 

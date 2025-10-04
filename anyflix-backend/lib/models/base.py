@@ -162,7 +162,10 @@ class VideoSource(BaseModel):
     original_url: str
     quality: str
     language: str | None = None
-    type: str | None = None  # "Dub" or "Sub"
+    format: str | None = None
+    type: str | None = Field(
+        default="original", description="Dub or Sub or original"
+    )  # "Dub" or "Sub"
     host: str | None = None  # Video host name (e.g., "vidmoly", "voe", "doodstream")
     requires_proxy: bool = False  # Whether this source requires proxy due to CORS
     headers: dict[str, str] | None = None

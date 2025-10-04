@@ -123,6 +123,7 @@ class TrailerResponse(BaseModel):
     success: bool
     original_url: str
     streamable_url: str | None = None
+    m3u8_url: str | None = None
     quality: str | None = None
     error: str | None = None
 

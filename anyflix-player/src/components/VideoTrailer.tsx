@@ -30,12 +30,17 @@ export const VideoTrailer = ({
       console.log(trailerExtraction);
       video.src = trailerExtraction.streamable_url;
       video.play();
+      video.volume = 0.5;
+      video.muted = false;
       setPlaying(true);
     }
   }, [trailerExtraction]);
 
   return (
     <video
+      autoPlay
+      loop
+      
       ref={videoRef}
       className={cn(
         "w-full h-full object-cover origin-center transform-gpu absolute bottom-0 left-0 transition-opacity duration-300",

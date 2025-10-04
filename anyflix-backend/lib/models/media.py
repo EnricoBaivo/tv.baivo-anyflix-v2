@@ -27,6 +27,8 @@ class MediaSpotlight(BaseModel):
     """Media spotlight model."""
 
     id: str
+    anilist_id: int | None = None
+    tmdb_id: int | None = None
     title: str
     description: str
     media_source_type: MediaSourceEnum = Field(

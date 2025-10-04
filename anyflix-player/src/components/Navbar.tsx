@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Bell, User, Menu, X } from "lucide-react";
 import SearchModal from "./search/SearchModal";
-import { useWebOSNavigation } from "../hooks/useWebOSFocus";
+import { useWebOSKeyHandler } from "../hooks/useWebOSFocus";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,21 +13,19 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "TV Shows", path: "/tv-shows" },
     { name: "Aniworld", path: "/aniworld" },
+    { name: "SerienStream", path: "/serienstream" },
     { name: "test", path: "/test" },
     { name: "Anime", path: "/anime" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
-  // webOS TV navigation hook
-  const { navigationMode, updateFocusableElements } = useWebOSNavigation({
-    containerRef: navRef,
+  // webOS TV key handler for custom navigation
+  const { navigationMode } = useWebOSKeyHandler({
     onNavigate: (direction) => {
       if (direction === "down" && !isMenuOpen) {
         setIsMenuOpen(true);
-        console.log("down");
         return true; // Handled
       }
       return false; // Not handled, use default behavior
@@ -50,13 +48,7 @@ const Navbar = () => {
         }
       }
     },
-    autoFocus: true,
   });
-
-  // Update focusable elements when menu state changes
-  React.useEffect(() => {
-    updateFocusableElements();
-  }, [isMenuOpen, updateFocusableElements]);
 
   // Helper function to generate webOS-compatible button classes
   const getWebOSButtonClasses = (baseClasses: string, isActive?: boolean) => {
@@ -75,7 +67,7 @@ const Navbar = () => {
   return (
     <nav
       ref={navRef}
-      className="fixed top-0 w-full z-50 bg-anyflix-black/95 backdrop-blur-sm transition-all duration-300"
+      className=" top-0 w-full z-50 bg-anyflix-black/95 backdrop-blur-sm transition-all duration-300"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -191,10 +183,10 @@ const Navbar = () => {
       </div>
 
       {/* Search Modal */}
-      <SearchModal
+      {/* <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-      />
+      /> */}
     </nav>
   );
 };

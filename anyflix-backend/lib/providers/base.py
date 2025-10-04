@@ -166,16 +166,16 @@ class BaseProvider(ABC):
         """
         return clean_html_string(input_str)
 
-    async def enrich_with_details(self, search_result: SearchResult) -> SearchResult:
+    async def enrich_with_details(self, link: str) -> SearchResult:
         """Enrich SearchResult with detailed MediaInfo."""
-        media_info = await self.get_detail(search_result.link, episodes=False)
+        media_info = await self.get_detail(link, episodes=False)
         confident_anime_source = False
         best_match_anilist = None
         best_match_tmdb = None
         best_match_source = None
         confidence = 0
         async with TMDBService() as tmdb_service:
-            tmdb_media_info = await tmdb_service.search_multi(query=search_result.name)
+            tmdb_media_info = await tmdb_service.search_multi(query=media_info.name)
             best_match_tmdb, confidence = MatchingService.calculate_match_confidence(
                 media_info, tmdb_media_info
             )
@@ -197,7 +197,7 @@ class BaseProvider(ABC):
         if self.is_anime_source or confidence < 0.7:
             async with AniListService() as anilist_service:
                 anilist_media_info = await anilist_service.search_anime(
-                    query=search_result.name,
+                    query=media_info.name,
                     alternative_titles=media_info.alternative_titles,
                 )
 
@@ -217,9 +217,9 @@ class BaseProvider(ABC):
 
             # final result
         return SearchResult(
-            name=search_result.name,
-            image_url=search_result.image_url,
-            link=search_result.link,
+            name=media_info.name,
+            image_url=media_info.cover_image_url,
+            link=link,
             media_info=media_info,
             anilist_media_info=best_match_anilist,
             tmdb_media_info=TMDBMediaResult(

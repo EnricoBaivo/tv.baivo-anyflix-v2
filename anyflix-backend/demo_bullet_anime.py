@@ -146,7 +146,6 @@ async def test_popular_anime() -> None:
     """Test popular anime."""
     async with AniWorldProvider() as aniworld_provider:
         popular_anime = await aniworld_provider.get_popular()
-        print(popular_anime.model_dump_json(indent=2))
 
 
 async def main() -> None:

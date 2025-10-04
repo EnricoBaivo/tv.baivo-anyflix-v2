@@ -104,7 +104,12 @@ class SerienStreamProvider(BaseProvider):
                 link = link_element.attr("href")
 
                 series_list.append(
-                    SearchResult(name=name, image_url=image_url, link=link,provider=self.source.name)
+                    SearchResult(
+                        name=name,
+                        image_url=image_url,
+                        link=link,
+                        provider=self.source.name,
+                    )
                 )
 
         return series_list
@@ -185,9 +190,9 @@ class SerienStreamProvider(BaseProvider):
 
         all_series = self._parse_series_list_elements(elements)
         paginated_series, has_next_page = self._apply_pagination(all_series, page)
-
+        series_links = [series.link for series in paginated_series]
         series_list_extended_metadata = await self.async_pool(
-            13, paginated_series, self.enrich_with_details
+            13, series_links, self.enrich_with_details
         )
         return PaginatedSearchResultResponse(
             type=self.response_type,
@@ -205,9 +210,9 @@ class SerienStreamProvider(BaseProvider):
 
         all_series = self._parse_series_list_elements(elements)
         paginated_series, has_next_page = self._apply_pagination(all_series, page)
-        print("paginated_series", paginated_series)
+        series_links = [series.link for series in paginated_series]
         series_list_extended_metadata = await self.async_pool(
-            13, paginated_series, self.enrich_with_details
+            13, series_links, self.enrich_with_details
         )
         return PaginatedSearchResultResponse(
             type=self.response_type,
@@ -239,8 +244,14 @@ class SerienStreamProvider(BaseProvider):
         paginated_results, has_next_page = self._apply_pagination(
             filtered_results, page
         )
+        series_links = [series.link for series in paginated_results]
+        series_list_extended_metadata = await self.async_pool(
+            13, series_links, self.enrich_with_details
+        )
         return PaginatedSearchResultResponse(
-            type=self.response_type, list=paginated_results, has_next_page=has_next_page
+            type=self.response_type,
+            list=series_list_extended_metadata,
+            has_next_page=has_next_page,
         )
 
     def _extract_extended_metadata(

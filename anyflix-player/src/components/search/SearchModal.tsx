@@ -16,7 +16,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Use SWR for search
-  const { data, isLoading, error } = useSearch("tmdb", debouncedQuery);
+  const { data, isLoading, error } = useSearch("aniworld", debouncedQuery);
 
   // Memoized results and state
   const { results, hasSearched, loading } = useMemo(() => {

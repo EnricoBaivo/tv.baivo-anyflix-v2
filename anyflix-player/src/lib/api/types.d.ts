@@ -868,6 +868,10 @@ export interface components {
         MediaSpotlight: {
             /** Id */
             id: string;
+            /** Anilist Id */
+            anilist_id?: number | null;
+            /** Tmdb Id */
+            tmdb_id?: number | null;
             /** Title */
             title: string;
             /** Description */

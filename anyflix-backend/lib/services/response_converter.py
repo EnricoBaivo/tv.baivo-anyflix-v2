@@ -594,7 +594,6 @@ def convert_to_media_spotlight(media_item: SearchResult) -> MediaSpotlight:
         and media_item.tmdb_media_info.media_result.id
         else media_item.media_info.imdb_id or media_item.link
     )
-    print("media", media_item.model_dump_json(indent=4))
     # get relevant media title and description based on best match source
     title, description = get_base_information(media_item)
     # get relevant media type based on best match source
@@ -616,6 +615,13 @@ def convert_to_media_spotlight(media_item: SearchResult) -> MediaSpotlight:
     fsk_rating = get_fsk_rating(media_item)
     media_spotlight = MediaSpotlight(
         id=str(media_id),
+        anilist_id=media_item.anilist_media_info.id
+        if media_item.anilist_media_info is not None
+        else None,
+        tmdb_id=media_item.tmdb_media_info.media_result.id
+        if media_item.tmdb_media_info is not None
+        and media_item.tmdb_media_info.media_result is not None
+        else None,
         title=title,
         fsk_rating=fsk_rating,
         episodes_count=episodes_count,

@@ -14,6 +14,7 @@ import { getFocusClasses, getWebOSProps } from "@/lib/webos-focus";
 import { MediaTitle } from "../typography";
 import { components } from "@/lib/api/types";
 import { VideoTrailer } from "../VideoTrailer";
+import { useNavigate } from "react-router-dom";
 
 interface MediaCardProps {
   media: components["schemas"]["MediaSpotlight"];
@@ -21,7 +22,6 @@ interface MediaCardProps {
   isSelected?: boolean;
   isHovered?: boolean;
   isAnyHovered?: boolean;
-  allowVideoPlayback?: boolean;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   onFocus?: () => void;
@@ -34,26 +34,34 @@ const MediaCard = ({
   isSelected = false,
   isHovered = false,
   isAnyHovered = false,
-  allowVideoPlayback = false,
   onMouseEnter,
   onMouseLeave,
   onFocus,
   onClick,
 }: MediaCardProps) => {
+  const navigate = useNavigate();
   // WebOS focus handling - when focused, automatically becomes selected
-  const { focusProps, navigationMode } = useWebOSFocus({
+  const { ref, focusableProps, isFocused, navigationMode } = useWebOSFocus({
     onFocus: onFocus, // Triggers selection when card receives focus
-    onEnter: onClick, // Triggers click action when Enter is pressed
+    onEnter: () => {
+      onClick?.();
+      // navigate to WatchMedia page
+      console.log(media.provider_url, media.provider);
+      navigate(`/media-detail?url=${media.provider_url}&src=${media.provider.toLowerCase()}`);
+    }, // Triggers click action when Enter is pressed
   });
   return (
-    <div
-      {...focusProps}
-      {...getWebOSProps()}
+    <button
+      ref={ref as React.RefObject<HTMLButtonElement>}
+      type="button"
+      title={media.title}
+      {...focusableProps}
       className={cn(
+        focusableProps.className,
         "cursor-pointer transition-transform duration-300 transform-gpu origin-center h-full flex flex-col rounded-lg",
         isSelected ? "media-card-selected" : "media-card group",
         !isSelected && isAnyHovered && !isHovered ? "scale-95" : "scale-100",
-        getFocusClasses("card", navigationMode)
+        isFocused && getFocusClasses("card", navigationMode)
       )}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -75,13 +83,11 @@ const MediaCard = ({
           className="w-full h-full object-cover origin-center transform-gpu"
           loading="lazy"
         />
-        {isSelected && media.trailers?.length > 0 && (
+        {isFocused && media.trailers?.length > 0 && (
           <VideoTrailer
-            mediaId={media.id}
             trailers={media.trailers ?? []}
             clips={media.clips ?? []}
             teasers={media.teasers ?? []}
-            shouldPlay={allowVideoPlayback}
           />
         )}
         {/* Gradient overlay - only for selected */}
@@ -178,7 +184,7 @@ const MediaCard = ({
           )}
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 

@@ -3,6 +3,7 @@ import { useTrailerExtraction, useVideoSources } from "@/lib/api/hooks";
 import { components } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface VideoTrailerProps {
   trailers: string[];
@@ -20,14 +21,15 @@ export const VideoTrailer = ({
   const { data: trailerExtraction } = useTrailerExtraction(
     [...trailers, ...clips, ...teasers].at(0)
   );
-  useEffect(() => {
-    console.log(trailerExtraction);
-  }, [trailerExtraction]);
 
   useEffect(() => {
     const video = videoRef.current;
     if (trailerExtraction && video) {
       console.log(trailerExtraction);
+      if (!trailerExtraction.success) {
+        toast.error(trailerExtraction.error);
+        return;
+      }
       video.src = trailerExtraction.streamable_url;
       video.play();
       video.volume = 0.5;
@@ -40,7 +42,6 @@ export const VideoTrailer = ({
     <video
       autoPlay
       loop
-      
       ref={videoRef}
       className={cn(
         "w-full h-full object-cover origin-center transform-gpu absolute bottom-0 left-0 transition-opacity duration-300",

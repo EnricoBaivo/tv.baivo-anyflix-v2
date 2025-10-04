@@ -20,9 +20,6 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isRowHovered, setIsRowHovered] = useState<boolean>(false);
-  const [playbackAllowedIndex, setPlaybackAllowedIndex] = useState<
-    number | null
-  >(null);
 
   const scrollToSelected = (index: number) => {
     if (scrollRef.current && containerRef.current) {
@@ -61,24 +58,11 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
       if (newIndex !== selectedIndex) {
         setSelectedIndex(newIndex);
         setSelectedMedia(media[newIndex]);
-        setPlaybackAllowedIndex(newIndex);
         scrollToSelected(newIndex);
         onMediaClick?.(media[newIndex]);
       }
     },
     [selectedIndex, media, onMediaClick]
-  );
-
-  // Use WebOS navigation hook
-  const handleNavigate = useCallback(
-    (direction: "left" | "right" | "up" | "down"): boolean => {
-      if (direction === "left" || direction === "right") {
-        handleKeyNavigation(direction);
-        return true; // We handled the navigation
-      }
-      return false; // Let the hook handle up/down
-    },
-    [handleKeyNavigation]
   );
 
   // Initialize first media as selected
@@ -88,12 +72,11 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
       setSelectedIndex(0);
     }
   }, [media, selectedMedia]);
-  
+
   return (
     <div
       ref={containerRef}
-      className="relative group mb-16 focus:outline-none overflow-visible"
-      tabIndex={0}
+      className="relative group mb-16 focus:outline-none overflow-visible h-screen border-2 border-red-500"
       onMouseEnter={() => setIsRowHovered(true)}
       onMouseLeave={() => setIsRowHovered(false)}
     >
@@ -132,21 +115,17 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
                   isSelected={selectedIndex === index}
                   isHovered={hoveredIndex === index}
                   isAnyHovered={isRowHovered}
-                  allowVideoPlayback={playbackAllowedIndex === index}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
                   onFocus={() => {
                     setSelectedIndex(index);
                     setSelectedMedia(item);
-                    setPlaybackAllowedIndex(index);
                     scrollToSelected(index);
                     onMediaClick?.(item);
-                    console.log("focus", index);
                   }}
                   onClick={() => {
                     setSelectedIndex(index);
                     setSelectedMedia(item);
-                    setPlaybackAllowedIndex(index);
                     scrollToSelected(index);
                     onMediaClick?.(item);
                   }}

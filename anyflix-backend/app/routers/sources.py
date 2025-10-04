@@ -168,6 +168,9 @@ async def get_video_sources(
     """Get video sources."""
     provider = get_provider(source)
     async with provider:
+        print(f"Getting video list for {url} with language filter {lang}")
+        print(f"Source: {source}")
+        print(f"URL: {url}")
         return await provider.get_video_list(url, lang)
 
 

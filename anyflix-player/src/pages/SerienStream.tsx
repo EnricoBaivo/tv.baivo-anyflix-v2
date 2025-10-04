@@ -4,13 +4,13 @@ import { components } from "@/lib/api/types";
 import PopularMediaRow from "@/components/media/PopularMediaRow";
 import LatestUpdateMediaRow from "@/components/media/LatestUpdateMediaRow";
 
-const Aniworld = () => {
+const SerienStream = () => {
   const { toast } = useToast();
-  const source = "aniworld"; // Using aniworld as the primary source
+  const source = "serienstream"; // Using aniworld as the primary source
 
   const handleMediaClick = useCallback(
     (media: components["schemas"]["MediaSpotlight"]) => {
-      console.log("Anime clicked:", media);
+      console.log("SerienStream clicked:", media);
       // TODO: Navigate to anime detail page or open modal
     },
     []
@@ -28,23 +28,15 @@ const Aniworld = () => {
           title="Richtig beliebt"
           source={source}
           onMediaClick={handleMediaClick}
-          page={1}
         />
         <LatestUpdateMediaRow
           title="Frisch reingekommen"
           source={source}
           onMediaClick={handleMediaClick}
-          page={1}
-        />
-        <PopularMediaRow
-          title="Lust auf mehr"
-          source={source}
-          onMediaClick={handleMediaClick}
-          page={2}
         />
       </div>
     </div>
   );
 };
 
-export default Aniworld;
+export default SerienStream;

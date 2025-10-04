@@ -11,7 +11,7 @@ interface MediaRowNavigationButtonProps {
 }
 
 const MediaRowNavigationButton = ({ direction, onClick, ariaLabel, title }: MediaRowNavigationButtonProps) => {
-  const { focusProps, navigationMode } = useWebOSFocus({
+  const { ref, focusableProps, isFocused, navigationMode } = useWebOSFocus({
     onEnter: onClick,
   });
 
@@ -20,13 +20,14 @@ const MediaRowNavigationButton = ({ direction, onClick, ariaLabel, title }: Medi
 
   return (
     <button
-      {...focusProps}
-      {...getWebOSProps()}
+      ref={ref as React.RefObject<HTMLButtonElement>}
+      {...focusableProps}
       onClick={onClick}
       className={cn(
+        focusableProps.className,
         "absolute top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70 focus:opacity-100",
         isLeft ? "left-0 rounded-r-md" : "right-0 rounded-l-md",
-        getFocusClasses("button", navigationMode)
+        isFocused && getFocusClasses("button", navigationMode)
       )}
       aria-label={ariaLabel}
       title={title}

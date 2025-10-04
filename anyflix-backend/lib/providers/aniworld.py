@@ -490,9 +490,9 @@ class AniWorldProvider(BaseProvider):
 
         all_anime = self._parse_anime_list_elements(elements)
         paginated_anime, has_next_page = self._apply_pagination(all_anime, page)
-
+        anime_links = [anime.link for anime in paginated_anime]
         anime_list_extended_metadata = await self.async_pool(
-            13, paginated_anime, self.enrich_with_details
+            13, anime_links, self.enrich_with_details
         )
         return PaginatedSearchResultResponse(
             type=self.response_type,
@@ -508,8 +508,9 @@ class AniWorldProvider(BaseProvider):
 
         all_anime = self._parse_anime_list_elements(elements)
         paginated_anime, has_next_page = self._apply_pagination(all_anime, page)
+        anime_links = [anime.link for anime in paginated_anime]
         anime_list_extended_metadata = await self.async_pool(
-            13, paginated_anime, self.enrich_with_details
+            13, anime_links, self.enrich_with_details
         )
         return PaginatedSearchResultResponse(
             type=self.response_type,
@@ -550,8 +551,9 @@ class AniWorldProvider(BaseProvider):
         paginated_results, has_next_page = self._apply_pagination(
             filtered_results, page
         )
+        anime_links = [anime.link for anime in paginated_results]
         anime_list_extended_metadata = await self.async_pool(
-            13, paginated_results, self.enrich_with_details
+            13, anime_links, self.enrich_with_details
         )
         return PaginatedSearchResultResponse(
             type=self.response_type,
@@ -584,7 +586,8 @@ class AniWorldProvider(BaseProvider):
         # Use robust URL normalization
         full_url = normalize_url(base_url, url)
         referer_url = full_url
-
+        print(f"Referer URL: {referer_url}")
+        print(f"Source: {self.source.base_url}")
         headers = {
             "Accept": "*/*",
             "Referer": referer_url,

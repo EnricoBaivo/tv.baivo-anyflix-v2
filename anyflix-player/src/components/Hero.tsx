@@ -1,14 +1,31 @@
 import { Play, Info, Star } from "lucide-react";
-import { BoldH1 } from "./typography";
+import { BoldH1, MetadataText, SectionTitle } from "./typography";
 import { components } from "@/lib/api/types";
+import { useWebOSFocus } from "@/hooks/useWebOSFocus";
+import { cn } from "@/lib/utils";
+import { getFocusClasses } from "@/lib/webos-focus";
+import { VideoTrailer } from "./VideoTrailer";
 
 interface HeroProps {
   media: components["schemas"]["MediaSpotlight"];
 }
 
 const Hero = ({ media }: HeroProps) => {
+  const { ref, focusableProps, isFocused, navigationMode } = useWebOSFocus({
+    onFocus: () => {}, // Triggers selection when card receives focus
+    onEnter: () => {}, // Triggers click action when Enter is pressed
+  });
   return (
-    <div className="relative flex flex-col justify-end mx-8 overflow-hidden rounded-3xl border border-white/10 mt-16 mb-8 min-h-[85vh]">
+    <div
+      ref={ref as React.RefObject<HTMLDivElement>}
+      {...focusableProps}
+      className={cn(
+        focusableProps.className,
+        "cursor-pointer transition-transform duration-300 transform-gpu origin-center h-full flex flex-col rounded-lg",
+        isFocused && getFocusClasses("card", navigationMode),
+        "relative flex flex-col justify-end mx-8 overflow-hidden rounded-3xl border border-white/10 mt-16 mb-8 min-h-[80vh] max-h-[85vh]"
+      )}
+    >
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -16,6 +33,13 @@ const Hero = ({ media }: HeroProps) => {
           backgroundImage: `url(${media.image_backdrop_url}})`,
         }}
       />
+      {isFocused && (
+        <VideoTrailer
+          trailers={media.trailers ?? []}
+          clips={media.clips ?? []}
+          teasers={media.teasers ?? []}
+        />
+      )}
 
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
@@ -33,7 +57,18 @@ const Hero = ({ media }: HeroProps) => {
           </div>
 
           {/* Title */}
-          <BoldH1> {media.title}</BoldH1>
+          {media.logo_urls && media.logo_urls.length > 0 ? (
+            <>
+              <img
+                src={media.logo_urls.at(0)}
+                alt={media.title}
+                className="w-full max-w-96"
+              />
+              <MetadataText> {media.title}</MetadataText>
+            </>
+          ) : (
+            <BoldH1> {media.title}</BoldH1>
+          )}
 
           {/* Metadata */}
           <div className="flex items-center space-x-4 text-sm text-white mb-4">
@@ -104,19 +139,6 @@ const Hero = ({ media }: HeroProps) => {
           <p className="text-lg text-white/90 mb-8 leading-relaxed max-w-xl line-clamp-3">
             {media.description}
           </p>
-
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-4">
-            <button className="bg-white text-black px-8 py-3 rounded font-bold text-lg hover:bg-white/80 transition-colors duration-200 flex items-center space-x-2">
-              <Play className="h-6 w-6 fill-current" />
-              <span>Play</span>
-            </button>
-
-            <button className="bg-gray-600/70 text-white px-8 py-3 rounded font-bold text-lg hover:bg-gray-600/90 transition-colors duration-200 flex items-center space-x-2">
-              <Info className="h-6 w-6" />
-              <span>More Info</span>
-            </button>
-          </div>
         </div>
       </div>
     </div>

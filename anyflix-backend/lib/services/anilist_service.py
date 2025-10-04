@@ -266,7 +266,7 @@ class AniListService:
 
     # GraphQL query for searching media with pagination
     MEDIA_SEARCH_QUERY = """
-    query ($page: Int = 1, $perPage: Int = 20, $search: String, $type: MediaType, $format: [MediaFormat], $status: MediaStatus, $season: MediaSeason, $seasonYear: Int, $year: String, $onList: Boolean, $isAdult: Boolean = false, $genre: [String], $tag: [String] ) {
+    query ($page: Int = 1, $perPage: Int = 20, $search: String, $type: MediaType, $format: [MediaFormat], $status: MediaStatus, $season: MediaSeason, $seasonYear: Int, $year: String, $onList: Boolean, $isAdult: Boolean = true, $genre: [String], $tag: [String] ) {
       Page(page: $page, perPage: $perPage) {
         pageInfo {
           total

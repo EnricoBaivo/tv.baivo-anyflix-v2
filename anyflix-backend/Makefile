@@ -1,5 +1,5 @@
 dev:
-	uv run --env-file .env fastapi dev app/main.py
+	uv run --env-file .env fastapi dev app/main.py --host 0.0.0.0
 
 gen-openapi:
 	uv run generate_openapi.py

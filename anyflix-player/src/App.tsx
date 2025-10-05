@@ -9,8 +9,6 @@ import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Aniworld from "./pages/Aniworld";
-import { RemoteControlDev } from "./components/RemoteControlDev";
-import { KeyRemoteNavigationProvider } from "./hooks/KeyRemoteNavigationProvider";
 import SerienStream from "./pages/SerienStream";
 import WatchMedia from "./pages/WatchMedia";
 import MediaDetail from "./pages/MediaDetail";
@@ -30,7 +28,7 @@ const AppLayout = () => {
         <Route
           path="/tv-shows"
           element={
-            <div className="pt-16 text-white text-center">
+            <div className="pt-20 text-white text-center">
               TV Shows - Coming Soon
             </div>
           }
@@ -39,7 +37,6 @@ const AppLayout = () => {
         <Route path="/serienstream" element={<SerienStream />} />
         <Route path="/watch" element={<WatchMedia />} />
         <Route path="/media-detail" element={<MediaDetail />} />
-        <Route path="/test" element={<RemoteControlDev />} />
 
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
@@ -61,21 +58,19 @@ const swrConfig = {
 };
 
 const App = () => (
-  <KeyRemoteNavigationProvider>
-    <QueryClientProvider client={queryClient}>
-      <SWRConfig value={swrConfig}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <div className="min-h-screen bg-background">
-              <AppLayout />
-            </div>
-          </BrowserRouter>
-        </TooltipProvider>
-      </SWRConfig>
-    </QueryClientProvider>
-  </KeyRemoteNavigationProvider>
+  <QueryClientProvider client={queryClient}>
+    <SWRConfig value={swrConfig}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <div className="min-h-screen bg-background">
+            <AppLayout />
+          </div>
+        </BrowserRouter>
+      </TooltipProvider>
+    </SWRConfig>
+  </QueryClientProvider>
 );
 
 export default App;

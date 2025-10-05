@@ -1,9 +1,12 @@
 import { useSeriesDetail } from "@/lib/api/hooks";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { MediaTitle, SectionTitle } from "@/components/typography";
+import { MediaTitle } from "@/components/typography";
 import { Button } from "@/components/ui/button";
-import { Play, Info, ChevronDown } from "lucide-react";
+import { Play, Info, Tv, Film } from "lucide-react";
+import { SeasonEpisodeSelector, Episode } from "@/components/media-detail";
+import { useWebOSFocus } from "@/hooks/useWebOSFocus";
+import { cn } from "@/lib/utils";
 
 const MediaDetail = () => {
   const [searchParams] = useSearchParams();
@@ -11,9 +14,34 @@ const MediaDetail = () => {
   const mediaUrl = searchParams.get("url");
   const source = searchParams.get("src");
   const [selectedSeason, setSelectedSeason] = useState(1);
-  
+  const [contentType, setContentType] = useState<"series" | "movies">("series");
+
   const { data, isLoading, error } = useSeriesDetail(source, mediaUrl);
-  
+
+  // Prevent default scroll behavior when using arrow keys on the document level
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent default scroll for arrow keys (37-40), let focus system handle navigation
+      if ([37, 38, 39, 40].includes(e.keyCode)) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Auto-switch to movies if no seasons available
+  useEffect(() => {
+    if (data && data.series.seasons && data.series.movies) {
+      const hasSeasons = data.series.seasons.length > 0;
+      const hasMovies = data.series.movies.length > 0;
+      if (!hasSeasons && hasMovies) {
+        setContentType("movies");
+      }
+    }
+  }, [data]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -21,7 +49,7 @@ const MediaDetail = () => {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -31,7 +59,7 @@ const MediaDetail = () => {
       </div>
     );
   }
-  
+
   if (!data || !mediaUrl || !source) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -42,36 +70,74 @@ const MediaDetail = () => {
     );
   }
 
-  const currentSeason = data.series.seasons.find(
-    (s) => s.season === selectedSeason
-  ) || data.series.seasons[0];
+  const currentSeason =
+    data.series.seasons?.find((s) => s.season === selectedSeason) ||
+    data.series.seasons?.[0];
 
-  const handleEpisodeClick = (episodeUrl: string) => {
-    navigate(`/watch?url=${encodeURIComponent(episodeUrl)}&src=${source}`);
+  const hasSeasons = data.series.seasons && data.series.seasons.length > 0;
+  const hasMovies = data.series.movies && data.series.movies.length > 0;
+
+  const handleEpisodeClick = (episodeUrl: string, episode: Episode) => {
+    // Find which season this episode belongs to
+    const season = data.series.seasons?.find((s) =>
+      s.episodes.some((ep) => ep.url === episodeUrl)
+    );
+
+    if (!season) {
+      console.error("Could not find season for episode");
+      return;
+    }
+
+    // Navigate with all necessary parameters for episode navigation
+    const params = new URLSearchParams({
+      url: episodeUrl,
+      src: source || "",
+      seriesUrl: mediaUrl || "",
+      episode: episode.episode.toString(),
+      season: season.season.toString(),
+    });
+
+    navigate(`/watch?${params.toString()}`);
+  };
+
+  const handleMovieClick = (movieUrl: string) => {
+    const params = new URLSearchParams({
+      url: movieUrl,
+      src: source || "",
+      seriesUrl: mediaUrl || "",
+    });
+
+    navigate(`/watch?${params.toString()}`);
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="flex flex-col overflow-y-auto  h-[calc(100vh-80px)]  bg-background pb-20">
       {/* Hero Section */}
       <div className="relative h-[70vh] w-full">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10" />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10" />
-        
+
         {/* Content */}
         <div className="relative z-20 h-full flex flex-col justify-end p-8 md:p-16 lg:p-20">
           <div className="max-w-2xl space-y-6">
-            <MediaTitle>{data.series.slug.split('-').map(word => 
-              word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' ')}</MediaTitle>
-            
+            <MediaTitle>
+              {data.series.slug
+                .split("-")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ")}
+            </MediaTitle>
+
             <div className="flex items-center gap-4">
               <Button
                 size="lg"
                 className="bg-white text-black hover:bg-white/90 font-semibold px-8"
                 onClick={() => {
                   if (currentSeason.episodes.length > 0) {
-                    handleEpisodeClick(currentSeason.episodes[0].url);
+                    handleEpisodeClick(
+                      currentSeason.episodes[0].url,
+                      currentSeason.episodes[0]
+                    );
                   }
                 }}
               >
@@ -87,94 +153,189 @@ const MediaDetail = () => {
                 More Info
               </Button>
             </div>
-            
+
             <div className="flex items-center gap-3 text-gray-300 text-sm">
-              <span className="text-green-500 font-semibold">
-                {data.series.seasons.length} Season{data.series.seasons.length > 1 ? 's' : ''}
+              {hasSeasons && (
+                <>
+                  <span className="text-green-500 font-semibold">
+                    {data.series.seasons.length} Season
+                    {data.series.seasons.length > 1 ? "s" : ""}
+                  </span>
+                  <span>•</span>
+                </>
+              )}
+              {hasMovies && (
+                <>
+                  <span className="text-green-500 font-semibold">
+                    {data.series.movies.length} Movie
+                    {data.series.movies.length > 1 ? "s" : ""}
+                  </span>
+                  <span>•</span>
+                </>
+              )}
+              <span>
+                {data.type.charAt(0).toUpperCase() + data.type.slice(1)}
               </span>
-              <span>•</span>
-              <span>{data.type.charAt(0).toUpperCase() + data.type.slice(1)}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Episodes Section */}
+      {/* Content Section */}
       <div className="px-8 md:px-16 lg:px-20 mt-8 space-y-8">
-        {/* Season Selector */}
-        <div className="flex items-center gap-4">
-          <SectionTitle className="mb-0">Episodes</SectionTitle>
-          
-          {data.series.seasons.length > 1 && (
-            <div className="relative">
-              <select
-                value={selectedSeason}
-                onChange={(e) => setSelectedSeason(Number(e.target.value))}
-                aria-label="Select season"
-                className="appearance-none bg-gray-800 text-white border border-gray-600 rounded px-6 py-2 pr-10 cursor-pointer hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-              >
-                {data.series.seasons.map((season) => (
-                  <option key={season.season} value={season.season}>
-                    {season.title}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-            </div>
-          )}
-        </div>
+        {/* Content Type Toggle (if both available) */}
+        {hasSeasons && hasMovies && (
+          <div className="flex gap-3">
+            <ContentTypeToggle
+              type="series"
+              active={contentType === "series"}
+              onClick={() => setContentType("series")}
+              icon={<Tv className="h-5 w-5" />}
+              label="Series"
+            />
+            <ContentTypeToggle
+              type="movies"
+              active={contentType === "movies"}
+              onClick={() => setContentType("movies")}
+              icon={<Film className="h-5 w-5" />}
+              label="Movies"
+            />
+          </div>
+        )}
 
-        {/* Episodes Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {currentSeason.episodes.map((episode, index) => (
-            <button
-              key={episode.url}
-              onClick={() => handleEpisodeClick(episode.url)}
-              className="group relative bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-all duration-300 hover:scale-105"
-            >
-              {/* Episode Number Badge */}
-              <div className="aspect-video bg-gray-900 relative flex items-center justify-center">
-                <span className="text-6xl font-bold text-gray-600 group-hover:text-gray-500 transition-colors">
-                  {episode.episode}
-                </span>
-                
-                {/* Play overlay on hover */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center">
-                    <Play className="h-8 w-8 text-white fill-current ml-1" />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Episode Info */}
-              <div className="p-4 space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-white text-left line-clamp-1">
-                    {episode.episode}. {episode.title}
-                  </h3>
-                  <span className="text-gray-400 text-sm whitespace-nowrap">
-                    {/* Duration placeholder - add if available in data */}
-                  </span>
-                </div>
-                
-                {episode.tags && episode.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {episode.tags.map((tag, i) => (
-                      <span
-                        key={i}
-                        className="text-xs text-gray-400 bg-gray-900 px-2 py-1 rounded"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
+        {/* Episodes or Movies Grid */}
+        {contentType === "series" && hasSeasons && (
+          <SeasonEpisodeSelector
+            seasons={data.series.seasons}
+            selectedSeason={selectedSeason}
+            onSeasonChange={setSelectedSeason}
+            onEpisodeClick={handleEpisodeClick}
+          />
+        )}
+
+        {contentType === "movies" && hasMovies && (
+          <MoviesGrid
+            movies={data.series.movies}
+            onMovieClick={handleMovieClick}
+          />
+        )}
       </div>
     </div>
+  );
+};
+
+// Content Type Toggle Button Component
+interface ContentTypeToggleProps {
+  type: "series" | "movies";
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}
+
+const ContentTypeToggle = ({
+  active,
+  onClick,
+  icon,
+  label,
+}: ContentTypeToggleProps) => {
+  const { ref, focusableProps, isFocused } = useWebOSFocus({
+    onEnter: onClick,
+  });
+
+  return (
+    <button
+      ref={ref as React.RefObject<HTMLButtonElement>}
+      {...focusableProps}
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200",
+        active
+          ? "bg-white text-black"
+          : "bg-gray-800 text-white hover:bg-gray-700",
+        isFocused &&
+          !active &&
+          "ring-2 ring-white ring-offset-2 ring-offset-background"
+      )}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+};
+
+// Movies Grid Component
+interface MoviesGridProps {
+  movies: Array<{ number: number; title: string; url: string; kind: string }>;
+  onMovieClick: (url: string) => void;
+}
+
+const MoviesGrid = ({ movies, onMovieClick }: MoviesGridProps) => {
+  if (movies.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">No movies available</div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-white mb-6">Movies</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {movies.map((movie) => (
+          <MovieCard
+            key={movie.url}
+            movie={movie}
+            onClick={() => onMovieClick(movie.url)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Movie Card Component
+interface MovieCardProps {
+  movie: { number: number; title: string; url: string; kind: string };
+  onClick: () => void;
+}
+
+const MovieCard = ({ movie, onClick }: MovieCardProps) => {
+  const { ref, focusableProps, isFocused } = useWebOSFocus({
+    onEnter: onClick,
+  });
+
+  return (
+    <button
+      ref={ref as React.RefObject<HTMLButtonElement>}
+      {...focusableProps}
+      onClick={onClick}
+      className={cn(
+        "group relative bg-gray-800 rounded-lg overflow-hidden transition-all duration-300",
+        "hover:bg-gray-700 hover:scale-105",
+        isFocused && "scale-105 bg-gray-700"
+      )}
+    >
+      {/* Movie Number Badge */}
+      <div className="aspect-video bg-gray-900 relative flex items-center justify-center">
+        <span className="text-6xl font-bold text-gray-600 group-hover:text-gray-500 transition-colors">
+          {movie.number}
+        </span>
+
+        {/* Play overlay on hover */}
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center">
+            <Play className="h-8 w-8 text-white fill-current ml-1" />
+          </div>
+        </div>
+      </div>
+
+      {/* Movie Info */}
+      <div className="p-4">
+        <h3 className="font-semibold text-white text-left line-clamp-2">
+          {movie.title}
+        </h3>
+      </div>
+    </button>
   );
 };
 

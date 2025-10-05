@@ -1,19 +1,88 @@
-import VideoPlayer from "@/components/VideoPlayer";
-import { useVideoSources } from "@/lib/api/hooks";
-import { useSearchParams } from "react-router-dom";
+import VideoPlayer from "@/components/media-watch/VideoPlayer";
+import { useVideoSources, useSeriesDetail } from "@/lib/api/hooks";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { useMemo } from "react";
+import type { Episode } from "@/components/media-watch";
 
 const WatchMedia = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const mediaUrl = searchParams.get("url");
   const source = searchParams.get("src");
   const lang = searchParams.get("lang");
+  const seriesUrl = searchParams.get("seriesUrl");
+  const episodeNum = searchParams.get("episode");
+  const seasonNum = searchParams.get("season");
   
+  // Fetch video sources
   const { data, isLoading, error } = useVideoSources(
     source || "",
     mediaUrl || "",
     lang || undefined
   );
+
+  // Fetch series data if seriesUrl is provided
+  const {
+    data: seriesData,
+    isLoading: isSeriesLoading,
+    error: seriesError,
+  } = useSeriesDetail(source || "", seriesUrl || "");
+
+  // Find current episode and season if available (before any early returns)
+  const currentEpisode = useMemo(() => {
+    if (!seriesData || !episodeNum || !seasonNum) return undefined;
+    
+    const season = seriesData.series.seasons.find(
+      (s) => s.season === Number(seasonNum)
+    );
+    
+    if (!season) return undefined;
+    
+    return season.episodes.find((ep) => ep.episode === Number(episodeNum));
+  }, [seriesData, episodeNum, seasonNum]);
+
+  const currentSeason = useMemo(() => {
+    if (!seriesData || !seasonNum) return undefined;
+    
+    return seriesData.series.seasons.find(
+      (s) => s.season === Number(seasonNum)
+    );
+  }, [seriesData, seasonNum]);
+
+  const handleEpisodeChange = (episodeUrl: string, episode: Episode) => {
+    // Find which season this episode belongs to
+    const season = seriesData?.series.seasons.find((s) =>
+      s.episodes.some((ep) => ep.url === episodeUrl)
+    );
+
+    if (!season) {
+      console.error("Could not find season for episode");
+      return;
+    }
+
+    // Navigate to the new episode with all necessary parameters
+    const params = new URLSearchParams({
+      url: episodeUrl,
+      src: source || "",
+      ...(lang && { lang }),
+      ...(seriesUrl && { seriesUrl }),
+      episode: episode.episode.toString(),
+      season: season.season.toString(),
+    });
+
+    navigate(`/watch?${params.toString()}`);
+  };
+
+  const handleBack = () => {
+    // Navigate back to the media detail page
+    console.log("handleBack", seriesUrl, source);
+    if (seriesUrl && source) {
+      navigate(`/media-detail?url=${encodeURIComponent(seriesUrl)}&src=${source}`);
+    } else {
+      window.history.back();
+    }
+  };
 
   // Check for missing parameters first
   if (!mediaUrl || !source) {
@@ -38,7 +107,7 @@ const WatchMedia = () => {
   }
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading || (seriesUrl && isSeriesLoading)) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
@@ -50,8 +119,16 @@ const WatchMedia = () => {
     );
   }
 
-  // Show error state
-  if (error) {
+  // Show error state (for video sources or series data)
+  if (error || (seriesUrl && seriesError)) {
+    const errorMessage = error
+      ? error instanceof Error
+        ? error.message
+        : "Failed to load video sources"
+      : seriesError instanceof Error
+      ? seriesError.message
+      : "Failed to load series data";
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center px-4 max-w-md">
@@ -59,9 +136,7 @@ const WatchMedia = () => {
             <h1 className="text-2xl font-bold text-red-500 mb-4">
               Error Loading Video
             </h1>
-            <p className="text-white mb-4">
-              {error instanceof Error ? error.message : "Failed to load video sources"}
-            </p>
+            <p className="text-white mb-4">{errorMessage}</p>
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => window.location.reload()}
@@ -105,7 +180,19 @@ const WatchMedia = () => {
   }
 
   // Render the video player with all available video sources
-  return <VideoPlayer videos={data.videos} autoPlay={true} />;
+  // Use mediaUrl as key to force remount when episode changes
+  return (
+    <VideoPlayer
+      key={mediaUrl} // Force remount on episode change
+      videos={data.videos}
+      autoPlay={true}
+      currentEpisode={currentEpisode}
+      currentSeason={currentSeason}
+      allSeasons={seriesData?.series.seasons}
+      onEpisodeChange={handleEpisodeChange}
+      onBack={handleBack}
+    />
+  );
 };
 
 export default WatchMedia;

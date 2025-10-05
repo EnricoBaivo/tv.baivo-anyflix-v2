@@ -70,7 +70,7 @@ const Navbar = () => {
       className=" top-0 w-full z-50 bg-anyflix-black/95 backdrop-blur-sm transition-all duration-300"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center">
             <Link
@@ -183,10 +183,10 @@ const Navbar = () => {
       </div>
 
       {/* Search Modal */}
-      {/* <SearchModal
+      <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-      /> */}
+      />
     </nav>
   );
 };

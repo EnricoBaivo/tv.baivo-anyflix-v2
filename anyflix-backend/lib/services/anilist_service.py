@@ -708,7 +708,7 @@ class AniListService:
         search: str | None = None,
         media_type: MediaType | None = None,
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = 10,
         alternative_titles: list[str] | None = None,
         **kwargs: str | int | bool | list[str] | None,
     ) -> PageResponse | None:
@@ -779,7 +779,7 @@ class AniListService:
     async def get_trending_anime(
         self,
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = 10,
         alternative_titles: list[str] | None = None,
     ) -> PageResponse | None:
         """Get trending anime.
@@ -805,7 +805,7 @@ class AniListService:
     async def get_popular_anime(
         self,
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = 10,
         alternative_titles: list[str] | None = None,
     ) -> PageResponse | None:
         """Get popular anime.
@@ -828,7 +828,7 @@ class AniListService:
     async def get_top_rated_anime(
         self,
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = 10,
         alternative_titles: list[str] | None = None,
     ) -> PageResponse | None:
         """Get top rated anime.
@@ -853,7 +853,7 @@ class AniListService:
         season: str,
         year: int,
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = 10,
         alternative_titles: list[str] | None = None,
     ) -> PageResponse | None:
         """Get seasonal anime.
@@ -880,7 +880,7 @@ class AniListService:
     async def get_upcoming_anime(
         self,
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = 10,
         alternative_titles: list[str] | None = None,
     ) -> PageResponse | None:
         """Get upcoming anime.
@@ -909,7 +909,7 @@ class AniListService:
         query: str,
         alternative_titles: list[str] | None = None,
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = 10,
     ) -> PageResponse | None:
         """Search anime by title.
 
@@ -935,7 +935,7 @@ class AniListService:
         query: str,
         alternative_titles: list[str] | None = None,
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = 10,
     ) -> PageResponse | None:
         """Search manga by title.
 

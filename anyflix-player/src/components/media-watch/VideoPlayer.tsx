@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { VideoPlayerProps } from "./types";
 import {
@@ -29,6 +29,43 @@ const VideoPlayer = ({
 }: VideoPlayerProps) => {
   const [selectedVideo, setSelectedVideo] = useState(videos[0]);
   const [showEpisodeSelector, setShowEpisodeSelector] = useState(false);
+  const [triedVideoIndices, setTriedVideoIndices] = useState<Set<number>>(new Set([0]));
+  const [allQualitiesExhausted, setAllQualitiesExhausted] = useState(false);
+
+  // Handle network failure by switching to next available quality
+  const handleNetworkFailure = useCallback(() => {
+    // If all qualities have been exhausted, don't try to auto-switch anymore
+    if (allQualitiesExhausted) {
+      console.log("All qualities already exhausted, not attempting auto-switch");
+      return;
+    }
+
+    const currentIndex = videos.findIndex(v => v.url === selectedVideo.url);
+    
+    // Try to find the next video that hasn't been tried yet
+    for (let i = currentIndex + 1; i < videos.length; i++) {
+      if (!triedVideoIndices.has(i)) {
+        console.log(`Switching from quality ${currentIndex} to ${i} due to network failure`);
+        setTriedVideoIndices(prev => new Set(prev).add(i));
+        setSelectedVideo(videos[i]);
+        return;
+      }
+    }
+    
+    // If no untried videos found after current, try from the beginning
+    for (let i = 0; i < currentIndex; i++) {
+      if (!triedVideoIndices.has(i)) {
+        console.log(`Switching from quality ${currentIndex} to ${i} due to network failure`);
+        setTriedVideoIndices(prev => new Set(prev).add(i));
+        setSelectedVideo(videos[i]);
+        return;
+      }
+    }
+    
+    // All qualities have been tried and failed
+    console.log("All video qualities have been tried and failed");
+    setAllQualitiesExhausted(true);
+  }, [videos, selectedVideo, triedVideoIndices, allQualitiesExhausted]);
 
   const {
     videoRef,
@@ -39,7 +76,7 @@ const VideoPlayer = ({
     duration,
     volume,
     isMuted,
-  } = useVideoPlayer(selectedVideo, autoPlay);
+  } = useVideoPlayer(selectedVideo, autoPlay, handleNetworkFailure);
 
   const {
     isFullscreen,
@@ -53,6 +90,30 @@ const VideoPlayer = ({
 
   const { showControls, setShowControls, resetControlsTimeout } =
     useControlsVisibility(isPlaying);
+
+  // Reset tried video indices when videos change (e.g., new episode)
+  useEffect(() => {
+    setSelectedVideo(videos[0]);
+    setTriedVideoIndices(new Set([0]));
+    setAllQualitiesExhausted(false);
+  }, [videos]);
+
+  // Handler for manual video quality selection
+  const handleVideoSelect = (video: typeof selectedVideo) => {
+    const videoIndex = videos.findIndex(v => v.url === video.url);
+    setSelectedVideo(video);
+    
+    // If all qualities were exhausted, mark all as tried except the selected one
+    // This prevents auto-fallback from cycling through again
+    if (allQualitiesExhausted) {
+      console.log("Manual quality selection after exhaustion - preventing auto-fallback loop");
+      const allIndices = Array.from({ length: videos.length }, (_, i) => i);
+      setTriedVideoIndices(new Set(allIndices));
+    } else {
+      // Normal behavior: reset tried indices for manual retry
+      setTriedVideoIndices(new Set([videoIndex]));
+    }
+  };
 
   // Calculate next episode if episode data is available
   const nextEpisode = useMemo(() => {
@@ -124,7 +185,7 @@ const VideoPlayer = ({
 
       {isLoading && <LoadingSpinner />}
 
-      {error && <ErrorMessage error={error} />}
+      {error && <ErrorMessage error={error} provider_url={selectedVideo.original_url} />}
 
       {!isPlaying && !isLoading && !error && (
         <PlayOverlay onPlay={togglePlay} />
@@ -141,18 +202,18 @@ const VideoPlayer = ({
         />
       )}
 
-      {!isLoading && !error && (
+      {!isLoading && (
         <>
           <TopBar
             selectedVideo={selectedVideo}
-            showControls={showControls}
+            showControls={showControls || !!error}
             onBack={onBack}
           />
 
           <div
             className={cn(
               "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent transition-all duration-300 z-10",
-              showControls
+              showControls || error
                 ? "translate-y-0 opacity-100"
                 : "translate-y-full opacity-0"
             )}
@@ -165,7 +226,7 @@ const VideoPlayer = ({
 
             <ControlBar
               isPlaying={isPlaying}
-              showControls={showControls}
+              showControls={showControls || !!error}
               currentTime={currentTime}
               duration={duration}
               volume={volume}
@@ -177,7 +238,7 @@ const VideoPlayer = ({
               onSkip={(seconds) => skip(seconds, duration)}
               onToggleMute={toggleMute}
               onVolumeChange={handleVolumeChange}
-              onVideoSelect={setSelectedVideo}
+              onVideoSelect={handleVideoSelect}
               onToggleFullscreen={toggleFullscreen}
               nextEpisode={nextEpisode}
               onNextEpisode={nextEpisode ? handleNextEpisode : undefined}

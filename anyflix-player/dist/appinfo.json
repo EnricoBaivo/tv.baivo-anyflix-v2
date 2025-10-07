@@ -1,0 +1,14 @@
+{
+  "id": "com.baivo.anyflix.v2",
+  "version": "1.0.0",
+  "title": "Anyflix",
+  "vendor": "Baivo",
+  "type": "web",
+  "main": "index.html",
+  "icon": "icon.png",
+  "requestedPermissions": ["network", "storage"],
+  "features": {
+    "orientation": "landscape"
+  },
+  "logLevel": "debug"
+}

@@ -1,9 +1,5 @@
-import { getImageUrl } from "@/services/tmdb";
 import {
-  Play,
-  Plus,
   ThumbsUp,
-  ChevronDown,
   Star,
   Tv,
   Calendar,
@@ -47,7 +43,11 @@ const MediaCard = ({
       onClick?.();
       // navigate to WatchMedia page
       console.log(media.provider_url, media.provider);
-      navigate(`/media-detail?url=${media.provider_url}&src=${media.provider.toLowerCase()}`);
+      navigate(
+        `/media-detail?url=${
+          media.provider_url
+        }&src=${media.provider.toLowerCase()}`
+      );
     }, // Triggers click action when Enter is pressed
   });
   return (

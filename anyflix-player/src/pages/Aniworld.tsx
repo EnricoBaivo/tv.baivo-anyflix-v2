@@ -17,12 +17,18 @@ const Aniworld = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-y-auto">
       {/* Hero Section */}
       {/*       {popularMedia.list && <Hero media={popularMedia.list.at(0)} />}
        */}
       {/* Media Rows */}
       <div className="relative z-10 pb-16">
+        <PopularMediaRow
+          title="Lust auf mehr"
+          source={source}
+          onMediaClick={handleMediaClick}
+          page={2}
+        />
         {/* Default Content - only show when not searching */}
         <PopularMediaRow
           title="Richtig beliebt"
@@ -35,12 +41,6 @@ const Aniworld = () => {
           source={source}
           onMediaClick={handleMediaClick}
           page={1}
-        />
-        <PopularMediaRow
-          title="Lust auf mehr"
-          source={source}
-          onMediaClick={handleMediaClick}
-          page={2}
         />
       </div>
     </div>

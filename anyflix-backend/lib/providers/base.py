@@ -216,14 +216,17 @@ class BaseProvider(ABC):
                 name, image_url, link = item
                 try:
                     media_info = await self.get_detail(link, episodes=False)
+                    available_languages = media_info.available_languages if media_info else []
                 except Exception:
                     self.logger.exception("Failed to fetch detail for %s", link)
                     media_info = None
+                    available_languages = []
                 return SearchResult(
                     name=name,
                     image_url=image_url,
                     link=link,
                     provider=self.source.name,
+                    available_languages=available_languages,
                     media_info=media_info,
                 )
 
@@ -449,7 +452,61 @@ class BaseProvider(ABC):
             with contextlib.suppress(ValueError, TypeError):
                 metadata["rating_count"] = int(rating_count_text)
 
+        # === Available Languages ===
+        # Extract from episode table flag images
+        available_languages = self._extract_available_languages(document)
+        if available_languages:
+            metadata["available_languages"] = available_languages
+
         return metadata
+
+    def _extract_available_languages(self, document: Document) -> list[str]:
+        """Extract available languages from episode flag images.
+
+        Parses flag images in the episode table to determine available audio/subtitle options.
+
+        Args:
+            document: Parsed HTML document
+
+        Returns:
+            List of language codes (de, en, de_sub, en_sub)
+        """
+        languages = set()
+
+        # Find all flag images in the episode table
+        flag_elements = document.select("td.editFunctions img.flag")
+
+        for flag in flag_elements:
+            if not flag._element:
+                continue
+
+            src = self._safe_extract_attr(flag, "src").lower()
+            title = self._safe_extract_attr(flag, "title").lower()
+
+            # Map flag images to language codes
+            # Check for subtitle patterns FIRST (more specific)
+            if "japanese-german" in src:
+                # Japanese audio with German subtitles
+                languages.add("de_sub")
+            elif "japanese-english" in src:
+                # Japanese audio with English subtitles
+                languages.add("en_sub")
+            elif "german.svg" in src or "german.png" in src:
+                # German dub (standalone german flag, not japanese-german)
+                languages.add("de")
+            elif "english.svg" in src or "english.png" in src:
+                # English dub (standalone english flag, not japanese-english)
+                languages.add("en")
+            elif "untertitel" in title or "sub" in title:
+                # Fallback: check title for subtitle indicators
+                if "deutsch" in title:
+                    languages.add("de_sub")
+                elif "english" in title or "englisch" in title:
+                    languages.add("en_sub")
+
+        # Sort for consistent ordering: dubs first, then subs
+        order = {"de": 0, "en": 1, "de_sub": 2, "en_sub": 3}
+        return sorted(languages, key=lambda x: order.get(x, 99))
 
     # =========================================================================
     # Detail & Episode Parsing

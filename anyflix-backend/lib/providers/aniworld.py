@@ -84,15 +84,18 @@ class AniWorldProvider(BaseProvider):
             try:
                 media_info = await self.get_detail(link, episodes=False)
                 image_url = media_info.cover_image_url if media_info else ""
+                available_languages = media_info.available_languages if media_info else []
             except Exception:
                 self.logger.exception("Failed to fetch detail for search result %s", link)
                 media_info = None
                 image_url = ""
+                available_languages = []
             return SearchResult(
                 name=name,
                 image_url=image_url,
                 link=link,
                 provider=self.source.name,
+                available_languages=available_languages,
                 media_info=media_info,
             )
 

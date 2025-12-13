@@ -96,7 +96,6 @@ class MediaInfo(BaseModel):
     name: str
     cover_image_url: str
     description: str
-    author: str = ""
     genres: list[str] = Field(default_factory=list)
     episodes: list[Episode] = Field(default_factory=list)  # Internal use only
     seasons_length: int | None = Field(None, description="Number of seasons")
@@ -124,6 +123,10 @@ class MediaInfo(BaseModel):
     trailer_url: str | None = Field(None, description="Trailer or official website URL")
     rating_value: float | None = Field(None, description="User rating value (e.g., 3.0)")
     rating_count: int | None = Field(None, description="Number of user ratings")
+    available_languages: list[str] = Field(
+        default_factory=list,
+        description="Available languages/audio tracks (de, en, de_sub, en_sub)",
+    )
 
 
 class TMDBMediaResult(BaseModel):
@@ -140,6 +143,9 @@ class SearchResult(BaseModel):
     image_url: str
     link: str
     provider: str
+    available_languages: list[str] = Field(
+        default_factory=list, description="Available languages (de, en, sub, jp)"
+    )
     media_info: MediaInfo | None = None
 
 

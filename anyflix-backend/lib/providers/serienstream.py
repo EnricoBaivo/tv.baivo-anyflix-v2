@@ -63,9 +63,6 @@ class SerienStreamProvider(BaseProvider):
             has_next_page=has_next_page,
         )
 
-    @cached(
-        ttl=ServiceCacheConfig.PROVIDER_SEARCH_TTL, key_prefix="serienstream_search"
-    )
     async def search(
         self, query: str, page: int = 1, _lang: str | None = None
     ) -> PaginatedSearchResultResponse:
@@ -73,24 +70,38 @@ class SerienStreamProvider(BaseProvider):
         res = await self.client.get(f"{self.source.base_url}/serien")
         elements = Document(res.body).select("#seriesContainer > div > ul > li > a")
 
-        # Filter and build results
-        filtered_results = []
+        # Filter matching results (just names and links)
+        matching_items = []
         for element in elements:
             if element._element:
                 name = element.text
                 if query.lower() in name.lower():
-                    filtered_results.append(
-                        SearchResult(
-                            name=name,
-                            image_url="",
-                            link=element.attr("href"),
-                            provider=self.source.name,
-                        )
-                    )
+                    matching_items.append((name, element.attr("href")))
 
-        paginated_results, has_next_page = self._apply_pagination(
-            filtered_results, page
-        )
+        # Apply pagination BEFORE fetching details (for efficiency)
+        paginated_items, has_next_page = self._apply_pagination(matching_items, page)
+
+        # Fetch details for paginated results only
+        async def fetch_search_detail(item: tuple) -> SearchResult:
+            name, link = item
+            try:
+                media_info = await self.get_detail(link, episodes=False)
+                image_url = media_info.cover_image_url if media_info else ""
+            except Exception:
+                self.logger.exception("Failed to fetch detail for search result %s", link)
+                media_info = None
+                image_url = ""
+            return SearchResult(
+                name=name,
+                image_url=image_url,
+                link=link,
+                provider=self.source.name,
+                media_info=media_info,
+            )
+
+        # Fetch details concurrently with rate limiting
+        paginated_results = await self.async_pool(3, paginated_items, fetch_search_detail)
+
         return PaginatedSearchResultResponse(
             type=self.response_type,
             list=paginated_results,

@@ -46,9 +46,6 @@ class DebugMiddleware(BaseHTTPMiddleware):
         self.logger.info("🔵 %s %s", request.method, request.url)
         self.logger.debug("Request headers: %s", dict(request.headers))
 
-        # Log query parameters for proxy endpoints
-        if "/proxy/" in str(request.url):
-            self.logger.debug("Query params: %s", dict(request.query_params))
 
         # Process request
         try:
@@ -206,10 +203,7 @@ app = FastAPI(
             "name": "media-api",
             "description": "Complete media streaming API with discovery, content management, and video sources",
         },
-        {
-            "name": "proxy",
-            "description": "Video proxy endpoints for CORS handling and streaming",
-        },
+
         {
             "name": "admin",
             "description": "Administrative endpoints for service management",
@@ -269,7 +263,6 @@ async def root():
         "openapi_schema": "/openapi.json",
         "features": {
             "hierarchical_api": "Modern structure with seasons and movies",
-            "video_proxy": "Built-in video proxy for CORS handling",
             "multi_source": "Support for multiple streaming sources",
             "extractors": "Support for 10+ video hosting services",
             "media_types": "Extensible architecture for various media content",

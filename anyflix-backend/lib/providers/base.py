@@ -216,7 +216,9 @@ class BaseProvider(ABC):
                 name, image_url, link = item
                 try:
                     media_info = await self.get_detail(link, episodes=False)
-                    available_languages = media_info.available_languages if media_info else []
+                    available_languages = (
+                        media_info.available_languages if media_info else []
+                    )
                 except Exception:
                     self.logger.exception("Failed to fetch detail for %s", link)
                     media_info = None

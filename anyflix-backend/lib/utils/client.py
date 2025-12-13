@@ -1,11 +1,16 @@
 """HTTP client wrapper similar to the JavaScript Client class."""
 
 import asyncio
+import hashlib
+import logging
 from typing import Any
 
 import cloudscraper
 import httpx
+from aiocache import caches
 from httpx import Response
+
+logger = logging.getLogger(__name__)
 
 
 class HTTPClient:
@@ -15,15 +20,21 @@ class HTTPClient:
         self,
         follow_redirects: bool = True,
         use_cloudscraper: bool = True,
+        use_cache: bool = True,
+        cache_ttl: int = 300,  # 5 minutes default
     ) -> None:
         """Initialize HTTP client.
 
         Args:
             follow_redirects: Whether to follow redirects automatically
             use_cloudscraper: Whether to use cloudscraper for Cloudflare bypass
+            use_cache: Whether to cache successful responses
+            cache_ttl: Time to live for cached responses in seconds
         """
         self.follow_redirects = follow_redirects
         self.use_cloudscraper = use_cloudscraper
+        self.use_cache = use_cache
+        self.cache_ttl = cache_ttl
         self._client: httpx.AsyncClient | None = None
         self._cloudscraper_session = None
         self._create_session()
@@ -53,11 +64,80 @@ class HTTPClient:
             self._create_session()
         return self._client
 
+    def _generate_cache_key(
+        self, url: str, params: dict[str, str] | None = None
+    ) -> str:
+        """Generate a cache key for a URL and params.
+
+        Args:
+            url: Request URL
+            params: Optional query parameters
+
+        Returns:
+            Cache key string
+        """
+        key_data = url
+        if params:
+            # Sort params for consistent key generation
+            sorted_params = "&".join(f"{k}={v}" for k, v in sorted(params.items()))
+            key_data = f"{url}?{sorted_params}"
+
+        # Create a hash for the key to keep it manageable length
+        key_hash = hashlib.md5(key_data.encode()).hexdigest()
+        return f"http_client:{key_hash}"
+
+    async def _get_from_cache(self, cache_key: str) -> "CachedResponse | None":
+        """Try to get a cached response.
+
+        Args:
+            cache_key: Cache key to look up
+
+        Returns:
+            CachedResponse if found, None otherwise
+        """
+        try:
+            cache = caches.get("default")
+            cached_data = await cache.get(cache_key)
+            if cached_data is not None:
+                logger.debug("Cache hit for HTTP request: %s", cache_key)
+                return CachedResponse(
+                    body=cached_data["body"],
+                    status_code=cached_data["status_code"],
+                    headers=cached_data["headers"],
+                    url=cached_data["url"],
+                )
+        except Exception as e:
+            logger.debug("Cache lookup failed: %s", e)
+        return None
+
+    async def _store_in_cache(
+        self, cache_key: str, response: "ClientResponse"
+    ) -> None:
+        """Store a response in cache.
+
+        Args:
+            cache_key: Cache key to store under
+            response: Response to cache
+        """
+        try:
+            cache = caches.get("default")
+            cached_data = {
+                "body": response.body,
+                "status_code": response.status_code,
+                "headers": response.headers,
+                "url": response.request.url,
+            }
+            await cache.set(cache_key, cached_data, ttl=self.cache_ttl)
+            logger.debug("Cached HTTP response: %s (TTL: %ds)", cache_key, self.cache_ttl)
+        except Exception as e:
+            logger.debug("Failed to cache response: %s", e)
+
     async def get(
         self,
         url: str,
         headers: dict[str, str] | None = None,
         params: dict[str, str] | None = None,
+        use_cache: bool | None = None,
     ) -> "ClientResponse":
         """Make GET request with Cloudflare bypass if needed.
 
@@ -65,10 +145,22 @@ class HTTPClient:
             url: URL to request
             headers: Optional headers
             params: Optional query parameters
+            use_cache: Override instance cache setting for this request
 
         Returns:
             ClientResponse object
         """
+        # Determine if we should use cache for this request
+        should_cache = use_cache if use_cache is not None else self.use_cache
+
+        # Try to get from cache first
+        cache_key = None
+        if should_cache:
+            cache_key = self._generate_cache_key(url, params)
+            cached_response = await self._get_from_cache(cache_key)
+            if cached_response is not None:
+                return cached_response
+
         if headers is None:
             headers = {}
 
@@ -86,10 +178,14 @@ class HTTPClient:
             # Check if we got blocked by Cloudflare
             if self._is_cloudflare_blocked(client_response):
                 if self.use_cloudscraper:
-                    # Fallback to cloudscraper
+                    # Fallback to cloudscraper (don't cache cloudflare responses)
                     return await self._get_with_cloudscraper(url, headers, params)
                 # Try with enhanced headers
                 return await self._get_with_enhanced_headers(url, headers, params)
+
+            # Cache successful response (not blocked by Cloudflare)
+            if should_cache and cache_key:
+                await self._store_in_cache(cache_key, client_response)
 
         except Exception:
             if self.use_cloudscraper:
@@ -300,3 +396,57 @@ class CloudflareClientResponse(ClientResponse):
                 self.url = url
 
         return SimpleRequest(self._cs_response.url)
+
+
+class CachedResponse:
+    """Wrapper for cached HTTP response data to match ClientResponse interface."""
+
+    def __init__(
+        self,
+        body: str,
+        status_code: int,
+        headers: dict[str, str],
+        url: str,
+    ) -> None:
+        """Initialize with cached data.
+
+        Args:
+            body: Response body
+            status_code: HTTP status code
+            headers: Response headers
+            url: Original request URL
+        """
+        self._body = body
+        self._status_code = status_code
+        self._headers = headers
+        self._url = url
+
+    @property
+    def body(self) -> str:
+        """Get response body as string."""
+        return self._body
+
+    @property
+    def status_code(self) -> int:
+        """Get response status code."""
+        return self._status_code
+
+    @property
+    def statusCode(self) -> int:
+        """Alias for status_code to match JS API."""
+        return self.status_code
+
+    @property
+    def headers(self) -> dict[str, str]:
+        """Get response headers."""
+        return self._headers
+
+    @property
+    def request(self):
+        """Get request information."""
+
+        class SimpleRequest:
+            def __init__(self, url):
+                self.url = url
+
+        return SimpleRequest(self._url)

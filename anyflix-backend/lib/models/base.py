@@ -3,22 +3,15 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from pydantic import BaseModel, Field
 
-from lib.models.tmdb import TMDBMovieDetail, TMDBTVDetail
-
-if TYPE_CHECKING:
-    from lib.models.anilist import Media  # noqa: F401
-    from lib.models.tmdb import TMDBSearchResult  # noqa: F401
-
-# Type alias using string annotations for runtime compatibility
-# This approach provides several benefits:
-# 1. Avoids circular import issues at runtime
-# 2. Keeps type checking accurate during development
-# 3. Allows for cleaner dependency separation
-# 4. Maintains backward compatibility
+from lib.models.tmdb import (  # noqa: TC001 - Pydantic needs these at runtime
+    TMDBMovieDetail,
+    TMDBSearchResult,
+    TMDBTVDetail,
+)
 
 
 class MediaSource(BaseModel):
@@ -47,10 +40,9 @@ class MovieKind(str, Enum):
 
 
 class MatchSource(str, Enum):
-    """Match source enumeration. Can be TMDB, ANILIST or both."""
+    """Match source enumeration."""
 
     TMDB = "tmdb"
-    ANILIST = "anilist"
 
 
 class Episode(BaseModel):
@@ -107,7 +99,7 @@ class MediaInfo(BaseModel):
     author: str = ""
     genres: list[str] = Field(default_factory=list)
     episodes: list[Episode] = Field(default_factory=list)  # Internal use only
-    seasons_length: int | None = Field(None, description="Number of episodes")
+    seasons_length: int | None = Field(None, description="Number of seasons")
     # Extended metadata fields from seriesContentBox
     alternative_titles: list[str] = Field(
         default_factory=list, description="Alternative titles in different languages"
@@ -129,6 +121,9 @@ class MediaInfo(BaseModel):
     series_id: str | None = Field(
         None, description="Internal series ID from the provider"
     )
+    trailer_url: str | None = Field(None, description="Trailer or official website URL")
+    rating_value: float | None = Field(None, description="User rating value (e.g., 3.0)")
+    rating_count: int | None = Field(None, description="Number of user ratings")
 
 
 class TMDBMediaResult(BaseModel):
@@ -146,13 +141,6 @@ class SearchResult(BaseModel):
     link: str
     provider: str
     media_info: MediaInfo | None = None
-    anilist_media_info: Media | None = None
-    tmdb_media_info: TMDBMediaResult | None = None
-    best_match_source: MatchSource | None = None
-    confidence: float | None = None
-    is_anime: bool = Field(
-        default=False, description="Is currently detecting with provider"
-    )
 
 
 class VideoSource(BaseModel):
@@ -179,29 +167,3 @@ class SourcePreference(BaseModel):
     key: str
     list_preference: dict[str, Any] | None = None
     multi_select_list_preference: dict[str, Any] | None = None
-
-
-# Rebuild models with forward references after all models are defined
-def rebuild_models() -> None:
-    """Rebuild models with forward references."""
-    # Import the actual classes for rebuilding
-    import sys
-
-    from lib.models.anilist import Media
-    from lib.models.tmdb import TMDBSearchResult
-
-    # Add the types to the global namespace for proper resolution
-    module = sys.modules[__name__]
-    module.Media = Media  # type: ignore[attr-defined]
-    module.TMDBSearchResult = TMDBSearchResult  # type: ignore[attr-defined]
-
-    # Rebuild the base model first
-    SearchResult.model_rebuild()
-
-    # Also rebuild dependent models that use SearchResult
-    try:
-        from lib.models.responses import PaginatedResponse
-
-        PaginatedResponse.model_rebuild()
-    except ImportError:
-        pass  # responses module might not be available in all contexts

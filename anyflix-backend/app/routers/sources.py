@@ -1,13 +1,12 @@
 """Media sources API router."""
 
 import logging
-import os
 
 from fastapi import APIRouter, HTTPException, Path, Query
 
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
 from lib.models.responses import (
-    PaginatedMediaSpotlightResponse,
+    PaginatedSearchResultResponse,
     PreferencesResponse,
     SourcesResponse,
     TrailerResponse,
@@ -16,9 +15,6 @@ from lib.models.responses import (
 from lib.providers.aniworld import AniWorldProvider
 from lib.providers.base import BaseProvider
 from lib.providers.serienstream import SerienStreamProvider
-from lib.services.anilist_service import AniListService
-from lib.services.response_converter import convert_to_media_spotlight
-from lib.services.tmdb_service import TMDBService
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +32,6 @@ providers: dict[str, BaseProvider] = {
     "aniworld": AniWorldProvider(),
     "serienstream": SerienStreamProvider(),
 }
-
-# Initialize services
-anilist_service = AniListService()
-tmdb_service = TMDBService(api_key=os.getenv("TMDB_API_KEY", ""))  # Get from env
 
 
 def get_provider(source: str) -> BaseProvider:
@@ -82,56 +74,37 @@ async def get_source_preferences(source: str = Path(...)) -> PreferencesResponse
 
 @router.get(
     "/{source}/popular",
-    response_model=PaginatedMediaSpotlightResponse,
+    response_model=PaginatedSearchResultResponse,
     summary="🔍 Get Popular Content",
 )
 async def get_popular(
     source: str = Path(...),
     page: int = Query(1, ge=1),
-) -> PaginatedMediaSpotlightResponse:
-    """Get popular content with optional metadata enrichment."""
+) -> PaginatedSearchResultResponse:
+    """Get popular content."""
     provider = get_provider(source)
     async with provider:
-        popular_response = await provider.get_popular(page=page)
-        media_spotlight_list = [
-            convert_to_media_spotlight(media_item)
-            for media_item in popular_response.list
-        ]
-        return PaginatedMediaSpotlightResponse(
-            list=media_spotlight_list,
-            type=popular_response.type,
-            has_next_page=popular_response.has_next_page,
-        )
+        return await provider.get_popular(page=page)
 
 
 @router.get(
     "/{source}/latest",
-    response_model=PaginatedMediaSpotlightResponse,
+    response_model=PaginatedSearchResultResponse,
     summary="🔍 Get Latest Updates",
 )
 async def get_latest_updates(
     source: str = Path(...),
     page: int = Query(1, ge=1),
-) -> PaginatedMediaSpotlightResponse:
-    """Get latest updates with optional metadata enrichment."""
+) -> PaginatedSearchResultResponse:
+    """Get latest updates."""
     provider = get_provider(source)
     async with provider:
-        latest_updates_response = await provider.get_latest_updates(page=page)
-        media_spotlight_list = [
-            convert_to_media_spotlight(media_item)
-            for media_item in latest_updates_response.list
-        ]
-
-        return PaginatedMediaSpotlightResponse(
-            list=media_spotlight_list,
-            type=latest_updates_response.type,
-            has_next_page=latest_updates_response.has_next_page,
-        )
+        return await provider.get_latest_updates(page=page)
 
 
 @router.get(
     "/{source}/search",
-    response_model=PaginatedMediaSpotlightResponse,
+    response_model=PaginatedSearchResultResponse,
     summary="🔍 Search Content",
 )
 async def search_content(
@@ -139,20 +112,11 @@ async def search_content(
     q: str = Query(..., min_length=1),
     page: int = Query(1, ge=1),
     lang: str = Query(None),
-) -> PaginatedMediaSpotlightResponse:
-    """Search for content with optional metadata enrichment."""
+) -> PaginatedSearchResultResponse:
+    """Search for content."""
     provider = get_provider(source)
     async with provider:
-        search_response = await provider.search(q, page, lang)
-        media_spotlight_list = [
-            convert_to_media_spotlight(media_item)
-            for media_item in search_response.list
-        ]
-        return PaginatedMediaSpotlightResponse(
-            list=media_spotlight_list,
-            type=search_response.type,
-            has_next_page=search_response.has_next_page,
-        )
+        return await provider.search(q, page, lang)
 
 
 @router.get(

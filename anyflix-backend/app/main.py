@@ -91,7 +91,7 @@ cache_manager = CacheManager()
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     """Manage application lifespan events."""
     # Startup: Configure logging
     setup_logging(

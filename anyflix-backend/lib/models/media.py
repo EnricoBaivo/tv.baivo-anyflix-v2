@@ -2,8 +2,70 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-from lib.models.anilist import MediaFormat, MediaRanking
 from lib.models.base import MatchSource
+
+
+class MediaFormat(str, Enum):
+    """Media format enumeration."""
+
+    TV = "TV"
+    TV_SHORT = "TV_SHORT"
+    MOVIE = "MOVIE"
+    SPECIAL = "SPECIAL"
+    OVA = "OVA"
+    ONA = "ONA"
+    MUSIC = "MUSIC"
+    MANGA = "MANGA"
+    NOVEL = "NOVEL"
+    ONE_SHOT = "ONE_SHOT"
+
+
+class MediaSeason(str, Enum):
+    """Media season enumeration."""
+
+    WINTER = "WINTER"
+    SPRING = "SPRING"
+    SUMMER = "SUMMER"
+    FALL = "FALL"
+
+
+class RankingType(str, Enum):
+    """Ranking type enumeration."""
+
+    RATED = "RATED"
+    POPULAR = "POPULAR"
+
+
+class MediaRankingContext(str, Enum):
+    """Media ranking context enumeration."""
+
+    HIGHEST_RATED_ALL_TIME = "highest rated all time"
+    HIGHEST_RATED = "highest rated"
+    MOST_POPULAR = "most popular"
+    MOST_POPULAR_ALL_TIME = "most popular all time"
+
+
+class MediaStatus(str, Enum):
+    """Media status enumeration."""
+
+    FINISHED = "FINISHED"
+    RELEASING = "RELEASING"
+    NOT_YET_RELEASED = "NOT_YET_RELEASED"
+    CANCELLED = "CANCELLED"
+    HIATUS = "HIATUS"
+
+
+class MediaRanking(BaseModel):
+    """Media ranking model."""
+
+    id: int
+    rank: int
+    type: RankingType
+    format: MediaFormat
+    year: int | None = None
+    season: MediaSeason | None = None
+    allTime: bool | None = None
+    context: str
 
 
 class MediaSourceEnum(Enum):
@@ -27,7 +89,6 @@ class MediaSpotlight(BaseModel):
     """Media spotlight model."""
 
     id: str
-    anilist_id: int | None = None
     tmdb_id: int | None = None
     title: str
     description: str

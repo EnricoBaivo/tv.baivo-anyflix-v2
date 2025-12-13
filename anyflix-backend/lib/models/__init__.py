@@ -1,15 +1,5 @@
 """Models for media backend service."""
 
-# AniList models
-from .anilist import (
-    Media,
-    MediaPageResponse,
-    MediaResponse,
-    MediaSearchVariables,
-    MediaType,
-    PageResponse,
-)
-
 # Base models
 from .base import (
     Episode,
@@ -18,14 +8,17 @@ from .base import (
     SearchResult,
     SourcePreference,
     VideoSource,
-    rebuild_models,
 )
+
+# Media models
+from .media import MediaSpotlight
 
 # Response models
 from .responses import (
     EpisodeResponse,
     MovieResponse,
     MoviesResponse,
+    PaginatedMediaSpotlightResponse,
     PaginatedSearchResultResponse,
     SeasonResponse,
     SeasonsResponse,
@@ -42,32 +35,21 @@ from .tmdb import (
     TMDBTVDetail,
 )
 
-# Rebuild models with forward references after all imports
-rebuild_models()
-
 __all__ = [
     "Episode",
-    # Response models
     "EpisodeResponse",
     "MatchSource",
-    # AniList models
-    "Media",
-    # Base models
     "MediaInfo",
-    "MediaPageResponse",
-    "MediaResponse",
-    "MediaSearchVariables",
-    "MediaType",
+    "MediaSpotlight",
     "MovieResponse",
     "MoviesResponse",
-    "PageResponse",
     "PaginatedMediaSpotlightResponse",
+    "PaginatedSearchResultResponse",
     "SearchResult",
     "SeasonResponse",
     "SeasonsResponse",
     "SeriesDetailResponse",
     "SourcePreference",
-    # TMDB models
     "TMDBConfiguration",
     "TMDBMovieDetail",
     "TMDBSearchResponse",

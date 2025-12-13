@@ -14,7 +14,6 @@ import asyncio
 import os
 import sys
 
-from lib.services.anilist_service import AniListService
 from lib.services.matching_service import MatchingService
 
 # Add the lib directory to the path
@@ -44,12 +43,6 @@ async def simple_test() -> None:
         serienstream_media_info = await provider.get_detail(url=serienstream_url)
         # print(media_info.model_dump_json(indent=2))
 
-    async with AniListService() as anilist_service:
-        anilist_media_info = await anilist_service.search_anime(
-            query=aniworld_search_query
-        )
-        for media in anilist_media_info.media:
-            print(media.title.userPreferred)
     print("=" * 80)
     print("TMDB Media Info")
     tmdb_api_key = os.getenv("TMDB_API_KEY")
@@ -106,47 +99,13 @@ async def simple_test() -> None:
     else:
         print("No match found")
     print("=" * 80)
-    # Calculate confidence against AniList PageResponse
-    best_match, confidence = MatchingService.calculate_match_confidence(
-        aniworld_media_info, anilist_media_info
-    )
-    print(f"Confidence: {confidence}")
-    if best_match:
-        # Safe access to title with proper type checking
-        if best_match.title and hasattr(best_match.title, "userPreferred"):
-            print(f"Best match: {best_match.title.userPreferred}")
-        else:
-            print(f"Best match: {getattr(best_match, 'name', 'Unknown')}")
-        # Print AniList URL
-        print(f"AniList URL: https://anilist.co/anime/{best_match.id}")
-    else:
-        print("No match found")
-    print("=" * 80)
-
-    print("=" * 80)
-    print("SerienStream Media Info")
-    best_match, confidence = MatchingService.calculate_match_confidence(
-        serienstream_media_info, anilist_media_info
-    )
-    print(f"Confidence: {confidence}")
-    if best_match:
-        # Safe access to title with proper type checking
-        if best_match.title and hasattr(best_match.title, "userPreferred"):
-            print(f"Best match: {best_match.title.userPreferred}")
-        else:
-            print(f"Best match: {getattr(best_match, 'name', 'Unknown')}")
-        # Print AniList URL
-        print(f"AniList URL: https://anilist.co/anime/{best_match.id}")
-    else:
-        print("No match found")
-    print("=" * 80)
 
 
 async def test_popular_anime() -> None:
     """Test popular anime."""
     async with AniWorldProvider() as aniworld_provider:
         popular_anime = await aniworld_provider.get_popular()
-
+        print(popular_anime.model_dump_json(indent=2))
 
 async def main() -> None:
     """Main function."""

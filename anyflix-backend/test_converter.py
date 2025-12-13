@@ -4,7 +4,6 @@ from app.routers.sources import convert_to_media_spotlight
 from lib.models.responses import (
     PaginatedMediaSpotlightResponse,
 )
-from lib.providers.serienstream import SerienStreamProvider
 from lib.providers.aniworld import AniWorldProvider
 
 

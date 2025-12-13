@@ -17,7 +17,6 @@ from lib.models.responses import (
 from lib.providers.aniworld import AniWorldProvider
 from lib.providers.base import BaseProvider
 from lib.providers.serienstream import SerienStreamProvider
-from lib.services.anilist_service import AniListService
 from lib.services.series_converter import SeriesConverterService
 from lib.services.tmdb_service import TMDBService
 
@@ -39,7 +38,6 @@ providers: dict[str, BaseProvider] = {
 }
 
 # Initialize services
-anilist_service = AniListService()
 tmdb_service = TMDBService(api_key=os.getenv("TMDB_API_KEY", ""))  # Get from env
 
 
@@ -139,7 +137,6 @@ async def get_series_season(
             return SeasonResponse(
                 type=series_detail.type,
                 tmdb_data=series_detail.tmdb_data,
-                anilist_data=series_detail.anilist_data,
                 season=season,
             )
 
@@ -168,8 +165,6 @@ async def get_series_episode(
                     return EpisodeResponse(
                         type=series_detail.type,
                         tmdb_data=series_detail.tmdb_data,
-                        anilist_data=series_detail.anilist_data,
-                        match_confidence=series_detail.match_confidence,
                         episode=episode,
                     )
             raise HTTPException(
@@ -196,7 +191,6 @@ async def get_series_movies(
         type=series_detail.type,
         movies=series_detail.series.movies,
         tmdb_data=series_detail.tmdb_data,
-        anilist_data=series_detail.anilist_data,
         match_confidence=series_detail.match_confidence,
     )
 
@@ -221,7 +215,6 @@ async def get_series_movie(
                 type=series_detail.type,
                 movie=movie,
                 tmdb_data=series_detail.tmdb_data,
-                anilist_data=series_detail.anilist_data,
                 match_confidence=series_detail.match_confidence,
             )
 

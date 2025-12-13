@@ -2,14 +2,10 @@
 
 import logging
 
-from lib.models.anilist import (
+from lib.models.base import SearchResult
+from lib.models.media import (
     MediaFormat,
     MediaRanking,
-    MediaRankingContext,
-    MediaStatus,
-)
-from lib.models.base import MatchSource, SearchResult
-from lib.models.media import (
     MediaSourceEnum,
     MediaSpotlight,
     MediaStatusEnum,
@@ -17,46 +13,11 @@ from lib.models.media import (
 from lib.models.tmdb import TMDBVideoType, get_genres_by_ids
 
 
-def safe_anilist_access(
-    media_item: SearchResult, attribute_path: str, default: object = None
-) -> object:
-    """Safely access anilist_media_info attributes with null checks."""
-    if media_item.anilist_media_info is None:
-        return default
-
-    # Navigate through the attribute path (e.g., "title.english")
-    obj = media_item.anilist_media_info
-    for attr in attribute_path.split("."):
-        if hasattr(obj, attr):
-            obj = getattr(obj, attr)
-            if obj is None:
-                return default
-        else:
-            return default
-    return obj
-
-
 def get_base_information(media_item: SearchResult) -> tuple[str, str]:
     """Get base information for media spotlight."""
     title = media_item.media_info.name
     description = None
-    if (
-        media_item.best_match_source == MatchSource.ANILIST
-        and media_item.anilist_media_info is not None
-    ):
-        title = media_item.anilist_media_info.title.english
-        if not title:
-            title = media_item.anilist_media_info.title.userPreferred
-        if not title:
-            title = media_item.anilist_media_info.title.english
-        if not title:
-            title = media_item.anilist_media_info.title.native
-        if not title:
-            title = media_item.media_info.name
-        description = media_item.anilist_media_info.description
-        if not description:
-            description = media_item.anilist_media_info.description
-    if media_item.best_match_source == MatchSource.TMDB:
+    if media_item.tmdb_media_info and media_item.tmdb_media_info.media_result:
         title = media_item.tmdb_media_info.media_result.title
         if not title:
             title = media_item.media_info.name
@@ -70,19 +31,6 @@ def get_base_information(media_item: SearchResult) -> tuple[str, str]:
 
 def get_media_source_type(media_item: SearchResult) -> MediaSourceEnum:
     """Get media source type."""
-    if media_item.is_anime:
-        anilist_format = safe_anilist_access(media_item, "format")
-        if anilist_format is not None:
-            return (
-                MediaSourceEnum.OVA
-                if anilist_format == MediaFormat.OVA
-                else MediaSourceEnum.MOVIE
-                if anilist_format == MediaFormat.MOVIE
-                else MediaSourceEnum.SPECIAL
-                if anilist_format == MediaFormat.SPECIAL
-                else MediaSourceEnum.SERIES
-            )
-
     return (
         MediaSourceEnum.MOVIE
         if media_item.tmdb_media_info
@@ -103,22 +51,8 @@ def get_media_format(media_item: SearchResult) -> MediaFormat | None:
     """
     logger = logging.getLogger(__name__)
 
-    # Priority 1: Use AniList format if available and reliable
-    if (
-        media_item.best_match_source == MatchSource.ANILIST
-        and media_item.anilist_media_info
-        and media_item.anilist_media_info.format is not None
-    ):
-        anilist_format = media_item.anilist_media_info.format
-        logger.debug("Using AniList format: %s", anilist_format)
-        return anilist_format
-
-    # Priority 2: Map TMDB media_type to appropriate MediaFormat
-    if (
-        media_item.best_match_source == MatchSource.TMDB
-        and media_item.tmdb_media_info
-        and media_item.tmdb_media_info.media_result
-    ):
+    # Priority 1: Map TMDB media_type to appropriate MediaFormat
+    if media_item.tmdb_media_info and media_item.tmdb_media_info.media_result:
         tmdb_type = media_item.tmdb_media_info.media_result.media_type
         format_mapping = {
             "movie": MediaFormat.MOVIE,
@@ -132,16 +66,7 @@ def get_media_format(media_item: SearchResult) -> MediaFormat | None:
             logger.debug("Using TMDB mapped format: %s -> %s", tmdb_type, mapped_format)
             return mapped_format
 
-    # Priority 3: Fallback to AniList format even if not best match
-    if (
-        media_item.anilist_media_info
-        and media_item.anilist_media_info.format is not None
-    ):
-        anilist_format = media_item.anilist_media_info.format
-        logger.debug("Using AniList fallback format: %s", anilist_format)
-        return anilist_format
-
-    # Priority 4: Intelligent inference based on media characteristics
+    # Priority 2: Intelligent inference based on media characteristics
     if media_item.media_info:
         # Check duration for format inference
         duration = getattr(media_item.media_info, "duration", None)
@@ -168,7 +93,7 @@ def get_media_format(media_item: SearchResult) -> MediaFormat | None:
             logger.debug("Inferred format: TV based on episode count")
             return MediaFormat.TV
 
-    # Priority 5: Check if we have any format hints from the source
+    # Priority 3: Check if we have any format hints from the source
     if hasattr(media_item, "source_format") and media_item.source_format:
         logger.debug("Using source format hint: %s", media_item.source_format)
         return MediaFormat.TV
@@ -216,29 +141,12 @@ def build_tmdb_image_url(
 
 
 def get_image_cover_url(media_item: SearchResult) -> str:
-    """Get image cover url. prefer tmdb poster path over anilist cover image and fallback to media info cover image url."""
+    """Get image cover url. Prefer TMDB poster path and fallback to media info cover image url."""
     cover_image_url = media_item.media_info.cover_image_url
-    if (
-        media_item.best_match_source == MatchSource.ANILIST
-        and media_item.anilist_media_info is not None
-    ):
-        anime_media_cover_image = media_item.anilist_media_info.coverImage
-        if anime_media_cover_image is not None:
-            cover_image_url = (
-                anime_media_cover_image.extraLarge
-                if anime_media_cover_image.extraLarge is not None
-                else anime_media_cover_image.large
-                if anime_media_cover_image.large is not None
-                else anime_media_cover_image.medium
-            )
     if (
         media_item.tmdb_media_info
         and media_item.tmdb_media_info.media_result.poster_path is not None
     ):
-        print(
-            "tmdb_media_info.media_result.poster_path",
-            media_item.tmdb_media_info.media_result.poster_path,
-        )
         cover_image_url = build_tmdb_image_url(
             media_item.tmdb_media_info.media_result.poster_path, image_type="poster"
         )
@@ -250,24 +158,14 @@ def get_image_backdrop_url(media_item: SearchResult) -> str:
     backdrop_image_url = media_item.media_info.backdrop_url
 
     if (
-        media_item.best_match_source == MatchSource.ANILIST
-        and media_item.anilist_media_info is not None
-    ):
-        backdrop_image_url = media_item.anilist_media_info.bannerImage
-    if (
         media_item.tmdb_media_info
         and media_item.tmdb_media_info.media_result
         and media_item.tmdb_media_info.media_result.backdrop_path is not None
     ):
-        # Use the new TMDB URL builder
         backdrop_image_url = build_tmdb_image_url(
             media_item.tmdb_media_info.media_result.backdrop_path, image_type="backdrop"
         )
 
-    if backdrop_image_url is None:
-        print(
-            f"backdrop_image_url is None for media_item: {media_item.model_dump_json(indent=4)}"
-        )
     return backdrop_image_url
 
 
@@ -303,16 +201,7 @@ def get_logo_urls(media_item: SearchResult) -> list[str]:
 
 def get_color(media_item: SearchResult) -> str:
     """Get color."""
-    color = None
-    if (
-        media_item.best_match_source == MatchSource.ANILIST
-        and media_item.anilist_media_info is not None
-    ):
-        cover_image = media_item.anilist_media_info.coverImage
-        if cover_image is not None:
-            color = cover_image.color
-
-    return color
+    return None
 
 
 def get_seasons_and_episodes_count(media_item: SearchResult) -> tuple[int, int]:
@@ -332,13 +221,6 @@ def get_release_year(media_item: SearchResult) -> int:
     """Get release year."""
     release_year = media_item.media_info.end_year
     if (
-        media_item.best_match_source == MatchSource.ANILIST
-        and media_item.anilist_media_info is not None
-    ):
-        start_date = media_item.anilist_media_info.startDate
-        if start_date is not None:
-            release_year = start_date.year
-    elif (
         media_item.tmdb_media_info
         and media_item.tmdb_media_info.media_result
         and media_item.tmdb_media_info.media_result.release_date is not None
@@ -355,12 +237,6 @@ def get_average_rating(media_item: SearchResult) -> int:
     """Get average rating."""
     average_rating = 0
     if (
-        media_item.best_match_source == MatchSource.ANILIST
-        and media_item.anilist_media_info is not None
-        and media_item.anilist_media_info.averageScore is not None
-    ):
-        average_rating = media_item.anilist_media_info.averageScore
-    elif (
         media_item.tmdb_media_info
         and media_item.tmdb_media_info.media_result
         and media_item.tmdb_media_info.media_result.vote_average is not None
@@ -373,12 +249,6 @@ def get_popularity(media_item: SearchResult) -> int:
     """Get popularity."""
     popularity = 0
     if (
-        media_item.is_anime
-        and media_item.anilist_media_info is not None
-        and media_item.anilist_media_info.popularity is not None
-    ):
-        popularity = media_item.anilist_media_info.popularity
-    elif (
         media_item.tmdb_media_info
         and media_item.tmdb_media_info.media_result
         and media_item.tmdb_media_info.media_result.popularity is not None
@@ -390,9 +260,7 @@ def get_popularity(media_item: SearchResult) -> int:
 def get_votes(media_item: SearchResult) -> int:
     """Get votes."""
     votes = 0
-    if media_item.is_anime and media_item.anilist_media_info is not None:
-        votes = media_item.anilist_media_info.favourites
-    elif (
+    if (
         media_item.tmdb_media_info
         and media_item.tmdb_media_info.media_result
         and media_item.tmdb_media_info.media_result.vote_count is not None
@@ -402,48 +270,20 @@ def get_votes(media_item: SearchResult) -> int:
 
 
 def get_media_status(media_item: SearchResult) -> MediaStatusEnum:
-    """Get media status.
-    FINISHED = "FINISHED"
-    RELEASING = "RELEASING"
-    CANCELLED = "CANCELLED"
-    """
-    media_status = MediaStatusEnum.RELEASED
-    if (
-        media_item.best_match_source == MatchSource.ANILIST
-        and media_item.anilist_media_info is not None
-    ):
-        media_status = (
-            MediaStatusEnum.COMPLETED
-            if media_item.anilist_media_info.status == MediaStatus.FINISHED
-            or MediaStatus.CANCELLED
-            else MediaStatusEnum.CONTINUING
-        )
-    # TODO: add tmdb media status needs additonal fatching
-    return media_status
+    """Get media status."""
+    # TODO: add tmdb media status - needs additional fetching
+    return MediaStatusEnum.RELEASED
 
 
 def get_genres(media_item: SearchResult) -> list[str]:
     """Get genres."""
     genres = []
     if (
-        media_item.best_match_source == MatchSource.ANILIST
-        and media_item.anilist_media_info is not None
-    ):
-        # Split genres that contain "&" symbol into separate genres
-        for genre in media_item.anilist_media_info.genres:
-            if "&" in genre:
-                # Split by "&" and clean up each part
-                split_genres = [g.strip().lower() for g in genre.split("&")]
-                genres.extend(split_genres)
-            else:
-                genres.append(genre.lower())
-
-    if (
         media_item.tmdb_media_info
         and media_item.tmdb_media_info.media_result
         and media_item.tmdb_media_info.media_result.genre_ids is not None
     ):
-        # Also split TMDB genres that contain "&"
+        # Split TMDB genres that contain "&"
         tmdb_genres = get_genres_by_ids(
             media_item.tmdb_media_info.media_result.genre_ids
         )
@@ -466,17 +306,10 @@ def get_trailer(media_item: SearchResult) -> str:
     youtube_base_url = "https://www.youtube.com/watch?v="
     trailers = None
     if (
-        media_item.best_match_source == MatchSource.ANILIST
-        and media_item.anilist_media_info is not None
-        and media_item.anilist_media_info.trailer is not None
-    ):
-        if (
-            media_item.anilist_media_info.trailer.site == "youtube"
-            and media_item.anilist_media_info.trailer.id is not None
-        ):
-            trailers = [f"{youtube_base_url}{media_item.anilist_media_info.trailer.id}"]
-    elif media_item.best_match_source == MatchSource.TMDB and any(
-        media_item.tmdb_media_info.media_info.videos.results
+        media_item.tmdb_media_info
+        and media_item.tmdb_media_info.media_info
+        and media_item.tmdb_media_info.media_info.videos
+        and any(media_item.tmdb_media_info.media_info.videos.results)
     ):
         videos = media_item.tmdb_media_info.media_info.videos.results
         trailers = [
@@ -491,8 +324,11 @@ def get_clips(media_item: SearchResult) -> str:
     """Get clips."""
     youtube_base_url = "https://www.youtube.com/watch?v="
     clips = None
-    if media_item.best_match_source == MatchSource.TMDB and any(
-        media_item.tmdb_media_info.media_info.videos.results
+    if (
+        media_item.tmdb_media_info
+        and media_item.tmdb_media_info.media_info
+        and media_item.tmdb_media_info.media_info.videos
+        and any(media_item.tmdb_media_info.media_info.videos.results)
     ):
         videos = media_item.tmdb_media_info.media_info.videos.results
         clips = [
@@ -507,8 +343,11 @@ def get_teasers(media_item: SearchResult) -> str:
     """Get teasers."""
     youtube_base_url = "https://www.youtube.com/watch?v="
     teasers = None
-    if media_item.best_match_source == MatchSource.TMDB and any(
-        media_item.tmdb_media_info.media_info.videos.results
+    if (
+        media_item.tmdb_media_info
+        and media_item.tmdb_media_info.media_info
+        and media_item.tmdb_media_info.media_info.videos
+        and any(media_item.tmdb_media_info.media_info.videos.results)
     ):
         videos = media_item.tmdb_media_info.media_info.videos.results
         teasers = [
@@ -520,58 +359,8 @@ def get_teasers(media_item: SearchResult) -> str:
 
 
 def get_best_ranking(media_item: SearchResult) -> MediaRanking:
-    """Get best ranking.
-
-    Args:
-        media_item: SearchResult
-
-    Returns:
-        MediaRanking
-
-    description:
-    gets one element back when available in this order:
-    - highest rated all time
-    - highest rated
-    - most popular
-    - none
-    """
-    if (
-        media_item.best_match_source != MatchSource.ANILIST
-        or media_item.anilist_media_info is None
-        or media_item.anilist_media_info.rankings is None
-    ):
-        return None
-
-    rankings = media_item.anilist_media_info.rankings
-    if not rankings:
-        return None
-
-    # Priority 1: highest rated all time
-    for ranking in rankings:
-        if (
-            ranking.context == MediaRankingContext.HIGHEST_RATED_ALL_TIME
-            or ranking.context == "highest rated all time"
-        ):
-            return ranking
-
-    # Priority 2: highest rated (period-specific)
-    for ranking in rankings:
-        if (
-            ranking.context == MediaRankingContext.HIGHEST_RATED
-            or ranking.context == "highest rated"
-        ):
-            return ranking
-
-    # Priority 3: most popular
-    for ranking in rankings:
-        if (
-            ranking.context == MediaRankingContext.MOST_POPULAR
-            or ranking.context == "most popular"
-        ):
-            return ranking
-
-    # Priority 4: Return first available ranking if none match our priorities
-    return rankings[0] if rankings else None
+    """Get best ranking. Currently not available without anilist."""
+    return None
 
 
 def get_fsk_rating(media_item: SearchResult) -> int:
@@ -585,10 +374,7 @@ def convert_to_media_spotlight(media_item: SearchResult) -> MediaSpotlight:
     """Convert latest updates list to unified media spotlight list."""
     # get relevant media id based on best match source
     media_id = (
-        media_item.anilist_media_info.id
-        if media_item.anilist_media_info is not None
-        and media_item.best_match_source == MatchSource.ANILIST
-        else media_item.tmdb_media_info.media_result.id
+        media_item.tmdb_media_info.media_result.id
         if media_item.tmdb_media_info
         and media_item.tmdb_media_info.media_result
         and media_item.tmdb_media_info.media_result.id
@@ -615,9 +401,6 @@ def convert_to_media_spotlight(media_item: SearchResult) -> MediaSpotlight:
     fsk_rating = get_fsk_rating(media_item)
     media_spotlight = MediaSpotlight(
         id=str(media_id),
-        anilist_id=media_item.anilist_media_info.id
-        if media_item.anilist_media_info is not None
-        else None,
         tmdb_id=media_item.tmdb_media_info.media_result.id
         if media_item.tmdb_media_info is not None
         and media_item.tmdb_media_info.media_result is not None

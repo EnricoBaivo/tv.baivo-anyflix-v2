@@ -1,45 +1,43 @@
 """Response models for API endpoints."""
 
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from pydantic import BaseModel, Field
 
-from lib.models.media import MediaSpotlight
-
-from .anilist import Media
 from .base import (
     Episode,
-    MediaInfo,
     Movie,
     SearchResult,
     Season,
     SeriesDetail,
     VideoSource,
 )
+from .media import MediaSpotlight
 from .tmdb import TMDBMovieDetail, TMDBTVDetail
 
-# Generic patterns (moved from generic.py)
-T = TypeVar("T")
 
-
-class PaginatedResponse(BaseModel, Generic[T]):
-    """Generic paginated response model."""
+# Paginated response models - concrete classes instead of generics
+class PaginatedSearchResultResponse(BaseModel):
+    """Paginated response for search results."""
 
     type: str  # "anime" or "normal"
-    list: list[T]
+    list: list[SearchResult]
     has_next_page: bool = False
 
 
-# Type aliases using generics for common patterns
-PaginatedSearchResultResponse = PaginatedResponse[SearchResult]
-PaginatedMediaSpotlightResponse = PaginatedResponse[MediaSpotlight]
+class PaginatedMediaSpotlightResponse(BaseModel):
+    """Paginated response for media spotlight items."""
+
+    type: str  # "anime" or "normal"
+    list: list[MediaSpotlight]
+    has_next_page: bool = False
 
 
 # Single item responses
 class DetailResponse(BaseModel):
     """Response for media details."""
 
-    media: MediaInfo
+    media: SearchResult
 
 
 class VideoListResponse(BaseModel):
@@ -54,7 +52,6 @@ class SeriesDetailResponse(BaseModel):
 
     type: str  # "anime" or "normal"
     tmdb_data: TMDBMovieDetail | TMDBTVDetail | None = None
-    anilist_data: Media | None = None
     match_confidence: float | None = None
     length: int | None = None
     series: SeriesDetail
@@ -66,7 +63,6 @@ class SeasonsResponse(BaseModel):
     type: str  # "anime" or "normal"
     seasons: list[Season]
     tmdb_data: TMDBMovieDetail | TMDBTVDetail | None = None
-    anilist_data: Media | None = None
     match_confidence: float | None = None
 
 
@@ -75,7 +71,6 @@ class SeasonResponse(BaseModel):
 
     type: str  # "anime" or "normal"
     tmdb_data: TMDBMovieDetail | TMDBTVDetail | None = None
-    anilist_data: Media | None = None
     season: Season
 
 
@@ -84,7 +79,6 @@ class EpisodeResponse(BaseModel):
 
     type: str  # "anime" or "normal"
     tmdb_data: TMDBMovieDetail | TMDBTVDetail | None = None
-    anilist_data: Media | None = None
     episode: Episode
 
 
@@ -94,7 +88,6 @@ class MoviesResponse(BaseModel):
     type: str  # "anime" or "normal"
     movies: list[Movie]
     tmdb_data: TMDBMovieDetail | TMDBTVDetail | None = None
-    anilist_data: Media | None = None
     match_confidence: float | None = None
 
 
@@ -104,16 +97,12 @@ class MovieResponse(BaseModel):
     type: str  # "anime" or "normal"
     movie: Movie
     tmdb_data: TMDBMovieDetail | TMDBTVDetail | None = None
-    anilist_data: Media | None = None
     match_confidence: float | None = None
 
 
 class TrailerRequest(BaseModel):
     """Request model for trailer extraction."""
 
-    # AniList trailer data
-    anilist_trailer: dict[str, Any] | None = None
-    # TMDB trailer data
     tmdb_trailer: dict[str, Any] | None = None
 
 

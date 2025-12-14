@@ -10,15 +10,11 @@ from .base import (
     VideoSource,
 )
 
-# Media models
-from .media import MediaSpotlight
-
 # Response models
 from .responses import (
     EpisodeResponse,
     MovieResponse,
     MoviesResponse,
-    PaginatedMediaSpotlightResponse,
     PaginatedSearchResultResponse,
     SeasonResponse,
     SeasonsResponse,
@@ -40,10 +36,8 @@ __all__ = [
     "EpisodeResponse",
     "MatchSource",
     "MediaInfo",
-    "MediaSpotlight",
     "MovieResponse",
     "MoviesResponse",
-    "PaginatedMediaSpotlightResponse",
     "PaginatedSearchResultResponse",
     "SearchResult",
     "SeasonResponse",

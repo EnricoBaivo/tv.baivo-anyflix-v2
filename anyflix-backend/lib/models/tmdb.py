@@ -235,6 +235,94 @@ class TMDBTVDetail(BaseModel):
     external_ids: TMDBExternalIds | None = None
 
 
+class TMDBSeasonImages(BaseModel):
+    """TMDB season images collection."""
+
+    backdrops: list[TMDBImage] = Field(default_factory=list)
+    logos: list[TMDBImage] = Field(default_factory=list)
+    posters: list[TMDBImage] = Field(default_factory=list)
+
+
+class TMDBEpisodeImages(BaseModel):
+    """TMDB episode images collection."""
+
+    backdrops: list[TMDBImage] = Field(default_factory=list)
+    logos: list[TMDBImage] = Field(default_factory=list)
+    posters: list[TMDBImage] = Field(default_factory=list)
+    stills: list[TMDBImage] = Field(default_factory=list)
+
+
+class TMDBCrew(BaseModel):
+    """TMDB crew member model."""
+
+    id: int
+    credit_id: str
+    name: str
+    department: str
+    job: str
+    profile_path: str | None = None
+
+
+class TMDBGuestStar(BaseModel):
+    """TMDB guest star model."""
+
+    id: int
+    credit_id: str
+    name: str
+    character: str
+    order: int
+    profile_path: str | None = None
+
+
+class TMDBSeasonDetail(BaseModel):
+    """Full season detail with all episodes.
+
+    API: GET /tv/{series_id}/season/{season_number}
+    Docs: https://developer.themoviedb.org/reference/tv-season-details
+    """
+
+    _id: str | None = Field(default=None, alias="_id")
+    id: int
+    name: str
+    overview: str
+    season_number: int
+    air_date: str | None = None
+    poster_path: str | None = None
+    vote_average: float = 0.0
+    episodes: list[TMDBEpisode] = Field(default_factory=list)
+
+    # Always include videos and images via append_to_response
+    videos: TMDBVideoResult | None = None
+    images: TMDBSeasonImages | None = None
+
+
+class TMDBEpisodeDetail(BaseModel):
+    """Full episode detail.
+
+    API: GET /tv/{series_id}/season/{season_number}/episode/{episode_number}
+    Docs: https://developer.themoviedb.org/reference/tv-episode-details
+    """
+
+    id: int
+    name: str
+    overview: str
+    season_number: int
+    episode_number: int
+    episode_type: str | None = None
+    production_code: str | None = None
+    air_date: str | None = None
+    still_path: str | None = None
+    runtime: int | None = None
+    vote_average: float = 0.0
+    vote_count: int = 0
+    crew: list[TMDBCrew] = Field(default_factory=list)
+    guest_stars: list[TMDBGuestStar] = Field(default_factory=list)
+
+    # Always include videos and images via append_to_response
+    videos: TMDBVideoResult | None = None
+    images: TMDBEpisodeImages | None = None
+
+
 class TMDBSearchResult(BaseModel):
     """TMDB search result model."""
 

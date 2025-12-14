@@ -23,7 +23,10 @@ from lib.providers.aniworld import AniWorldProvider
 from lib.providers.serienstream import SerienStreamProvider
 from lib.services.tmdb_service import TMDBService
 
-
+tmdb_api_key = os.getenv("TMDB_API_KEY")
+if not tmdb_api_key:
+    msg = "TMDB_API_KEY environment variable is required"
+    raise ValueError(msg)
 async def simple_test() -> None:
     """Main demo function."""
     print("🚀 BULLET/BULLET Anime Demo - Fetching from Multiple Sources")
@@ -41,14 +44,10 @@ async def simple_test() -> None:
     async with SerienStreamProvider() as provider:
         # Get anime details
         serienstream_media_info = await provider.get_detail(url=serienstream_url)
-        # print(media_info.model_dump_json(indent=2))
 
     print("=" * 80)
     print("TMDB Media Info")
-    tmdb_api_key = os.getenv("TMDB_API_KEY")
-    if not tmdb_api_key:
-        msg = "TMDB_API_KEY environment variable is required"
-        raise ValueError(msg)
+
 
     async with TMDBService(tmdb_api_key) as tmdb_service:
         tmdb_media_info = await tmdb_service.search_multi(

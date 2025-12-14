@@ -9,9 +9,11 @@ import httpx
 
 from lib.models.tmdb import (
     TMDBConfiguration,
+    TMDBEpisodeDetail,
     TMDBImages,
     TMDBMovieDetail,
     TMDBSearchResponse,
+    TMDBSeasonDetail,
     TMDBTVDetail,
     TMDBVideoResult,
 )
@@ -387,6 +389,108 @@ class TMDBService:
             return TMDBSearchResponse(
                 page=1, results=[], total_pages=0, total_results=0
             )
+
+    @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_tv_season")
+    async def get_tv_season_details(
+        self, tv_id: int, season_number: int
+    ) -> TMDBSeasonDetail | None:
+        """Get TV season details by ID and season number.
+
+        API: GET /tv/{series_id}/season/{season_number}
+        Docs: https://developer.themoviedb.org/reference/tv-season-details
+
+        Args:
+            tv_id: TMDB TV show ID
+            season_number: Season number
+
+        Returns:
+            Season details with episodes, videos, and images or None if not found
+        """
+        try:
+            url = f"{self.base_url}/tv/{tv_id}/season/{season_number}"
+            params = {
+                "api_key": self.api_key,
+                "append_to_response": "videos,images",
+                "language": "de-DE",
+            }
+
+            response = await self.client.get(
+                url, params=params, headers=self._get_headers()
+            )
+            response_data = json.loads(response.body)
+
+            # Check for error response
+            if "success" in response_data and not response_data["success"]:
+                logger.warning(
+                    "TMDB API error for season %d of TV %d: %s",
+                    season_number,
+                    tv_id,
+                    response_data.get("status_message", "Unknown error"),
+                )
+                return None
+
+            return TMDBSeasonDetail(**response_data)
+
+        except (httpx.HTTPError, ValueError, KeyError):
+            logger.exception(
+                "Failed to get season %d details for TV ID %s", season_number, tv_id
+            )
+            return None
+
+    @cached(ttl=ServiceCacheConfig.TMDB_DETAILS_TTL, key_prefix="tmdb_tv_episode")
+    async def get_tv_episode_details(
+        self, tv_id: int, season_number: int, episode_number: int
+    ) -> TMDBEpisodeDetail | None:
+        """Get TV episode details by ID, season, and episode number.
+
+        API: GET /tv/{series_id}/season/{season_number}/episode/{episode_number}
+        Docs: https://developer.themoviedb.org/reference/tv-episode-details
+
+        Args:
+            tv_id: TMDB TV show ID
+            season_number: Season number
+            episode_number: Episode number
+
+        Returns:
+            Episode details with videos and images or None if not found
+        """
+        try:
+            url = (
+                f"{self.base_url}/tv/{tv_id}/season/{season_number}"
+                f"/episode/{episode_number}"
+            )
+            params = {
+                "api_key": self.api_key,
+                "append_to_response": "videos,images",
+                "language": "de-DE",
+            }
+
+            response = await self.client.get(
+                url, params=params, headers=self._get_headers()
+            )
+            response_data = json.loads(response.body)
+
+            # Check for error response
+            if "success" in response_data and not response_data["success"]:
+                logger.warning(
+                    "TMDB API error for S%dE%d of TV %d: %s",
+                    season_number,
+                    episode_number,
+                    tv_id,
+                    response_data.get("status_message", "Unknown error"),
+                )
+                return None
+
+            return TMDBEpisodeDetail(**response_data)
+
+        except (httpx.HTTPError, ValueError, KeyError):
+            logger.exception(
+                "Failed to get S%dE%d details for TV ID %s",
+                season_number,
+                episode_number,
+                tv_id,
+            )
+            return None
 
     @cached(ttl=ServiceCacheConfig.TMDB_CONFIG_TTL, key_prefix="tmdb_image_url")
     async def get_image_url(self, path: str | None, size: str = "w500") -> str | None:

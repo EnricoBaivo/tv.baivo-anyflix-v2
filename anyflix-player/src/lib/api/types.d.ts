@@ -93,7 +93,7 @@ export interface paths {
         };
         /**
          * 🔍 Get Popular Content
-         * @description Get popular content with optional metadata enrichment.
+         * @description Get popular content.
          */
         get: operations["get_popular_sources__source__popular_get"];
         put?: never;
@@ -113,7 +113,7 @@ export interface paths {
         };
         /**
          * 🔍 Get Latest Updates
-         * @description Get latest updates with optional metadata enrichment.
+         * @description Get latest updates.
          */
         get: operations["get_latest_updates_sources__source__latest_get"];
         put?: never;
@@ -133,7 +133,7 @@ export interface paths {
         };
         /**
          * 🔍 Search Content
-         * @description Search for content with optional metadata enrichment.
+         * @description Search for content.
          */
         get: operations["search_content_sources__source__search_get"];
         put?: never;
@@ -424,119 +424,6 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
-         * AniListDate
-         * @description AniList date model.
-         */
-        AniListDate: {
-            /** Year */
-            year?: number | null;
-            /** Month */
-            month?: number | null;
-            /** Day */
-            day?: number | null;
-        };
-        /**
-         * Character
-         * @description Character model.
-         */
-        Character: {
-            /** Id */
-            id: number;
-            name?: components["schemas"]["CharacterName"] | null;
-            image?: components["schemas"]["CharacterImage"] | null;
-            /** Description */
-            description?: string | null;
-            /** Gender */
-            gender?: string | null;
-            dateOfBirth?: components["schemas"]["AniListDate"] | null;
-            /** Age */
-            age?: string | null;
-            /** Bloodtype */
-            bloodType?: string | null;
-            /** Isfavourite */
-            isFavourite?: boolean | null;
-            /** Isfavouriteblocked */
-            isFavouriteBlocked?: boolean | null;
-            /** Siteurl */
-            siteUrl?: string | null;
-        };
-        /**
-         * CharacterConnection
-         * @description Character connection model.
-         */
-        CharacterConnection: {
-            /** Edges */
-            edges?: components["schemas"]["CharacterEdge"][] | null;
-            /** Nodes */
-            nodes?: components["schemas"]["Character"][] | null;
-        };
-        /**
-         * CharacterEdge
-         * @description Character edge model.
-         */
-        CharacterEdge: {
-            /** Id */
-            id?: number | null;
-            role?: components["schemas"]["CharacterRole"] | null;
-            /** Name */
-            name?: string | null;
-            /** Voiceactors */
-            voiceActors?: components["schemas"]["VoiceActor"][] | null;
-            node?: components["schemas"]["Character"] | null;
-        };
-        /**
-         * CharacterImage
-         * @description Character image model.
-         */
-        CharacterImage: {
-            /** Large */
-            large?: string | null;
-            /** Medium */
-            medium?: string | null;
-        };
-        /**
-         * CharacterName
-         * @description Character name model.
-         */
-        CharacterName: {
-            /** First */
-            first?: string | null;
-            /** Middle */
-            middle?: string | null;
-            /** Last */
-            last?: string | null;
-            /** Full */
-            full?: string | null;
-            /** Native */
-            native?: string | null;
-            /** Alternative */
-            alternative?: string[] | null;
-            /** Alternativespoiler */
-            alternativeSpoiler?: string[] | null;
-            /** Userpreferred */
-            userPreferred?: string | null;
-        };
-        /**
-         * CharacterRole
-         * @description Character role enumeration.
-         * @enum {string}
-         */
-        CharacterRole: "MAIN" | "SUPPORTING" | "BACKGROUND";
-        /**
-         * CoverImage
-         * @description Cover image model.
-         */
-        CoverImage: {
-            /** Extralarge */
-            extraLarge?: string | null;
-            /** Large */
-            large?: string | null;
-            /** Medium */
-            medium?: string | null;
-            /** Color */
-            color?: string | null;
-        };
-        /**
          * Episode
          * @description Episode information.
          */
@@ -567,442 +454,114 @@ export interface components {
             type: string;
             /** Tmdb Data */
             tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            anilist_data?: components["schemas"]["Media"] | null;
             episode: components["schemas"]["Episode"];
         };
-        /**
-         * ExternalLink
-         * @description External link model.
-         */
-        ExternalLink: {
-            /** Id */
-            id: number;
-            /** Url */
-            url?: string | null;
-            /** Site */
-            site: string;
-            /** Siteid */
-            siteId?: number | null;
-            type?: components["schemas"]["ExternalLinkType"] | null;
-            /** Language */
-            language?: string | null;
-            /** Color */
-            color?: string | null;
-            /** Icon */
-            icon?: string | null;
-            /** Notes */
-            notes?: string | null;
-            /** Isdisabled */
-            isDisabled?: boolean | null;
-        };
-        /**
-         * ExternalLinkType
-         * @description External link type enumeration.
-         * @enum {string}
-         */
-        ExternalLinkType: "INFO" | "STREAMING" | "SOCIAL";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
         /**
-         * MatchSource
-         * @description Match source enumeration. Can be TMDB, ANILIST or both.
-         * @enum {string}
+         * MediaInfo
+         * @description Detailed Media information.
          */
-        MatchSource: "tmdb" | "anilist";
-        /**
-         * Media
-         * @description Main media model.
-         */
-        Media: {
-            /** Id */
-            id: number;
-            /** Idmal */
-            idMal?: number | null;
-            title?: components["schemas"]["MediaTitle"] | null;
-            type?: components["schemas"]["MediaType"] | null;
-            format?: components["schemas"]["MediaFormat"] | null;
-            status?: components["schemas"]["MediaStatus"] | null;
-            /** Description */
-            description?: string | null;
-            startDate?: components["schemas"]["AniListDate"] | null;
-            endDate?: components["schemas"]["AniListDate"] | null;
-            season?: components["schemas"]["MediaSeason"] | null;
-            /** Seasonyear */
-            seasonYear?: number | null;
-            /** Seasonint */
-            seasonInt?: number | null;
-            /** Episodes */
-            episodes?: number | null;
-            /** Duration */
-            duration?: number | null;
-            /** Chapters */
-            chapters?: number | null;
-            /** Volumes */
-            volumes?: number | null;
-            /** Countryoforigin */
-            countryOfOrigin?: string | null;
-            /** Islicensed */
-            isLicensed?: boolean | null;
-            source?: components["schemas"]["MediaSource"] | null;
-            /** Hashtag */
-            hashtag?: string | null;
-            trailer?: components["schemas"]["Trailer"] | null;
-            /** Updatedat */
-            updatedAt?: number | null;
-            coverImage?: components["schemas"]["CoverImage"] | null;
-            /** Bannerimage */
-            bannerImage?: string | null;
-            /** Genres */
-            genres?: string[] | null;
-            /** Synonyms */
-            synonyms?: string[] | null;
-            /** Averagescore */
-            averageScore?: number | null;
-            /** Meanscore */
-            meanScore?: number | null;
-            /** Popularity */
-            popularity?: number | null;
-            /** Islocked */
-            isLocked?: boolean | null;
-            /** Trending */
-            trending?: number | null;
-            /** Favourites */
-            favourites?: number | null;
-            /** Tags */
-            tags?: components["schemas"]["MediaTag"][] | null;
-            relations?: components["schemas"]["MediaConnection"] | null;
-            characters?: components["schemas"]["CharacterConnection"] | null;
-            characterPreview?: components["schemas"]["CharacterConnection"] | null;
-            staff?: components["schemas"]["StaffConnection"] | null;
-            staffPreview?: components["schemas"]["StaffConnection"] | null;
-            studios?: components["schemas"]["StudioConnection"] | null;
-            /** Isfavourite */
-            isFavourite?: boolean | null;
-            /** Isfavouriteblocked */
-            isFavouriteBlocked?: boolean | null;
-            /** Isadult */
-            isAdult?: boolean | null;
-            nextAiringEpisode?: components["schemas"]["NextAiringEpisode"] | null;
-            /** Airingschedule */
-            airingSchedule?: unknown | null;
-            /** Trends */
-            trends?: unknown | null;
-            /** Externallinks */
-            externalLinks?: components["schemas"]["ExternalLink"][] | null;
-            /** Streamingepisodes */
-            streamingEpisodes?: components["schemas"]["StreamingEpisode"][] | null;
-            /** Rankings */
-            rankings?: components["schemas"]["MediaRanking"][] | null;
-            mediaListEntry?: components["schemas"]["MediaListEntry"] | null;
-            reviews?: components["schemas"]["ReviewConnection"] | null;
-            reviewPreview?: components["schemas"]["ReviewConnection"] | null;
-            recommendations?: components["schemas"]["RecommendationConnection"] | null;
-            stats?: components["schemas"]["MediaStats"] | null;
-            /** Siteurl */
-            siteUrl?: string | null;
-            /** Autocreateforumthread */
-            autoCreateForumThread?: boolean | null;
-            /** Isrecommendationblocked */
-            isRecommendationBlocked?: boolean | null;
-            /** Isreviewblocked */
-            isReviewBlocked?: boolean | null;
-            /** Modnotes */
-            modNotes?: string | null;
-        };
-        /**
-         * MediaConnection
-         * @description Media connection model.
-         */
-        MediaConnection: {
-            /** Edges */
-            edges?: components["schemas"]["MediaEdge"][] | null;
-            /** Nodes */
-            nodes?: components["schemas"]["Media"][] | null;
-            pageInfo?: components["schemas"]["PageInfo"] | null;
-        };
-        /**
-         * MediaEdge
-         * @description Media edge model.
-         */
-        MediaEdge: {
-            /** Id */
-            id?: number | null;
-            relationType?: components["schemas"]["RelationType"] | null;
-            /** Ismainstudio */
-            isMainStudio?: boolean | null;
-            /** Characters */
-            characters?: components["schemas"]["Character"][] | null;
-            characterRole?: components["schemas"]["CharacterRole"] | null;
-            /** Charactername */
-            characterName?: string | null;
-            /** Rolenotes */
-            roleNotes?: string | null;
-            /** Dubgroup */
-            dubGroup?: string | null;
-            /** Staffrole */
-            staffRole?: string | null;
-            /** Voiceactors */
-            voiceActors?: components["schemas"]["VoiceActor"][] | null;
-            /** Voiceactorroles */
-            voiceActorRoles?: unknown[] | null;
-            node?: components["schemas"]["Media"] | null;
-        };
-        /**
-         * MediaFormat
-         * @description Media format enumeration.
-         * @enum {string}
-         */
-        MediaFormat: "TV" | "TV_SHORT" | "MOVIE" | "SPECIAL" | "OVA" | "ONA" | "MUSIC" | "MANGA" | "NOVEL" | "ONE_SHOT";
-        /**
-         * MediaListEntry
-         * @description Media list entry model.
-         */
-        MediaListEntry: {
-            /** Id */
-            id: number;
-            status?: components["schemas"]["MediaListStatus"] | null;
-            /** Score */
-            score?: number | null;
-            /** Progress */
-            progress?: number | null;
-            /** Progressvolumes */
-            progressVolumes?: number | null;
-            /** Repeat */
-            repeat?: number | null;
-            /** Priority */
-            priority?: number | null;
-            /** Private */
-            private?: boolean | null;
-            /** Notes */
-            notes?: string | null;
-            /** Hiddenfromstatuslists */
-            hiddenFromStatusLists?: boolean | null;
-            /** Customlists */
-            customLists?: {
-                [key: string]: unknown;
-            } | null;
-            /** Advancedscores */
-            advancedScores?: {
-                [key: string]: unknown;
-            } | null;
-            startedAt?: components["schemas"]["AniListDate"] | null;
-            completedAt?: components["schemas"]["AniListDate"] | null;
-            /** Updatedat */
-            updatedAt?: number | null;
-            /** Createdat */
-            createdAt?: number | null;
-        };
-        /**
-         * MediaListStatus
-         * @description Media list status enumeration.
-         * @enum {string}
-         */
-        MediaListStatus: "CURRENT" | "PLANNING" | "COMPLETED" | "DROPPED" | "PAUSED" | "REPEATING";
-        /**
-         * MediaRanking
-         * @description Media ranking model.
-         */
-        MediaRanking: {
-            /** Id */
-            id: number;
-            /** Rank */
-            rank: number;
-            type: components["schemas"]["RankingType"];
-            format: components["schemas"]["MediaFormat"];
-            /** Year */
-            year?: number | null;
-            season?: components["schemas"]["MediaSeason"] | null;
-            /** Alltime */
-            allTime?: boolean | null;
-            /** Context */
-            context: string | components["schemas"]["MediaRankingContext"];
-        };
-        /**
-         * MediaRankingContext
-         * @description Media ranking context enumeration.
-         * @enum {string}
-         */
-        MediaRankingContext: "highest rated all time" | "highest rated" | "most popular";
-        /**
-         * MediaRecommendation
-         * @description Media recommendation model.
-         */
-        MediaRecommendation: {
-            /** Id */
-            id: number;
-            title?: components["schemas"]["MediaTitle"] | null;
-            format?: components["schemas"]["MediaFormat"] | null;
-            type?: components["schemas"]["MediaType"] | null;
-            status?: components["schemas"]["MediaStatus"] | null;
-            /** Bannerimage */
-            bannerImage?: string | null;
-            coverImage?: components["schemas"]["CoverImage"] | null;
-            /** Siteurl */
-            siteUrl?: string | null;
-        };
-        /**
-         * MediaSeason
-         * @description Media season enumeration.
-         * @enum {string}
-         */
-        MediaSeason: "WINTER" | "SPRING" | "SUMMER" | "FALL";
-        /**
-         * MediaSource
-         * @description Media source enumeration.
-         * @enum {string}
-         */
-        MediaSource: "ORIGINAL" | "MANGA" | "LIGHT_NOVEL" | "VISUAL_NOVEL" | "VIDEO_GAME" | "OTHER" | "NOVEL" | "DOUJINSHI" | "ANIME" | "WEB_NOVEL" | "LIVE_ACTION" | "GAME" | "COMIC" | "MULTIMEDIA_PROJECT" | "PICTURE_BOOK";
-        /**
-         * MediaSourceEnum
-         * @description Source media type. series or movie.
-         * @enum {string}
-         */
-        MediaSourceEnum: "series" | "movie" | "ova" | "special";
-        /**
-         * MediaSpotlight
-         * @description Media spotlight model.
-         */
-        MediaSpotlight: {
-            /** Id */
-            id: string;
-            /** Anilist Id */
-            anilist_id?: number | null;
-            /** Tmdb Id */
-            tmdb_id?: number | null;
-            /** Title */
-            title: string;
-            /** Description */
-            description: string;
-            /** @default series */
-            media_source_type: components["schemas"]["MediaSourceEnum"];
-            /** Image Cover Url */
-            image_cover_url: string;
-            /** Image Backdrop Url */
-            image_backdrop_url?: string | null;
-            /** Color */
-            color?: string | null;
-            /** Logo Urls */
-            logo_urls?: string[] | null;
-            /** Release Year */
-            release_year: number;
-            /**
-             * Average Rating
-             * @default 0
-             */
-            average_rating: number;
-            /**
-             * Popularity
-             * @default 0
-             */
-            popularity: number;
-            /**
-             * Votes
-             * @default 0
-             */
-            votes: number;
-            /** @description Best ranking for the media only available for anime sources */
-            best_ranking?: components["schemas"]["MediaRanking"] | null;
-            media_status: components["schemas"]["MediaStatusEnum"];
-            /** Genres */
-            genres: string[];
-            /** Seasons Count */
-            seasons_count?: number | null;
-            /** Episodes Count */
-            episodes_count?: number | null;
-            /** Fsk Rating */
-            fsk_rating?: number | null;
-            /** @description Media format for the media only available for anime sources */
-            media_format?: components["schemas"]["MediaFormat"];
-            source?: components["schemas"]["MatchSource"] | null;
-            /** Provider Url */
-            provider_url: string;
-            /** Provider */
-            provider: string;
-            /**
-             * Trailers
-             * @description Trailers for the media as a youtube url
-             */
-            trailers?: string[] | null;
-            /**
-             * Clips
-             * @description Clips for the media as a youtube url
-             */
-            clips?: string[] | null;
-            /**
-             * Teasers
-             * @description Teasers for the media as a youtube url
-             */
-            teasers?: string[] | null;
-        };
-        /**
-         * MediaStats
-         * @description Media statistics model.
-         */
-        MediaStats: {
-            /** Statusdistribution */
-            statusDistribution?: components["schemas"]["StatusDistribution"][] | null;
-            /** Scoredistribution */
-            scoreDistribution?: components["schemas"]["ScoreDistribution"][] | null;
-        };
-        /**
-         * MediaStatus
-         * @description Media status enumeration.
-         * @enum {string}
-         */
-        MediaStatus: "FINISHED" | "RELEASING" | "CANCELLED" | "NOT_YET_RELEASED" | "HIATUS";
-        /**
-         * MediaStatusEnum
-         * @description Media status type.
-         * @enum {string}
-         */
-        MediaStatusEnum: "completed" | "continuing" | "released";
-        /**
-         * MediaTag
-         * @description Media tag model.
-         */
-        MediaTag: {
-            /** Id */
-            id: number;
+        MediaInfo: {
             /** Name */
             name: string;
+            /** Cover Image Url */
+            cover_image_url: string;
             /** Description */
-            description?: string | null;
-            /** Category */
-            category?: string | null;
-            /** Rank */
-            rank?: number | null;
-            /** Isgeneralspoiler */
-            isGeneralSpoiler?: boolean | null;
-            /** Ismediaspoiler */
-            isMediaSpoiler?: boolean | null;
-            /** Isadult */
-            isAdult?: boolean | null;
-            /** Userid */
-            userId?: number | null;
+            description: string;
+            /** Genres */
+            genres?: string[];
+            /** Episodes */
+            episodes?: components["schemas"]["Episode"][];
+            /**
+             * Seasons Length
+             * @description Number of seasons
+             */
+            seasons_length?: number | null;
+            /**
+             * Alternative Titles
+             * @description Alternative titles in different languages
+             */
+            alternative_titles?: string[];
+            /**
+             * Start Year
+             * @description Start year of the series
+             */
+            start_year?: number | null;
+            /**
+             * End Year
+             * @description End year of the series
+             */
+            end_year?: number | null;
+            /**
+             * Fsk Rating
+             * @description FSK age rating (German rating system)
+             */
+            fsk_rating?: number | null;
+            /**
+             * Imdb Id
+             * @description IMDB ID (e.g., 'tt36469298')
+             */
+            imdb_id?: string | null;
+            /**
+             * Country Of Origin
+             * @description Country of origin
+             */
+            country_of_origin?: string | null;
+            /**
+             * Main Genre
+             * @description Primary genre classification
+             */
+            main_genre?: string | null;
+            /**
+             * Directors
+             * @description List of directors
+             */
+            directors?: string[];
+            /**
+             * Actors
+             * @description List of main actors
+             */
+            actors?: string[];
+            /**
+             * Producers
+             * @description List of production companies
+             */
+            producers?: string[];
+            /**
+             * Backdrop Url
+             * @description Backdrop/banner image URL
+             */
+            backdrop_url?: string | null;
+            /**
+             * Series Id
+             * @description Internal series ID from the provider
+             */
+            series_id?: string | null;
+            /**
+             * Trailer Url
+             * @description Trailer or official website URL
+             */
+            trailer_url?: string | null;
+            /**
+             * Rating Value
+             * @description User rating value (e.g., 3.0)
+             */
+            rating_value?: number | null;
+            /**
+             * Rating Count
+             * @description Number of user ratings
+             */
+            rating_count?: number | null;
+            /**
+             * Available Languages
+             * @description Available languages/audio tracks (de, en, de_sub, en_sub)
+             */
+            available_languages?: string[];
         };
-        /**
-         * MediaTitle
-         * @description Media title model.
-         */
-        MediaTitle: {
-            /** Romaji */
-            romaji?: string | null;
-            /** English */
-            english?: string | null;
-            /** Native */
-            native?: string | null;
-            /** Userpreferred */
-            userPreferred?: string | null;
-        };
-        /**
-         * MediaType
-         * @description Media type enumeration.
-         * @enum {string}
-         */
-        MediaType: "ANIME" | "MANGA";
         /**
          * Movie
          * @description Movie/OVA/Special information.
@@ -1036,7 +595,6 @@ export interface components {
             movie: components["schemas"]["Movie"];
             /** Tmdb Data */
             tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            anilist_data?: components["schemas"]["Media"] | null;
             /** Match Confidence */
             match_confidence?: number | null;
         };
@@ -1051,44 +609,18 @@ export interface components {
             movies: components["schemas"]["Movie"][];
             /** Tmdb Data */
             tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            anilist_data?: components["schemas"]["Media"] | null;
             /** Match Confidence */
             match_confidence?: number | null;
         };
         /**
-         * NextAiringEpisode
-         * @description Next airing episode model.
+         * PaginatedSearchResultResponse
+         * @description Paginated response for search results.
          */
-        NextAiringEpisode: {
-            /** Airingat */
-            airingAt?: number | null;
-            /** Timeuntilairing */
-            timeUntilAiring?: number | null;
-            /** Episode */
-            episode?: number | null;
-        };
-        /**
-         * PageInfo
-         * @description Page info model.
-         */
-        PageInfo: {
-            /** Total */
-            total?: number | null;
-            /** Perpage */
-            perPage?: number | null;
-            /** Currentpage */
-            currentPage?: number | null;
-            /** Lastpage */
-            lastPage?: number | null;
-            /** Hasnextpage */
-            hasNextPage?: boolean | null;
-        };
-        /** PaginatedResponse[MediaSpotlight] */
-        PaginatedResponse_MediaSpotlight_: {
+        PaginatedSearchResultResponse: {
             /** Type */
             type: string;
             /** List */
-            list: components["schemas"]["MediaSpotlight"][];
+            list: components["schemas"]["SearchResult"][];
             /**
              * Has Next Page
              * @default false
@@ -1109,96 +641,24 @@ export interface components {
             };
         };
         /**
-         * RankingType
-         * @description Ranking type enumeration.
-         * @enum {string}
+         * SearchResult
+         * @description Search result item.
          */
-        RankingType: "RATED" | "POPULAR";
-        /**
-         * Recommendation
-         * @description Recommendation model.
-         */
-        Recommendation: {
-            /** Id */
-            id: number;
-            /** Rating */
-            rating?: number | null;
-            /** Userrating */
-            userRating?: number | string | null;
-            mediaRecommendation?: components["schemas"]["MediaRecommendation"] | null;
-            user?: components["schemas"]["User"] | null;
-        };
-        /**
-         * RecommendationConnection
-         * @description Recommendation connection model.
-         */
-        RecommendationConnection: {
-            /** Edges */
-            edges?: unknown[] | null;
-            /** Nodes */
-            nodes?: components["schemas"]["Recommendation"][] | null;
-            pageInfo?: components["schemas"]["PageInfo"] | null;
-        };
-        /**
-         * RelationType
-         * @description Relation type enumeration.
-         * @enum {string}
-         */
-        RelationType: "ADAPTATION" | "PREQUEL" | "SEQUEL" | "PARENT" | "SIDE_STORY" | "CHARACTER" | "SUMMARY" | "ALTERNATIVE" | "SPIN_OFF" | "OTHER" | "SOURCE" | "COMPILATION" | "CONTAINS";
-        /**
-         * Review
-         * @description Review model.
-         */
-        Review: {
-            /** Id */
-            id: number;
-            /** Userid */
-            userId?: number | null;
-            /** Mediaid */
-            mediaId?: number | null;
-            mediaType?: components["schemas"]["MediaType"] | null;
-            /** Summary */
-            summary?: string | null;
-            /** Body */
-            body?: string | null;
-            /** Rating */
-            rating?: number | null;
-            /** Ratingamount */
-            ratingAmount?: number | null;
-            /** Userrating */
-            userRating?: number | null;
-            /** Score */
-            score?: number | null;
-            /** Private */
-            private?: boolean | null;
-            /** Siteurl */
-            siteUrl?: string | null;
-            /** Createdat */
-            createdAt?: number | null;
-            /** Updatedat */
-            updatedAt?: number | null;
-            user?: components["schemas"]["User"] | null;
-        };
-        /**
-         * ReviewConnection
-         * @description Review connection model.
-         */
-        ReviewConnection: {
-            /** Edges */
-            edges?: unknown[] | null;
-            /** Nodes */
-            nodes?: components["schemas"]["Review"][] | null;
-            pageInfo?: components["schemas"]["PageInfo"] | null;
-        };
-        /**
-         * ScoreDistribution
-         * @description Score distribution model.
-         */
-        ScoreDistribution: {
-            /** Score */
-            score?: number | null;
-            /** Amount */
-            amount?: number | null;
+        SearchResult: {
+            /** Name */
+            name: string;
+            /** Image Url */
+            image_url: string;
+            /** Link */
+            link: string;
+            /** Provider */
+            provider: string;
+            /**
+             * Available Languages
+             * @description Available languages (de, en, sub, jp)
+             */
+            available_languages?: string[];
+            media_info?: components["schemas"]["MediaInfo"] | null;
         };
         /**
          * Season
@@ -1221,7 +681,6 @@ export interface components {
             type: string;
             /** Tmdb Data */
             tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            anilist_data?: components["schemas"]["Media"] | null;
             season: components["schemas"]["Season"];
         };
         /**
@@ -1235,7 +694,6 @@ export interface components {
             seasons: components["schemas"]["Season"][];
             /** Tmdb Data */
             tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            anilist_data?: components["schemas"]["Media"] | null;
             /** Match Confidence */
             match_confidence?: number | null;
         };
@@ -1260,7 +718,6 @@ export interface components {
             type: string;
             /** Tmdb Data */
             tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            anilist_data?: components["schemas"]["Media"] | null;
             /** Match Confidence */
             match_confidence?: number | null;
             /** Length */
@@ -1277,151 +734,6 @@ export interface components {
              * @description List of available source names
              */
             sources: string[];
-        };
-        /**
-         * Staff
-         * @description Staff model.
-         */
-        Staff: {
-            /** Id */
-            id: number;
-            name?: components["schemas"]["StaffName"] | null;
-            /** Languagev2 */
-            languageV2?: string | null;
-            image?: components["schemas"]["StaffImage"] | null;
-            /** Description */
-            description?: string | null;
-            /** Primaryoccupations */
-            primaryOccupations?: string[] | null;
-            /** Gender */
-            gender?: string | null;
-            dateOfBirth?: components["schemas"]["AniListDate"] | null;
-            dateOfDeath?: components["schemas"]["AniListDate"] | null;
-            /** Age */
-            age?: number | null;
-            /** Yearsactive */
-            yearsActive?: number[] | null;
-            /** Hometown */
-            homeTown?: string | null;
-            /** Bloodtype */
-            bloodType?: string | null;
-            /** Isfavourite */
-            isFavourite?: boolean | null;
-            /** Isfavouriteblocked */
-            isFavouriteBlocked?: boolean | null;
-            /** Siteurl */
-            siteUrl?: string | null;
-        };
-        /**
-         * StaffConnection
-         * @description Staff connection model.
-         */
-        StaffConnection: {
-            /** Edges */
-            edges?: components["schemas"]["StaffEdge"][] | null;
-            /** Nodes */
-            nodes?: components["schemas"]["Staff"][] | null;
-        };
-        /**
-         * StaffEdge
-         * @description Staff edge model.
-         */
-        StaffEdge: {
-            /** Id */
-            id?: number | null;
-            /** Role */
-            role?: string | null;
-            node?: components["schemas"]["Staff"] | null;
-        };
-        /**
-         * StaffImage
-         * @description Staff image model.
-         */
-        StaffImage: {
-            /** Large */
-            large?: string | null;
-            /** Medium */
-            medium?: string | null;
-        };
-        /**
-         * StaffName
-         * @description Staff name model.
-         */
-        StaffName: {
-            /** First */
-            first?: string | null;
-            /** Middle */
-            middle?: string | null;
-            /** Last */
-            last?: string | null;
-            /** Full */
-            full?: string | null;
-            /** Native */
-            native?: string | null;
-            /** Alternative */
-            alternative?: string[] | null;
-            /** Userpreferred */
-            userPreferred?: string | null;
-        };
-        /**
-         * StatusDistribution
-         * @description Status distribution model.
-         */
-        StatusDistribution: {
-            status?: components["schemas"]["MediaListStatus"] | null;
-            /** Amount */
-            amount?: number | null;
-        };
-        /**
-         * StreamingEpisode
-         * @description Streaming episode model.
-         */
-        StreamingEpisode: {
-            /** Title */
-            title?: string | null;
-            /** Thumbnail */
-            thumbnail?: string | null;
-            /** Url */
-            url?: string | null;
-            /** Site */
-            site?: string | null;
-        };
-        /**
-         * Studio
-         * @description Studio model.
-         */
-        Studio: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Isanimationstudio */
-            isAnimationStudio?: boolean | null;
-            /** Siteurl */
-            siteUrl?: string | null;
-            /** Isfavourite */
-            isFavourite?: boolean | null;
-        };
-        /**
-         * StudioConnection
-         * @description Studio connection model.
-         */
-        StudioConnection: {
-            /** Edges */
-            edges?: components["schemas"]["StudioEdge"][] | null;
-            /** Nodes */
-            nodes?: components["schemas"]["Studio"][] | null;
-        };
-        /**
-         * StudioEdge
-         * @description Studio edge model.
-         */
-        StudioEdge: {
-            /** Id */
-            id?: number | null;
-            /** Ismain */
-            isMain: boolean;
-            node?: components["schemas"]["Studio"] | null;
         };
         /**
          * TMDBCreatedBy
@@ -1788,18 +1100,6 @@ export interface components {
          */
         TMDBVideoType: "Trailer" | "Clip" | "Teaser" | "Opening Credits" | "Ending Credits";
         /**
-         * Trailer
-         * @description Trailer model.
-         */
-        Trailer: {
-            /** Id */
-            id?: string | null;
-            /** Site */
-            site?: string | null;
-            /** Thumbnail */
-            thumbnail?: string | null;
-        };
-        /**
          * TrailerResponse
          * @description Response for trailer extraction.
          */
@@ -1816,69 +1116,6 @@ export interface components {
             quality?: string | null;
             /** Error */
             error?: string | null;
-        };
-        /**
-         * User
-         * @description User model.
-         */
-        User: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            avatar?: components["schemas"]["UserAvatar"] | null;
-            /** Bannerimage */
-            bannerImage?: string | null;
-            /** About */
-            about?: string | null;
-            /** Isfollowing */
-            isFollowing?: boolean | null;
-            /** Isfollower */
-            isFollower?: boolean | null;
-            /** Isblocked */
-            isBlocked?: boolean | null;
-            /** Bans */
-            bans?: unknown[] | null;
-            /** Options */
-            options?: {
-                [key: string]: unknown;
-            } | null;
-            /** Medialistoptions */
-            mediaListOptions?: {
-                [key: string]: unknown;
-            } | null;
-            /** Favourites */
-            favourites?: {
-                [key: string]: unknown;
-            } | null;
-            /** Statistics */
-            statistics?: {
-                [key: string]: unknown;
-            } | null;
-            /** Unreadnotificationcount */
-            unreadNotificationCount?: number | null;
-            /** Siteurl */
-            siteUrl?: string | null;
-            /** Donatortier */
-            donatorTier?: number | null;
-            /** Donatorbadge */
-            donatorBadge?: string | null;
-            /** Moderatorroles */
-            moderatorRoles?: string[] | null;
-            /** Createdat */
-            createdAt?: number | null;
-            /** Updatedat */
-            updatedAt?: number | null;
-        };
-        /**
-         * UserAvatar
-         * @description User avatar model.
-         */
-        UserAvatar: {
-            /** Large */
-            large?: string | null;
-            /** Medium */
-            medium?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -1939,42 +1176,6 @@ export interface components {
             audios?: {
                 [key: string]: string;
             }[] | null;
-        };
-        /**
-         * VoiceActor
-         * @description Voice actor model.
-         */
-        VoiceActor: {
-            /** Id */
-            id: number;
-            name?: components["schemas"]["StaffName"] | null;
-            /** Language */
-            language?: string | null;
-            /** Languagev2 */
-            languageV2?: string | null;
-            image?: components["schemas"]["StaffImage"] | null;
-            /** Description */
-            description?: string | null;
-            /** Primaryoccupations */
-            primaryOccupations?: string[] | null;
-            /** Gender */
-            gender?: string | null;
-            dateOfBirth?: components["schemas"]["AniListDate"] | null;
-            dateOfDeath?: components["schemas"]["AniListDate"] | null;
-            /** Age */
-            age?: number | null;
-            /** Yearsactive */
-            yearsActive?: number[] | null;
-            /** Hometown */
-            homeTown?: string | null;
-            /** Bloodtype */
-            bloodType?: string | null;
-            /** Isfavourite */
-            isFavourite?: boolean | null;
-            /** Isfavouriteblocked */
-            isFavouriteBlocked?: boolean | null;
-            /** Siteurl */
-            siteUrl?: string | null;
         };
     };
     responses: never;
@@ -2133,7 +1334,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedResponse_MediaSpotlight_"];
+                    "application/json": components["schemas"]["PaginatedSearchResultResponse"];
                 };
             };
             /** @description Source not found */
@@ -2180,7 +1381,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedResponse_MediaSpotlight_"];
+                    "application/json": components["schemas"]["PaginatedSearchResultResponse"];
                 };
             };
             /** @description Source not found */
@@ -2229,7 +1430,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedResponse_MediaSpotlight_"];
+                    "application/json": components["schemas"]["PaginatedSearchResultResponse"];
                 };
             };
             /** @description Source not found */

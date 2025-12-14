@@ -12,8 +12,12 @@ from .base import (
     SeriesDetail,
     VideoSource,
 )
-from .media import MediaSpotlight
-from .tmdb import TMDBMovieDetail, TMDBTVDetail
+from .tmdb import (
+    TMDBEpisodeDetail,
+    TMDBMovieDetail,
+    TMDBSeasonDetail,
+    TMDBTVDetail,
+)
 
 
 # Paginated response models - concrete classes instead of generics
@@ -22,14 +26,6 @@ class PaginatedSearchResultResponse(BaseModel):
 
     type: str  # "anime" or "normal"
     list: list[SearchResult]
-    has_next_page: bool = False
-
-
-class PaginatedMediaSpotlightResponse(BaseModel):
-    """Paginated response for media spotlight items."""
-
-    type: str  # "anime" or "normal"
-    list: list[MediaSpotlight]
     has_next_page: bool = False
 
 
@@ -71,6 +67,7 @@ class SeasonResponse(BaseModel):
 
     type: str  # "anime" or "normal"
     tmdb_data: TMDBMovieDetail | TMDBTVDetail | None = None
+    tmdb_season: TMDBSeasonDetail | None = None  # Season-specific TMDB data
     season: Season
 
 
@@ -79,6 +76,7 @@ class EpisodeResponse(BaseModel):
 
     type: str  # "anime" or "normal"
     tmdb_data: TMDBMovieDetail | TMDBTVDetail | None = None
+    tmdb_episode: TMDBEpisodeDetail | None = None  # Episode-specific TMDB data
     episode: Episode
 
 

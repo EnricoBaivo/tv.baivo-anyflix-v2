@@ -18,6 +18,7 @@ from lib.providers.aniworld import AniWorldProvider
 from lib.providers.base import BaseProvider
 from lib.providers.serienstream import SerienStreamProvider
 from lib.services.series_converter import SeriesConverterService
+from lib.services.tmdb_enrichment_service import TMDBEnrichmentService
 from lib.services.tmdb_service import TMDBService
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,8 @@ providers: dict[str, BaseProvider] = {
 }
 
 # Initialize services
-tmdb_service = TMDBService(api_key=os.getenv("TMDB_API_KEY", ""))  # Get from env
+tmdb_service = TMDBService(api_key=os.getenv("TMDB_API_KEY", ""))
+enrichment_service = TMDBEnrichmentService(tmdb_service)
 
 
 def get_provider(source: str) -> BaseProvider:
@@ -62,26 +64,42 @@ def get_provider(source: str) -> BaseProvider:
     "/{source}/series",
     response_model=SeriesDetailResponse,
     response_model_exclude_none=True,
-    summary="📺 Get Full Series Data",
+    summary="Get overall series data (overview, no full episode list)",
 )
-async def get_series_detail(
+async def get_series_overview(
     source: str = Path(...),
     url: str = Query(...),
 ) -> SeriesDetailResponse:
-    """Get complete series data with hierarchical structure."""
+    """Get series overview data without full episode list.
+
+    This endpoint fetches basic series information including season/episode
+    counts but not the full episode details. Use /series/seasons for
+    full episode data.
+    """
     provider = get_provider(source)
 
-    # Get flat detail response
+    # Step 1: Fetch from provider WITHOUT episodes (overview only)
     try:
         async with provider:
-            detail_response = await provider.get_detail(url)
+            detail_response = await provider.get_detail(url, episodes=False)
     except (httpx.HTTPError, ValueError, RuntimeError) as e:
         logger.exception("Failed to get detail from provider %s", source)
         raise HTTPException(
             status_code=500, detail=f"Failed to fetch series data from {source}"
         ) from e
 
-    # Convert to hierarchical structure using converter service
+    # Step 2: Enrich with TMDB data (basic TV info)
+    tmdb_detail = None
+    match_confidence = None
+    try:
+        async with tmdb_service:
+            _tmdb_match, tmdb_detail, match_confidence = (
+                await enrichment_service.enrich_media_info(detail_response)
+            )
+    except (httpx.HTTPError, ValueError, RuntimeError):
+        logger.exception("Failed to enrich with TMDB data, continuing without it")
+
+    # Step 3: Convert to hierarchical structure (will have empty seasons)
     try:
         slug = url.split("/")[-1] if "/" in url else "unknown"
         series_detail = SeriesConverterService.convert_to_hierarchical(
@@ -94,9 +112,11 @@ async def get_series_detail(
         ) from e
 
     return SeriesDetailResponse(
-        type=provider.type,
+        type=provider.response_type,
         series=series_detail,
-        length=len(detail_response.episodes),
+        tmdb_data=tmdb_detail,
+        match_confidence=match_confidence,
+        length=detail_response.seasons_length,
     )
 
 
@@ -104,17 +124,56 @@ async def get_series_detail(
     "/{source}/series/seasons",
     response_model=SeasonsResponse,
     response_model_exclude_none=True,
-    summary="📺 Get All Seasons",
+    summary="Get all seasons with full episode data",
 )
 async def get_series_seasons(
     source: str = Path(...),
     url: str = Query(...),
 ) -> SeasonsResponse:
-    """Get all seasons for a series."""
-    series_detail = await get_series_detail(source, url)
+    """Get all seasons for a series with full episode details.
+
+    This endpoint fetches the complete episode list organized by season.
+    """
+    provider = get_provider(source)
+
+    # Step 1: Fetch from provider WITH episodes (full data)
+    try:
+        async with provider:
+            detail_response = await provider.get_detail(url, episodes=True)
+    except (httpx.HTTPError, ValueError, RuntimeError) as e:
+        logger.exception("Failed to get detail from provider %s", source)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch series data from {source}"
+        ) from e
+
+    # Step 2: Enrich with TMDB data
+    tmdb_detail = None
+    match_confidence = None
+    try:
+        async with tmdb_service:
+            _tmdb_match, tmdb_detail, match_confidence = (
+                await enrichment_service.enrich_media_info(detail_response)
+            )
+    except (httpx.HTTPError, ValueError, RuntimeError):
+        logger.exception("Failed to enrich with TMDB data, continuing without it")
+
+    # Step 3: Convert to hierarchical structure
+    try:
+        slug = url.split("/")[-1] if "/" in url else "unknown"
+        series_detail = SeriesConverterService.convert_to_hierarchical(
+            detail_response, slug=slug
+        )
+    except ValueError as e:
+        logger.exception("Failed to convert series to hierarchical structure")
+        raise HTTPException(
+            status_code=500, detail="Failed to process series data structure"
+        ) from e
+
     return SeasonsResponse(
-        type=series_detail.type,
-        seasons=series_detail.series.seasons,
+        type=provider.response_type,
+        seasons=series_detail.seasons,
+        tmdb_data=tmdb_detail,
+        match_confidence=match_confidence,
     )
 
 
@@ -122,21 +181,64 @@ async def get_series_seasons(
     "/{source}/series/seasons/{season_num}",
     response_model=SeasonResponse,
     response_model_exclude_none=True,
-    summary="📺 Get Specific Season",
+    summary="Get specific season with TMDB season details",
 )
 async def get_series_season(
     source: str = Path(...),
     season_num: int = Path(..., ge=1),
     url: str = Query(...),
 ) -> SeasonResponse:
-    """Get details for a specific season."""
-    series_detail = await get_series_detail(source, url)
+    """Get details for a specific season with targeted TMDB lookup.
 
-    for season in series_detail.series.seasons:
+    This endpoint fetches season-specific TMDB data including all episodes
+    for that season only.
+    """
+    provider = get_provider(source)
+
+    # Step 1: Fetch from provider WITH episodes
+    try:
+        async with provider:
+            detail_response = await provider.get_detail(url, episodes=True)
+    except (httpx.HTTPError, ValueError, RuntimeError) as e:
+        logger.exception("Failed to get detail from provider %s", source)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch series data from {source}"
+        ) from e
+
+    # Step 2: Get TMDB ID first via basic enrichment
+    tmdb_detail = None
+    tmdb_season = None
+    try:
+        async with tmdb_service:
+            tmdb_match, tmdb_detail, _confidence = (
+                await enrichment_service.enrich_media_info(detail_response)
+            )
+            # Step 3: If we have a TV match, fetch season-specific TMDB data
+            if tmdb_match and tmdb_match.media_type == "tv":
+                tmdb_season = await enrichment_service.enrich_season(
+                    tmdb_match.id, season_num
+                )
+    except (httpx.HTTPError, ValueError, RuntimeError):
+        logger.exception("Failed to enrich with TMDB data, continuing without it")
+
+    # Step 4: Convert to hierarchical structure and find the season
+    try:
+        slug = url.split("/")[-1] if "/" in url else "unknown"
+        series_detail = SeriesConverterService.convert_to_hierarchical(
+            detail_response, slug=slug
+        )
+    except ValueError as e:
+        logger.exception("Failed to convert series to hierarchical structure")
+        raise HTTPException(
+            status_code=500, detail="Failed to process series data structure"
+        ) from e
+
+    for season in series_detail.seasons:
         if season.season == season_num:
             return SeasonResponse(
-                type=series_detail.type,
-                tmdb_data=series_detail.tmdb_data,
+                type=provider.response_type,
+                tmdb_data=tmdb_detail,
+                tmdb_season=tmdb_season,
                 season=season,
             )
 
@@ -147,7 +249,7 @@ async def get_series_season(
     "/{source}/series/seasons/{season_num}/episodes/{episode_num}",
     response_model=EpisodeResponse,
     response_model_exclude_none=True,
-    summary="📺 Get Specific Episode",
+    summary="Get specific episode with TMDB episode details",
 )
 async def get_series_episode(
     source: str = Path(...),
@@ -155,16 +257,59 @@ async def get_series_episode(
     episode_num: int = Path(..., ge=1),
     url: str = Query(...),
 ) -> EpisodeResponse:
-    """Get details for a specific episode."""
-    series_detail = await get_series_detail(source, url)
+    """Get details for a specific episode with targeted TMDB lookup.
 
-    for season in series_detail.series.seasons:
+    This endpoint fetches episode-specific TMDB data including videos,
+    images, crew, and guest stars for that episode only.
+    """
+    provider = get_provider(source)
+
+    # Step 1: Fetch from provider WITH episodes
+    try:
+        async with provider:
+            detail_response = await provider.get_detail(url, episodes=True)
+    except (httpx.HTTPError, ValueError, RuntimeError) as e:
+        logger.exception("Failed to get detail from provider %s", source)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch series data from {source}"
+        ) from e
+
+    # Step 2: Get TMDB ID first via basic enrichment
+    tmdb_detail = None
+    tmdb_episode = None
+    try:
+        async with tmdb_service:
+            tmdb_match, tmdb_detail, _confidence = (
+                await enrichment_service.enrich_media_info(detail_response)
+            )
+            # Step 3: If we have a TV match, fetch episode-specific TMDB data
+            if tmdb_match and tmdb_match.media_type == "tv":
+                tmdb_episode = await enrichment_service.enrich_episode(
+                    tmdb_match.id, season_num, episode_num
+                )
+    except (httpx.HTTPError, ValueError, RuntimeError):
+        logger.exception("Failed to enrich with TMDB data, continuing without it")
+
+    # Step 4: Convert to hierarchical structure and find the episode
+    try:
+        slug = url.split("/")[-1] if "/" in url else "unknown"
+        series_detail = SeriesConverterService.convert_to_hierarchical(
+            detail_response, slug=slug
+        )
+    except ValueError as e:
+        logger.exception("Failed to convert series to hierarchical structure")
+        raise HTTPException(
+            status_code=500, detail="Failed to process series data structure"
+        ) from e
+
+    for season in series_detail.seasons:
         if season.season == season_num:
             for episode in season.episodes:
                 if episode.episode == episode_num:
                     return EpisodeResponse(
-                        type=series_detail.type,
-                        tmdb_data=series_detail.tmdb_data,
+                        type=provider.response_type,
+                        tmdb_data=tmdb_detail,
+                        tmdb_episode=tmdb_episode,
                         episode=episode,
                     )
             raise HTTPException(
@@ -179,19 +324,53 @@ async def get_series_episode(
     "/{source}/series/movies",
     response_model=MoviesResponse,
     response_model_exclude_none=True,
-    summary="📺 Get All Movies/OVAs",
+    summary="Get all movies/OVAs for a series",
 )
 async def get_series_movies(
     source: str = Path(...),
     url: str = Query(...),
 ) -> MoviesResponse:
     """Get all movies, OVAs, and specials for a series."""
-    series_detail = await get_series_detail(source, url)
+    provider = get_provider(source)
+
+    # Fetch from provider WITH episodes to get movies
+    try:
+        async with provider:
+            detail_response = await provider.get_detail(url, episodes=True)
+    except (httpx.HTTPError, ValueError, RuntimeError) as e:
+        logger.exception("Failed to get detail from provider %s", source)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch series data from {source}"
+        ) from e
+
+    # Enrich with TMDB data
+    tmdb_detail = None
+    match_confidence = None
+    try:
+        async with tmdb_service:
+            _tmdb_match, tmdb_detail, match_confidence = (
+                await enrichment_service.enrich_media_info(detail_response)
+            )
+    except (httpx.HTTPError, ValueError, RuntimeError):
+        logger.exception("Failed to enrich with TMDB data, continuing without it")
+
+    # Convert to hierarchical structure
+    try:
+        slug = url.split("/")[-1] if "/" in url else "unknown"
+        series_detail = SeriesConverterService.convert_to_hierarchical(
+            detail_response, slug=slug
+        )
+    except ValueError as e:
+        logger.exception("Failed to convert series to hierarchical structure")
+        raise HTTPException(
+            status_code=500, detail="Failed to process series data structure"
+        ) from e
+
     return MoviesResponse(
-        type=series_detail.type,
-        movies=series_detail.series.movies,
-        tmdb_data=series_detail.tmdb_data,
-        match_confidence=series_detail.match_confidence,
+        type=provider.response_type,
+        movies=series_detail.movies,
+        tmdb_data=tmdb_detail,
+        match_confidence=match_confidence,
     )
 
 
@@ -199,7 +378,7 @@ async def get_series_movies(
     "/{source}/series/movies/{movie_num}",
     response_model=MovieResponse,
     response_model_exclude_none=True,
-    summary="📺 Get Specific Movie/OVA",
+    summary="Get specific movie/OVA",
 )
 async def get_series_movie(
     source: str = Path(...),
@@ -207,15 +386,48 @@ async def get_series_movie(
     url: str = Query(...),
 ) -> MovieResponse:
     """Get details for a specific movie, OVA, or special."""
-    series_detail = await get_series_detail(source, url)
+    provider = get_provider(source)
 
-    for movie in series_detail.series.movies:
+    # Fetch from provider WITH episodes to get movies
+    try:
+        async with provider:
+            detail_response = await provider.get_detail(url, episodes=True)
+    except (httpx.HTTPError, ValueError, RuntimeError) as e:
+        logger.exception("Failed to get detail from provider %s", source)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch series data from {source}"
+        ) from e
+
+    # Enrich with TMDB data
+    tmdb_detail = None
+    match_confidence = None
+    try:
+        async with tmdb_service:
+            _tmdb_match, tmdb_detail, match_confidence = (
+                await enrichment_service.enrich_media_info(detail_response)
+            )
+    except (httpx.HTTPError, ValueError, RuntimeError):
+        logger.exception("Failed to enrich with TMDB data, continuing without it")
+
+    # Convert to hierarchical structure
+    try:
+        slug = url.split("/")[-1] if "/" in url else "unknown"
+        series_detail = SeriesConverterService.convert_to_hierarchical(
+            detail_response, slug=slug
+        )
+    except ValueError as e:
+        logger.exception("Failed to convert series to hierarchical structure")
+        raise HTTPException(
+            status_code=500, detail="Failed to process series data structure"
+        ) from e
+
+    for movie in series_detail.movies:
         if movie.number == movie_num:
             return MovieResponse(
-                type=series_detail.type,
+                type=provider.response_type,
                 movie=movie,
-                tmdb_data=series_detail.tmdb_data,
-                match_confidence=series_detail.match_confidence,
+                tmdb_data=tmdb_detail,
+                match_confidence=match_confidence,
             )
 
     raise HTTPException(status_code=404, detail=f"Movie {movie_num} not found")

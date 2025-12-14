@@ -13,5 +13,5 @@ test:
 format:
 	uv run ruff format .
 
-demo-bullet-anime:
+demo:
 	uv run --env-file .env  demo_bullet_anime.py

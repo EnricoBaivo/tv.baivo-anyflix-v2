@@ -281,7 +281,7 @@ class TMDBSeasonDetail(BaseModel):
     Docs: https://developer.themoviedb.org/reference/tv-season-details
     """
 
-    _id: str | None = Field(default=None, alias="_id")
+    internal_id: str | None = Field(default=None, alias="_id")
     id: int
     name: str
     overview: str

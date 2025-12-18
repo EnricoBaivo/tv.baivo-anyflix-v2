@@ -13,7 +13,7 @@ class TestFileMoonExtractor:
     @pytest.fixture
     def test_url(self):
         """Return test URL for FileMoon."""
-        return "https://filemoon.to/d/iiwums6tekoj"
+        return "https://filemoon.to/d/hduvefsy82lu"
 
     @pytest.fixture
     def extractor_test(self, test_url):

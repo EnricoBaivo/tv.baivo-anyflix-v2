@@ -2,8 +2,9 @@
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Path, Query
+from fastapi import APIRouter, Path, Query
 
+from app.providers import get_provider, providers
 from lib.extractors.ytdlp_extractor import ytdlp_extractor
 from lib.models.responses import (
     PaginatedSearchResultResponse,
@@ -12,9 +13,6 @@ from lib.models.responses import (
     TrailerResponse,
     VideoListResponse,
 )
-from lib.providers.aniworld import AniWorldProvider
-from lib.providers.base import BaseProvider
-from lib.providers.serienstream import SerienStreamProvider
 
 logger = logging.getLogger(__name__)
 
@@ -26,29 +24,6 @@ router = APIRouter(
         500: {"description": "Internal server error"},
     },
 )
-
-# Initialize providers with proper typing
-providers: dict[str, BaseProvider] = {
-    "aniworld": AniWorldProvider(),
-    "serienstream": SerienStreamProvider(),
-}
-
-
-def get_provider(source: str) -> BaseProvider:
-    """Get provider by source name.
-
-    Args:
-        source: The source name (e.g., 'aniworld', 'serienstream')
-
-    Returns:
-        BaseProvider: The provider instance for the given source
-
-    Raises:
-        HTTPException: If the source is not found (404)
-    """
-    if source not in providers:
-        raise HTTPException(status_code=404, detail=f"Source '{source}' not found")
-    return providers[source]
 
 
 @router.get("/", response_model=SourcesResponse, summary="📋 List Available Sources")
@@ -132,9 +107,12 @@ async def get_video_sources(
     """Get video sources."""
     provider = get_provider(source)
     async with provider:
-        print(f"Getting video list for {url} with language filter {lang}")
-        print(f"Source: {source}")
-        print(f"URL: {url}")
+        logger.debug(
+            "Getting video list for %s with language filter %s (source: %s)",
+            url,
+            lang,
+            source,
+        )
         return await provider.get_video_list(url, lang)
 
 

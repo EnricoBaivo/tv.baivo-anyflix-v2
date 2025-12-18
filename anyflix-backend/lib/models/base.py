@@ -62,6 +62,15 @@ class Episode(BaseModel):
     url: str
     tags: list[str] | None = Field(default_factory=list)
 
+    # Optional TMDB enrichment fields
+    tmdb_id: int | None = Field(None, description="TMDB episode ID")
+    tmdb_overview: str | None = Field(None, description="TMDB episode overview/description")
+    tmdb_vote_average: float | None = Field(None, description="TMDB episode vote average")
+    tmdb_vote_count: int | None = Field(None, description="TMDB episode vote count")
+    tmdb_air_date: str | None = Field(None, description="TMDB episode air date")
+    tmdb_still_path: str | None = Field(None, description="TMDB episode still image path")
+    tmdb_runtime: int | None = Field(None, description="TMDB episode runtime in minutes")
+
 
 class Season(BaseModel):
     """Season information."""

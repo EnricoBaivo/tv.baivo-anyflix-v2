@@ -30,9 +30,10 @@ class TestYTDLPExtractor:
             "https://vidmoly.net/embed-16jl3rm2nwfj.html",
         ],
     )
-    def test_ytdlp_extraction_parametrized(self, test_url):
+    @pytest.mark.asyncio
+    async def test_ytdlp_extraction_parametrized(self, test_url):
         """Test yt-dlp video extraction with parametrized URLs."""
-        sources = ytdlp_extractor(test_url)
+        sources = await ytdlp_extractor(test_url)
 
         # Basic assertions
         assert sources is not None, "Sources should not be None"
@@ -52,14 +53,15 @@ class TestYTDLPExtractor:
                         source.original_url
                     ), "Original URL should not be empty if present"
 
-    def test_ytdlp_batch_extraction(self, extractor_test):
+    @pytest.mark.asyncio
+    async def test_ytdlp_batch_extraction(self, extractor_test):
         """Test yt-dlp batch extraction using base test class."""
         extractor_func = extractor_test.get_extractor_function()
         test_urls = extractor_test.get_test_urls()
 
         results = []
         for url in test_urls:
-            sources = extractor_func(url)
+            sources = await extractor_func(url)
             results.append((url, sources))
 
         assert len(results) == len(test_urls), "Should have results for all URLs"
@@ -67,10 +69,11 @@ class TestYTDLPExtractor:
         for url, sources in results:
             assert sources is not None, f"Sources should not be None for {url}"
 
-    def test_ytdlp_invalid_url(self):
+    @pytest.mark.asyncio
+    async def test_ytdlp_invalid_url(self):
         """Test yt-dlp extractor with invalid URL."""
         invalid_url = "https://invalid-domain.com/video.html"
-        sources = ytdlp_extractor(invalid_url)
+        sources = await ytdlp_extractor(invalid_url)
         assert sources is not None, "Sources should not be None even for invalid URLs"
 
     def test_manual_run(self, extractor_test, capsys):

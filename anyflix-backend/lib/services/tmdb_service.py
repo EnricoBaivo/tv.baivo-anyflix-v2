@@ -32,14 +32,17 @@ class TMDBService:
         """Initialize TMDB service.
 
         Args:
-            api_key: TMDB API key
+            api_key: TMDB API key (if None, will try TMDB_API_KEY env var)
             base_url: TMDB API base URL
         """
-        self.api_key = os.getenv("TMDB_API_KEY") if api_key is None else api_key.strip()
+        resolved_key = api_key if api_key is not None else os.getenv("TMDB_API_KEY", "")
+        self.api_key = resolved_key.strip() if resolved_key else ""
         self.base_url = base_url
         self.client = HTTPClient()
-        self._configuration: TMDBConfiguration | None = None
-        self._api_available = bool(api_key)
+        self._api_available = bool(self.api_key)
+
+        if not self._api_available:
+            logger.warning("TMDB API key not provided. TMDB features will be disabled.")
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -60,19 +63,21 @@ class TMDBService:
     @cached(ttl=ServiceCacheConfig.TMDB_CONFIG_TTL, key_prefix="tmdb_configuration")
     async def get_configuration(self) -> TMDBConfiguration:
         """Get TMDB API configuration."""
-        if self._configuration:
-            return self._configuration
+        if not self._api_available:
+            # Return default configuration when API is unavailable
+            return TMDBConfiguration(
+                images={"secure_base_url": "https://image.tmdb.org/t/p/"},
+                change_keys=[],
+            )
 
         url = f"{self.base_url}/configuration"
-        params = {"api_key": self.api_key}
-        params["language"] = "de-DE"
+        params = {"api_key": self.api_key, "language": "de-DE"}
 
         response = await self.client.get(
             url, params=params, headers=self._get_headers()
         )
         response_data = json.loads(response.body)
-        self._configuration = TMDBConfiguration(**response_data)
-        return self._configuration
+        return TMDBConfiguration(**response_data)
 
     @cached(ttl=ServiceCacheConfig.TMDB_SEARCH_TTL, key_prefix="tmdb_search_multi")
     async def search_multi(self, query: str, page: int = 1) -> TMDBSearchResponse:
@@ -85,6 +90,12 @@ class TMDBService:
         Returns:
             Search response with results
         """
+        if not self._api_available:
+            logger.debug("TMDB API unavailable, returning empty search results")
+            return TMDBSearchResponse(
+                page=page, results=[], total_pages=0, total_results=0
+            )
+
         try:
             url = f"{self.base_url}/search/multi"
             params = {

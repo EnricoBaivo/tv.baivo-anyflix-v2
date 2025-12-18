@@ -14,24 +14,6 @@ from .vidoza_extractor import vidoza_extractor
 from .voe_extractor import voe_extractor
 
 
-def _map_language_to_code(lang: str) -> str:
-    """
-    Map language names to standard language codes.
-
-    Args:
-        lang: Language name (e.g., 'Deutsch', 'Englisch')
-
-    Returns:
-        Standard language code (e.g., 'de', 'en')
-    """
-    lang_lower = lang.lower()
-    if "deutsch" in lang_lower:
-        return "de"
-    if "englisch" in lang_lower or "english" in lang_lower:
-        return "en"
-    return "sub"  # Default fallback
-
-
 async def extract_any(
     url: str,
     method: str,

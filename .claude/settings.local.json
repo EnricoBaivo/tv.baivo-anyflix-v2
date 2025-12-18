@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:aniworld.to)",
+      "WebFetch(domain:serienstream.to)",
+      "Bash(uv run pytest:*)"
+    ]
+  }
+}

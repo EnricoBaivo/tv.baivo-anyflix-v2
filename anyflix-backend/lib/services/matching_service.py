@@ -9,6 +9,7 @@ from lib.models.base import MediaInfo
 from lib.models.tmdb import (
     TMDBSearchResponse,
     TMDBSearchResult,
+    get_genres_by_ids,
 )
 
 logger = logging.getLogger(__name__)
@@ -244,53 +245,18 @@ class MatchingService:
         Returns:
             Bonus score (0.0 to GENRE_BONUS_WEIGHT)
         """
-        # TMDB genre ID to name mapping (common genres)
-        tmdb_genre_map = {
-            28: "action",
-            16: "animation",
-            35: "comedy",
-            80: "crime",
-            99: "documentary",
-            18: "drama",
-            10751: "family",
-            14: "fantasy",
-            36: "history",
-            27: "horror",
-            10402: "music",
-            9648: "mystery",
-            10749: "romance",
-            878: "science fiction",
-            10770: "tv movie",
-            53: "thriller",
-            10752: "war",
-            37: "western",
-            12: "adventure",
-            10759: "action & adventure",
-            10762: "kids",
-            10763: "news",
-            10764: "reality",
-            10765: "sci-fi & fantasy",
-            10766: "soap",
-            10767: "talk",
-            10768: "war & politics",
-        }
-
         if not source_genres or not target_genre_ids:
             return 0.0
 
-        # Convert TMDB genre IDs to names
-        target_genres = [
-            tmdb_genre_map[genre_id]
-            for genre_id in target_genre_ids
-            if genre_id in tmdb_genre_map
-        ]
+        # Convert TMDB genre IDs to names using shared mapping
+        target_genres = get_genres_by_ids(target_genre_ids)
 
-        if not source_genres or not target_genres:
+        if not target_genres:
             return 0.0
 
         # Normalize genres for comparison
         source_normalized = {genre.lower().strip() for genre in source_genres}
-        target_normalized = {genre.lower().strip() for genre in target_genres}
+        target_normalized = set(target_genres)  # Already lowercase from get_genres_by_ids
 
         # Calculate intersection ratio
         intersection = source_normalized.intersection(target_normalized)

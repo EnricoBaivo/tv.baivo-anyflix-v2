@@ -114,7 +114,7 @@ def initialize_cache(
             "port": redis_port,
             "db": redis_db,
             "timeout": 1,
-            "serializer": {"class": "lib.utils.caching.PydanticSerializer"},
+            "serializer": {"class": PydanticSerializer},
             "plugins": [
                 {"class": "aiocache.plugins.HitMissRatioPlugin"},
                 {"class": "aiocache.plugins.TimingPlugin"},
@@ -141,7 +141,7 @@ def initialize_cache(
         fallback_config = {
             "default": {
                 "cache": "aiocache.SimpleMemoryCache",
-                "serializer": {"class": "lib.utils.caching.PydanticSerializer"},
+                "serializer": {"class": PydanticSerializer},
             }
         }
         caches.set_config(fallback_config)
@@ -237,12 +237,6 @@ def _get_endpoint_namespace(prefix: str) -> str:
         "serienstream_search": "endpoints:serienstream:search",
         "serienstream_detail": "endpoints:serienstream:series:detail",
         "serienstream_videos": "endpoints:serienstream:videos",
-        # AniList service endpoints
-        "anilist_search_anime": "services:anilist:search:anime",
-        "anilist_search_media": "services:anilist:search:media",
-        "anilist_media_by_id": "services:anilist:media:by_id",
-        "anilist_trending_anime": "services:anilist:trending:anime",
-        "anilist_popular_anime": "services:anilist:popular:anime",
         # TMDB service endpoints
         "tmdb_configuration": "services:tmdb:configuration",
         "tmdb_search_multi": "services:tmdb:search:multi",
@@ -681,11 +675,6 @@ class CacheManager:
 class ServiceCacheConfig:
     """Cache configuration for different service types."""
 
-    # AniList cache settings
-    ANILIST_SEARCH_TTL = 1800  # 30 minutes
-    ANILIST_MEDIA_TTL = 3600  # 1 hour
-    ANILIST_TRENDING_TTL = 900  # 15 minutes
-
     # TMDB cache settings
     TMDB_SEARCH_TTL = 1800  # 30 minutes
     TMDB_DETAILS_TTL = 7200  # 2 hours
@@ -702,11 +691,3 @@ class ServiceCacheConfig:
     PROVIDER_DETAIL_TTL = 3600  # 1 hour
 
 
-# Cache warming utilities
-async def warm_cache_for_popular_content():
-    """Warm cache with popular content."""
-    logger.info("Starting cache warming for popular content...")
-    # This could be implemented to pre-populate cache with popular anime/series
-
-
-# Cache will be initialized by the application startup

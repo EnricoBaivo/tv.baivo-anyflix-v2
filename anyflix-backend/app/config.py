@@ -1,70 +1,6 @@
-"""Configuration management for anime backend service."""
+"""Configuration management for media backend service."""
 
-from typing import Any
-
-from pydantic import BaseModel
 from pydantic_settings import BaseSettings
-
-
-class SharedPreferences(BaseModel):
-    """Shared preferences similar to JavaScript version."""
-
-    def __init__(self):
-        """Initialize with default preferences."""
-        super().__init__()
-        self._prefs: dict[str, Any] = {
-            "lang": "Deutscher",
-            "type": "Dub",
-            "res": "1080p",
-            "host": "Doodstream",
-            "lang_filter": [
-                "Deutscher Dub",
-                "Deutscher Sub",
-                "Englischer Dub",
-                "Englischer Sub",
-            ],
-            "host_filter": [
-                "Doodstream",
-                "Filemoon",
-                "Luluvdo",
-                "SpeedFiles",
-                "Streamtape",
-                "Vidmoly",
-                "Vidoza",
-                "VOE",
-            ],
-        }
-
-    def get(
-        self, key: str, default: str | list[str] | None = None
-    ) -> str | list[str] | None:
-        """Get preference value.
-
-        Args:
-            key: Preference key
-            default: Default value if key not found
-
-        Returns:
-            Preference value
-        """
-        return self._prefs.get(key, default)
-
-    def set(self, key: str, value: str | list[str]) -> None:
-        """Set preference value.
-
-        Args:
-            key: Preference key
-            value: Preference value
-        """
-        self._prefs[key] = value
-
-    def get_all(self) -> dict[str, Any]:
-        """Get all preferences.
-
-        Returns:
-            Dictionary of all preferences
-        """
-        return self._prefs.copy()
 
 
 class Settings(BaseSettings):
@@ -114,9 +50,6 @@ class Settings(BaseSettings):
     cache_default_ttl: int = 3600  # 1 hour
 
     # Service-specific cache TTLs
-    anilist_search_ttl: int = 1800  # 30 minutes
-    anilist_media_ttl: int = 3600  # 1 hour
-    anilist_trending_ttl: int = 900  # 15 minutes
     tmdb_search_ttl: int = 1800  # 30 minutes
     tmdb_details_ttl: int = 7200  # 2 hours
     tmdb_config_ttl: int = 86400  # 24 hours
@@ -132,6 +65,3 @@ class Settings(BaseSettings):
 
 # Global settings instance
 settings = Settings()
-
-# Global shared preferences instance
-shared_preferences = SharedPreferences()

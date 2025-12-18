@@ -1,11 +1,12 @@
 """Series API router - dedicated endpoints for series operations."""
 
 import logging
-import os
 
 import httpx
 from fastapi import APIRouter, HTTPException, Path, Query
 
+from app.providers import enrichment_service, get_provider, tmdb_service
+from lib.models.base import Season
 from lib.models.responses import (
     EpisodeResponse,
     MovieResponse,
@@ -14,12 +15,8 @@ from lib.models.responses import (
     SeasonsResponse,
     SeriesDetailResponse,
 )
-from lib.providers.aniworld import AniWorldProvider
-from lib.providers.base import BaseProvider
-from lib.providers.serienstream import SerienStreamProvider
+from lib.models.tmdb import TMDBSeasonDetail
 from lib.services.series_converter import SeriesConverterService
-from lib.services.tmdb_enrichment_service import TMDBEnrichmentService
-from lib.services.tmdb_service import TMDBService
 
 logger = logging.getLogger(__name__)
 
@@ -32,32 +29,58 @@ router = APIRouter(
     },
 )
 
-# Initialize providers with proper typing
-providers: dict[str, BaseProvider] = {
-    "aniworld": AniWorldProvider(),
-    "serienstream": SerienStreamProvider(),
-}
 
-# Initialize services
-tmdb_service = TMDBService(api_key=os.getenv("TMDB_API_KEY", ""))
-enrichment_service = TMDBEnrichmentService(tmdb_service)
+def enrich_season_with_tmdb(
+    season: Season, tmdb_season: TMDBSeasonDetail | None
+) -> Season:
+    """Enrich provider season episodes with TMDB episode data.
 
-
-def get_provider(source: str) -> BaseProvider:
-    """Get provider by source name.
+    Matches TMDB episodes to provider episodes by episode_number and
+    merges TMDB metadata (overview, ratings, air_date, still_path, etc.)
+    into the provider episodes.
 
     Args:
-        source: The source name (e.g., 'aniworld', 'serienstream')
+        season: Provider season with episodes
+        tmdb_season: TMDB season detail with episodes (optional)
 
     Returns:
-        BaseProvider: The provider instance for the given source
-
-    Raises:
-        HTTPException: If the source is not found (404)
+        Season with enriched episodes
     """
-    if source not in providers:
-        raise HTTPException(status_code=404, detail=f"Source '{source}' not found")
-    return providers[source]
+    if not tmdb_season or not tmdb_season.episodes:
+        return season
+
+    # Create a lookup map of TMDB episodes by episode_number
+    tmdb_episodes_map = {
+        tmdb_ep.episode_number: tmdb_ep for tmdb_ep in tmdb_season.episodes
+    }
+
+    # Enrich provider episodes with TMDB data
+    enriched_episodes = []
+    for provider_episode in season.episodes:
+        # Create a copy of the episode to avoid mutating the original
+        enriched_episode = provider_episode.model_copy()
+
+        # Match by episode number
+        if provider_episode.episode is not None:
+            tmdb_ep = tmdb_episodes_map.get(provider_episode.episode)
+            if tmdb_ep:
+                # Merge TMDB data into provider episode
+                enriched_episode.tmdb_id = tmdb_ep.id
+                enriched_episode.tmdb_overview = tmdb_ep.overview
+                enriched_episode.tmdb_vote_average = tmdb_ep.vote_average
+                enriched_episode.tmdb_vote_count = tmdb_ep.vote_count
+                enriched_episode.tmdb_air_date = tmdb_ep.air_date
+                enriched_episode.tmdb_still_path = tmdb_ep.still_path
+                enriched_episode.tmdb_runtime = tmdb_ep.runtime
+
+        enriched_episodes.append(enriched_episode)
+
+    # Return new season with enriched episodes
+    return Season(
+        season=season.season,
+        title=season.title,
+        episodes=enriched_episodes,
+    )
 
 
 @router.get(
@@ -235,11 +258,13 @@ async def get_series_season(
 
     for season in series_detail.seasons:
         if season.season == season_num:
+            # Enrich season episodes with TMDB data
+            enriched_season = enrich_season_with_tmdb(season, tmdb_season)
             return SeasonResponse(
                 type=provider.response_type,
                 tmdb_data=tmdb_detail,
                 tmdb_season=tmdb_season,
-                season=season,
+                season=enriched_season,
             )
 
     raise HTTPException(status_code=404, detail=f"Season {season_num} not found")

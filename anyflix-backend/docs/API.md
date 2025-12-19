@@ -97,24 +97,26 @@ GET /sources/{source}/series?url=/anime/stream/solo-leveling
 - `source` (path): Source name
 - `url` (query): Series URL path (required)
 
-**Response:**
+**Response (v1.1.0+):**
 ```json
 {
-  "type": "anime",
-  "tmdb_data": {
-    "id": 217134,
-    "name": "Solo Leveling",
-    "overview": "...",
-    "poster_path": "/geCRueV3ElhRTr0xtJuEWJt6dJ1.jpg",
-    "vote_average": 8.6
-  },
-  "match_confidence": 0.95,
-  "length": 2,
+  "content_type": "anime",
   "series": {
     "slug": "solo-leveling",
     "seasons": [],
     "movies": []
-  }
+  },
+  "season_count": 2,
+  "tmdb_series_data": {
+    "id": 217134,
+    "name": "Solo Leveling",
+    "overview": "...",
+    "poster_path": "/geCRueV3ElhRTr0xtJuEWJt6dJ1.jpg",
+    "vote_average": 8.6,
+    "number_of_seasons": 2,
+    "number_of_episodes": 25
+  },
+  "match_confidence": 0.95
 }
 ```
 
@@ -124,25 +126,42 @@ GET /sources/{source}/series?url=/anime/stream/solo-leveling
 GET /sources/{source}/series/seasons?url=/anime/stream/solo-leveling
 ```
 
-**Response:**
+**Response (v1.1.0+):**
 ```json
 {
-  "type": "anime",
+  "content_type": "anime",
   "seasons": [
     {
       "season": 1,
       "title": "Staffel 1",
+      "episode_count": 12,
+      "tmdb_season_data": {
+        "id": 123456,
+        "name": "Season 1",
+        "season_number": 1,
+        "overview": "...",
+        "poster_path": "/..."
+      },
       "episodes": [
         {
           "season": 1,
           "episode": 1,
           "title": "I'm Used to It",
-          "url": "/anime/stream/solo-leveling/staffel-1/episode-1"
+          "url": "/anime/stream/solo-leveling/staffel-1/episode-1",
+          "tmdb_episode_data": {
+            "id": 654321,
+            "name": "I'm Used to It",
+            "overview": "Episode description...",
+            "air_date": "2024-01-06",
+            "still_path": "/...",
+            "runtime": 24,
+            "vote_average": 8.5
+          }
         }
       ]
     }
   ],
-  "tmdb_data": { ... },
+  "tmdb_series_data": { ... },
   "match_confidence": 0.95
 }
 ```
@@ -153,11 +172,36 @@ GET /sources/{source}/series/seasons?url=/anime/stream/solo-leveling
 GET /sources/{source}/series/seasons/{season_num}?url=/anime/stream/solo-leveling
 ```
 
-Includes TMDB season-specific data with episode enrichment:
-- `tmdb_overview`: Episode description
-- `tmdb_still_path`: Episode thumbnail
-- `tmdb_vote_average`: Episode rating
-- `tmdb_air_date`: Air date
+**Response (v1.1.0+):**
+```json
+{
+  "content_type": "anime",
+  "season": {
+    "season": 1,
+    "title": "Staffel 1",
+    "episode_count": 12,
+    "tmdb_season_data": {
+      "id": 123456,
+      "name": "Season 1",
+      "season_number": 1,
+      "overview": "...",
+      "poster_path": "/...",
+      "episodes": [...]
+    },
+    "episodes": [
+      {
+        "season": 1,
+        "episode": 1,
+        "title": "I'm Used to It",
+        "url": "/anime/stream/solo-leveling/staffel-1/episode-1",
+        "tmdb_episode_data": { ... }
+      }
+    ]
+  },
+  "tmdb_series_data": { ... },
+  "match_confidence": 0.95
+}
+```
 
 ### Get Specific Episode
 
@@ -165,7 +209,35 @@ Includes TMDB season-specific data with episode enrichment:
 GET /sources/{source}/series/seasons/{season_num}/episodes/{episode_num}?url=/anime/stream/solo-leveling
 ```
 
-Includes TMDB episode-specific data.
+**Response (v1.1.0+):**
+```json
+{
+  "content_type": "anime",
+  "episode": {
+    "season": 1,
+    "episode": 1,
+    "title": "I'm Used to It",
+    "url": "/anime/stream/solo-leveling/staffel-1/episode-1",
+    "tmdb_episode_data": {
+      "id": 654321,
+      "name": "I'm Used to It",
+      "overview": "Episode description...",
+      "season_number": 1,
+      "episode_number": 1,
+      "air_date": "2024-01-06",
+      "still_path": "/...",
+      "runtime": 24,
+      "vote_average": 8.5,
+      "crew": [...],
+      "guest_stars": [...],
+      "videos": {...},
+      "images": {...}
+    }
+  },
+  "tmdb_series_data": { ... },
+  "match_confidence": 0.95
+}
+```
 
 ### Get Movies/OVAs
 
@@ -173,10 +245,10 @@ Includes TMDB episode-specific data.
 GET /sources/{source}/series/movies?url=/anime/stream/series-name
 ```
 
-**Response:**
+**Response (v1.1.0+):**
 ```json
 {
-  "type": "anime",
+  "content_type": "anime",
   "movies": [
     {
       "number": 1,
@@ -185,7 +257,8 @@ GET /sources/{source}/series/movies?url=/anime/stream/series-name
       "url": "/anime/stream/series/filme/film-1"
     }
   ],
-  "tmdb_data": { ... }
+  "tmdb_series_data": { ... },
+  "match_confidence": 0.95
 }
 ```
 

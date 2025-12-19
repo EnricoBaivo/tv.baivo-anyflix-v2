@@ -1,0 +1,364 @@
+{
+    "content_type": "anime",
+    "seasons": [
+        {
+            "season": 0,
+            "tmdb_season_data": {
+                ... (other TMDB season data goes here)
+            },
+            "episode_count": 25,
+            "episodes": [
+                {
+                    "season": 0,
+                    "episode": 0,
+                    "kind": "string",
+                    "number": 0,
+                    "title": "string",
+                    "name": "string",
+                    "url": "string",
+                    "tmdb_episode_data": {
+                        "id": 65480,
+                        "name": "An dich in 2000 Jahren - Der Fall von Shiganshina, Teil 1",
+                        "overview": "Die Welt wird von einem Geschlecht riesiger Kannibalen beherrscht. Das letzte Refugium der Menschen ist eine Festung mit mehreren konzentrischen Mauern. Hinter diesen Mauern lauert das Verderben.",
+                        "season_number": 1,
+                        "episode_number": 1,
+                        "episode_type": "standard",
+                        "production_code": "",
+                        "air_date": "2013-04-07",
+                        "still_path": "/e363TDn4uP8jP7kHAXQfHAs6HTR.jpg",
+                        "runtime": 24,
+                        "vote_average": 8.691,
+                        "vote_count": 188,
+                        "crew": [
+                            {
+                                "id": 506610,
+                                "credit_id": "5b549590c3a3680b6103194d",
+                                "name": "小林靖子",
+                                "department": "Writing",
+                                "job": "Writer",
+                                "profile_path": "/watatoeziTz0xoyWeppAeFow8KC.jpg"
+                            },
+                            {
+                                "id": 1440053,
+                                "credit_id": "5d60ea506dea3a0014939103",
+                                "name": "田中洋之",
+                                "department": "Directing",
+                                "job": "Director"
+                            },
+                            {
+                                "id": 2394638,
+                                "credit_id": "5d60efd56dea3a0013939c12",
+                                "name": "服部一郎",
+                                "department": "Visual Effects",
+                                "job": "Animation Director"
+                            },
+                            {
+                                "id": 1848281,
+                                "credit_id": "5d60f7507f6c8d0015ec86d7",
+                                "name": "千葉崇明",
+                                "department": "Visual Effects",
+                                "job": "Animation Director"
+                            },
+                            {
+                                "id": 1842654,
+                                "credit_id": "5d60fa046dea3a001293a9cc",
+                                "name": "江原康之",
+                                "department": "Visual Effects",
+                                "job": "Animation Director"
+                            },
+                            {
+                                "id": 2039478,
+                                "credit_id": "5d60f5a17f6c8d0017ec8149",
+                                "name": "菊池聡延",
+                                "department": "Visual Effects",
+                                "job": "Animation Director"
+                            },
+                            {
+                                "id": 230645,
+                                "credit_id": "5faa5d18d4d509003eff88d2",
+                                "name": "浅野恭司",
+                                "department": "Visual Effects",
+                                "job": "Supervising Animation Director",
+                                "profile_path": "/uRGvUEL50iRU7JauHolboEmOzZ6.jpg"
+                            },
+                            {
+                                "id": 1148353,
+                                "credit_id": "5faa6f3d53866e004115f969",
+                                "name": "荒木哲郎",
+                                "department": "Directing",
+                                "job": "Director",
+                                "profile_path": "/oEdiTbFLMJDSGUSDe8a48VbueGJ.jpg"
+                            },
+                            {
+                                "id": 2043666,
+                                "credit_id": "5fee623c4a4bf60041d486f3",
+                                "name": "今井有文",
+                                "department": "Visual Effects",
+                                "job": "Animation Director",
+                                "profile_path": "/7BHfTwieAaLZfQ4TtCbJkWlllfq.jpg"
+                            },
+                            {
+                                "id": 2043666,
+                                "credit_id": "5fc389750328b9003d697166",
+                                "name": "今井有文",
+                                "department": "Visual Effects",
+                                "job": "Key Animation",
+                                "profile_path": "/7BHfTwieAaLZfQ4TtCbJkWlllfq.jpg"
+                            },
+                            {
+                                "id": 1848281,
+                                "credit_id": "5fc566f5d132d600411ce5bd",
+                                "name": "千葉崇明",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 1842654,
+                                "credit_id": "5fc567083a340b003fdf6c23",
+                                "name": "江原康之",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 2876521,
+                                "credit_id": "5fc5681fe3fa2f003f014b00",
+                                "name": "Tomo Maruyama",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 2799043,
+                                "credit_id": "5fc567e1aafebd003e1de038",
+                                "name": "木村行隆",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 2876531,
+                                "credit_id": "5fc569b121c4ca00421dfb8a",
+                                "name": "Dai Katsuta",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 1189332,
+                                "credit_id": "5fc5673963536a003f290cf3",
+                                "name": "佐々木啓悟",
+                                "department": "Visual Effects",
+                                "job": "Key Animation",
+                                "profile_path": "/ytsnq5SMk70dKxhMwU69P6AzINZ.jpg"
+                            },
+                            {
+                                "id": 2876525,
+                                "credit_id": "5fc568a00328b9003d6c1085",
+                                "name": "吉元美妃",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 2039478,
+                                "credit_id": "5fc56a06e3fa2f0040015248",
+                                "name": "菊池聡延",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 2118349,
+                                "credit_id": "5fc569172f8d0900410e2639",
+                                "name": "小丸敏之",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 1627353,
+                                "credit_id": "5fc5695c2fdec6003c78dc7b",
+                                "name": "世良コータ",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 1848208,
+                                "credit_id": "5fc569d38a84d2004214ac28",
+                                "name": "宇佐美皓一",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 1601273,
+                                "credit_id": "5fc5685c3a340b0040e0bc91",
+                                "name": "宗崎暢芳",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 2394640,
+                                "credit_id": "5fc568e11b7294003e8f84bc",
+                                "name": "手塚響平",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 1488854,
+                                "credit_id": "5fc5691e2f8d0900400d9abb",
+                                "name": "中野悟史",
+                                "department": "Visual Effects",
+                                "job": "Key Animation",
+                                "profile_path": "/eBq4UEztUsgM6bm2SDp9vgeorpc.jpg"
+                            },
+                            {
+                                "id": 2399195,
+                                "credit_id": "610c25aeeea34d005dc878b8",
+                                "name": "赤尾良太郎",
+                                "department": "Visual Effects",
+                                "job": "Key Animation"
+                            },
+                            {
+                                "id": 1148353,
+                                "credit_id": "61236629501cf2002cc937ae",
+                                "name": "荒木哲郎",
+                                "department": "Art",
+                                "job": "Storyboard Artist",
+                                "profile_path": "/oEdiTbFLMJDSGUSDe8a48VbueGJ.jpg"
+                            }
+                        ],
+                        "guest_stars": [
+                            {
+                                "id": 553954,
+                                "credit_id": "5fc3ac68dcf8750041d6610d",
+                                "name": "Akio Suyama",
+                                "character": "Hugo (voice)",
+                                "order": 525,
+                                "profile_path": "/hDqMgo8Ud1xQPq4EhIWKmk39W1.jpg"
+                            },
+                            {
+                                "id": 1325881,
+                                "credit_id": "5fc3acb64d6791003dd97532",
+                                "name": "Kyôko Terase",
+                                "character": "Moses' Mother (voice)",
+                                "order": 526,
+                                "profile_path": "/z6vPr939Frh589X3AhHXxwZNuP1.jpg"
+                            },
+                            {
+                                "id": 1513941,
+                                "credit_id": "5fc3acffdcf875003fd63eb4",
+                                "name": "Takuya Masumoto",
+                                "character": "Moses (voice)",
+                                "order": 527,
+                                "profile_path": "/zuT0uOxyIjoykyMtZcj6LxFH5EH.jpg"
+                            },
+                            {
+                                "id": 2395394,
+                                "credit_id": "5fc3afb52bcf67003fc16d3d",
+                                "name": "Kenta Ohkuma",
+                                "character": "Soldier (voice)",
+                                "order": 534,
+                                "profile_path": "/gqoWLlRapsptxefQa6ZKbOkBzP.jpg"
+                            },
+                            {
+                                "id": 2019945,
+                                "credit_id": "5fc3b30b4202280040c15c41",
+                                "name": "村上裕哉",
+                                "character": "Fish Salesman (voice)",
+                                "order": 536,
+                                "profile_path": "/a32VSI2jv6auNgEBatM0a1nbbls.jpg"
+                            },
+                            {
+                                "id": 1429452,
+                                "credit_id": "5fc3b3712bcf67003fc172cd",
+                                "name": "田久保修平",
+                                "character": "Resident (voice)",
+                                "order": 542,
+                                "profile_path": "/sCdjhDuEN7xgoKHjCnIVKJFpA4E.jpg"
+                            },
+                            {
+                                "id": 1241498,
+                                "credit_id": "5d61deec87f3f20013fd5283",
+                                "name": "Daisuke Ono",
+                                "character": "Erwin Smith (voice)",
+                                "order": 544,
+                                "profile_path": "/5rjl28lx84JjRS0hzq3Ajvx2dhp.jpg"
+                            },
+                            {
+                                "id": 1962819,
+                                "credit_id": "5fc3b458813cb6003f764c76",
+                                "name": "佐藤恵",
+                                "character": "Child (voice)",
+                                "order": 546,
+                                "profile_path": "/x7rHBrQZzrcHkvq3nkVPBusnJPi.jpg"
+                            },
+                            {
+                                "id": 9708,
+                                "credit_id": "5d61e19054f6eb00199c07ed",
+                                "name": "Keiji Fujiwara",
+                                "character": "Hannes (voice)",
+                                "order": 549,
+                                "profile_path": "/hbfBiFiEvD8u3vikl6hUNLKF7Lv.jpg"
+                            },
+                            {
+                                "id": 1338538,
+                                "credit_id": "5fc3b0044d6791003bd9cdde",
+                                "name": "須嵜成幸",
+                                "character": "Soldier (voice)",
+                                "order": 589,
+                                "profile_path": "/q4wrYGDWa4IlqJ1GXAAymQjdwxO.jpg"
+                            },
+                            {
+                                "id": 2394934,
+                                "credit_id": "5fc3b43362fcd3003cbe7cbb",
+                                "name": "川﨑芽衣子",
+                                "character": "Mother (voice)",
+                                "order": 621,
+                                "profile_path": "/o6sZerLYOzjxStlbP4Y4BG9RirB.jpg"
+                            },
+                            {
+                                "id": 1243965,
+                                "credit_id": "5fc3af64d2f5b5003fd782a0",
+                                "name": "Tomohisa Aso",
+                                "character": "Pastor Nick (voice)",
+                                "order": 685,
+                                "profile_path": "/4tC6CfvQnQpIMclDyGncKbz46w3.jpg"
+                            },
+                            {
+                                "id": 114910,
+                                "credit_id": "5d61e35b54f6eb00149c1475",
+                                "name": "鷹森淑乃",
+                                "character": "Carla Yeager (voice)",
+                                "order": 754,
+                                "profile_path": "/qB9kN6MC9QxVYDkNRdsQfBTufpu.jpg"
+                            },
+                            {
+                                "id": 1096527,
+                                "credit_id": "5fc3a833b84f9400420bbcea",
+                                "name": "Tsuguo Mogami",
+                                "character": "Keith Shadis (voice)",
+                                "order": 832,
+                                "profile_path": "/gy1ovkyhWBN9RdIEP7pB5rSNDpD.jpg"
+                            },
+                            {
+                                "id": 1091989,
+                                "credit_id": "5fc3ab4a0328b9003f69e009",
+                                "name": "Hiroshi Tsuchida",
+                                "character": "Grisha Yeager (voice)",
+                                "order": 866,
+                                "profile_path": "/ySiUpcn6UbIzPl4e411ZJMzbIsJ.jpg"
+                            }
+                        ],
+                        "videos": {
+                            "results": []
+                        },
+                        "images": {
+                            "backdrops": [],
+                            "logos": [],
+                            "posters": [],
+                            "stills": []
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "tmdb_series_data": {
+        ... (other TMDB series data goes here)
+    },
+    "match_confidence": 1
+}

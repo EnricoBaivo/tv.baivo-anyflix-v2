@@ -5,16 +5,21 @@ import logging
 # Import logging setup function
 import sys
 import time
+import uuid
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
+from lib.models.responses import ApiError, ApiMetadata, ApiResponse
 from lib.utils.caching import CacheManager
 
 from .config import settings
@@ -33,6 +38,23 @@ except ImportError:
         )
 
 
+class RequestTrackingMiddleware(BaseHTTPMiddleware):
+    """Middleware for adding request ID tracking to all requests."""
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # Generate unique request ID
+        request_id = str(uuid.uuid4())
+        request.state.request_id = request_id
+
+        # Process request
+        response = await call_next(request)
+
+        # Add request ID to response headers
+        response.headers["X-Request-ID"] = request_id
+
+        return response
+
+
 class DebugMiddleware(BaseHTTPMiddleware):
     """Middleware for debugging requests and responses."""
 
@@ -43,7 +65,8 @@ class DebugMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Log request
         start_time = time.time()
-        self.logger.info("🔵 %s %s", request.method, request.url)
+        request_id = getattr(request.state, "request_id", "unknown")
+        self.logger.info("🔵 [%s] %s %s", request_id[:8], request.method, request.url)
         self.logger.debug("Request headers: %s", dict(request.headers))
 
 
@@ -54,7 +77,8 @@ class DebugMiddleware(BaseHTTPMiddleware):
             # Log response
             process_time = time.time() - start_time
             self.logger.info(
-                "🟢 %s %s -> %d (%.3fs)",
+                "🟢 [%s] %s %s -> %d (%.3fs)",
+                request_id[:8],
                 request.method,
                 request.url,
                 response.status_code,
@@ -64,7 +88,8 @@ class DebugMiddleware(BaseHTTPMiddleware):
             # Log error responses with more detail
             if response.status_code >= 400:
                 self.logger.error(
-                    "❌ Error response: %d for %s %s",
+                    "❌ [%s] Error response: %d for %s %s",
+                    request_id[:8],
                     response.status_code,
                     request.method,
                     request.url,
@@ -75,7 +100,8 @@ class DebugMiddleware(BaseHTTPMiddleware):
         except Exception:
             process_time = time.time() - start_time
             self.logger.exception(
-                "🔴 %s %s -> EXCEPTION (%.3fs)",
+                "🔴 [%s] %s %s -> EXCEPTION (%.3fs)",
+                request_id[:8],
                 request.method,
                 request.url,
                 process_time,
@@ -210,6 +236,89 @@ app = FastAPI(
         },
     ],
 )
+
+
+# ============================================================================
+# Exception Handlers
+# ============================================================================
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    """Handle HTTP exceptions with standardized error response."""
+    request_id = getattr(request.state, "request_id", None)
+
+    error_response = ApiResponse(
+        success=False,
+        data=None,
+        error=ApiError(
+            code=f"HTTP_{exc.status_code}",
+            message=exc.detail,
+            details={"status_code": exc.status_code}
+        ),
+        metadata=ApiMetadata(request_id=request_id)
+    )
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=error_response.model_dump(mode='json', exclude_none=True)
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """Handle validation errors with standardized error response."""
+    request_id = getattr(request.state, "request_id", None)
+
+    error_response = ApiResponse(
+        success=False,
+        data=None,
+        error=ApiError(
+            code="VALIDATION_ERROR",
+            message="Request validation failed",
+            details={"errors": exc.errors()}
+        ),
+        metadata=ApiMetadata(request_id=request_id)
+    )
+
+    return JSONResponse(
+        status_code=422,
+        content=error_response.model_dump(mode='json', exclude_none=True)
+    )
+
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Handle unexpected exceptions with standardized error response."""
+    request_id = getattr(request.state, "request_id", None)
+
+    # Log the exception
+    logger = logging.getLogger(__name__)
+    logger.exception("Unhandled exception for request %s", request_id)
+
+    error_response = ApiResponse(
+        success=False,
+        data=None,
+        error=ApiError(
+            code="INTERNAL_SERVER_ERROR",
+            message="An unexpected error occurred",
+            details={"request_id": request_id} if settings.debug_extractors or settings.debug_providers else None
+        ),
+        metadata=ApiMetadata(request_id=request_id)
+    )
+
+    return JSONResponse(
+        status_code=500,
+        content=error_response.model_dump(mode='json', exclude_none=True)
+    )
+
+
+# ============================================================================
+# Middleware Configuration
+# ============================================================================
+
+# Add request tracking middleware (always enabled)
+app.add_middleware(RequestTrackingMiddleware)
 
 # Add debugging middleware (only in debug mode)
 if settings.debug_extractors or settings.debug_providers:

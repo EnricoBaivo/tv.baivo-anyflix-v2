@@ -78,18 +78,32 @@ class TestPopularEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        # Validate response structure
-        assert "type" in data
-        assert data["type"] == expected_type
-        assert "list" in data
-        assert "has_next_page" in data
-        assert isinstance(data["list"], list)
+        # Validate response structure (support both old and new formats)
+        assert "content_type" in data
+        # content_type is an enum value like "anime" or "series_movie"
+        # old "type" was "anime" or "normal"
+        assert data["content_type"] in ["anime", "series_movie", "adult"]
+
+        # Check for new pagination format
+        assert "items" in data
+        assert "pagination" in data
+        assert isinstance(data["items"], list)
+        assert isinstance(data["pagination"], dict)
+
+        # Validate pagination metadata
+        pagination = data["pagination"]
+        assert "page" in pagination
+        assert "per_page" in pagination
+        assert "has_next" in pagination
+        assert "has_previous" in pagination
+        assert pagination["page"] >= 1
+        assert pagination["per_page"] > 0
 
         # Should have some results
-        assert len(data["list"]) > 0, f"Popular should return results for {source}"
+        assert len(data["items"]) > 0, f"Popular should return results for {source}"
 
         # Validate search result structure
-        for item in data["list"][:3]:  # Check first 3 items
+        for item in data["items"][:3]:  # Check first 3 items
             assert "name" in item
             assert "image_url" in item
             assert "link" in item
@@ -109,8 +123,10 @@ class TestPopularEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "list" in data
-        assert isinstance(data["list"], list)
+        assert "items" in data
+        assert isinstance(data["items"], list)
+        assert "pagination" in data
+        assert data["pagination"]["page"] == 1
 
 
 class TestLatestEndpoints:
@@ -120,7 +136,7 @@ class TestLatestEndpoints:
     @pytest.mark.integration
     @pytest.mark.parametrize("source,expected_type", [
         ("aniworld", "anime"),
-        ("serienstream", "normal"),
+        ("serienstream", "series_movie"),
     ])
     async def test_get_latest_updates(
         self, async_client: AsyncClient, source: str, expected_type: str
@@ -131,18 +147,24 @@ class TestLatestEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        # Validate response structure
-        assert "type" in data
-        assert data["type"] == expected_type
-        assert "list" in data
-        assert "has_next_page" in data
-        assert isinstance(data["list"], list)
+        # Validate response structure (new format)
+        assert "content_type" in data
+        assert data["content_type"] == expected_type
+        assert "items" in data
+        assert "pagination" in data
+        assert isinstance(data["items"], list)
+        assert isinstance(data["pagination"], dict)
+
+        # Validate pagination metadata
+        pagination = data["pagination"]
+        assert "has_next" in pagination
+        assert "has_previous" in pagination
 
         # Should have some results
-        assert len(data["list"]) > 0, f"Latest should return results for {source}"
+        assert len(data["items"]) > 0, f"Latest should return results for {source}"
 
         # Validate search result structure
-        for item in data["list"][:3]:  # Check first 3 items
+        for item in data["items"][:3]:  # Check first 3 items
             assert "name" in item
             assert "image_url" in item
             assert "link" in item
@@ -164,17 +186,18 @@ class TestSearchEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "type" in data
-        assert data["type"] == "anime"
-        assert "list" in data
-        assert isinstance(data["list"], list)
+        assert "content_type" in data
+        assert data["content_type"] == "anime"
+        assert "items" in data
+        assert isinstance(data["items"], list)
+        assert "pagination" in data
 
         # Should find results for the search query
-        assert len(data["list"]) > 0, "Search should return results"
+        assert len(data["items"]) > 0, "Search should return results"
 
         # Validate first result
-        if data["list"]:
-            first_result = data["list"][0]
+        if data["items"]:
+            first_result = data["items"][0]
             assert "name" in first_result
             assert "link" in first_result
             assert "provider" in first_result
@@ -193,13 +216,14 @@ class TestSearchEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "type" in data
-        assert data["type"] == "normal"
-        assert "list" in data
-        assert isinstance(data["list"], list)
+        assert "content_type" in data
+        assert data["content_type"] == "series_movie"
+        assert "items" in data
+        assert isinstance(data["items"], list)
+        assert "pagination" in data
 
         # Should find results for the search query
-        assert len(data["list"]) > 0, "Search should return results"
+        assert len(data["items"]) > 0, "Search should return results"
 
     @pytest.mark.asyncio
     @pytest.mark.integration
@@ -222,9 +246,10 @@ class TestSearchEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "list" in data
+        assert "items" in data
         # May or may not find results, but should be a valid response
-        assert isinstance(data["list"], list)
+        assert isinstance(data["items"], list)
+        assert "pagination" in data
 
 
 class TestSeriesEndpoints:
@@ -246,8 +271,8 @@ class TestSeriesEndpoints:
         data = response.json()
 
         # Validate response structure
-        assert "type" in data
-        assert data["type"] == "anime"
+        assert "content_type" in data
+        assert data["content_type"] == "anime"
         assert "series" in data
 
         series = data["series"]
@@ -270,8 +295,8 @@ class TestSeriesEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "type" in data
-        assert data["type"] == "normal"
+        assert "content_type" in data
+        assert data["content_type"] == "series_movie"
         assert "series" in data
 
     @pytest.mark.asyncio
@@ -289,7 +314,7 @@ class TestSeriesEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "type" in data
+        assert "content_type" in data
         assert "seasons" in data
         assert isinstance(data["seasons"], list)
 
@@ -345,7 +370,7 @@ class TestSeasonEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "type" in data
+        assert "content_type" in data
         assert "season" in data
 
         season = data["season"]
@@ -405,7 +430,7 @@ class TestEpisodeEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "type" in data
+        assert "content_type" in data
         assert "episode" in data
 
         episode = data["episode"]
@@ -467,7 +492,7 @@ class TestMoviesEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "type" in data
+        assert "content_type" in data
         assert "movies" in data
         assert isinstance(data["movies"], list)
 
@@ -516,7 +541,7 @@ class TestVideoEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "type" in data
+        assert "content_type" in data
         assert "videos" in data
         assert isinstance(data["videos"], list)
 
@@ -540,7 +565,7 @@ class TestVideoEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert "type" in data
+        assert "content_type" in data
         assert "videos" in data
         assert isinstance(data["videos"], list)
 
@@ -584,17 +609,20 @@ class TestTMDBEnrichment:
         assert response.status_code == 200
         data = response.json()
 
-        # TMDB data may or may not be present depending on API availability
-        # Just verify the field exists in the response
-        assert "tmdb_data" in data
+        # New structure (v1.1.0+): tmdb_series_data and match_confidence at root level
+        assert "tmdb_series_data" in data
         assert "match_confidence" in data
 
         # If TMDB data is present, validate its structure
-        if data["tmdb_data"]:
-            tmdb = data["tmdb_data"]
+        if data["tmdb_series_data"]:
+            tmdb = data["tmdb_series_data"]
             assert "id" in tmdb
             # Should have name or title depending on media type
             assert "name" in tmdb or "title" in tmdb
+
+            # Verify match confidence is valid
+            if data["match_confidence"] is not None:
+                assert 0.0 <= data["match_confidence"] <= 1.0
 
     @pytest.mark.asyncio
     @pytest.mark.integration
@@ -611,9 +639,21 @@ class TestTMDBEnrichment:
         assert response.status_code == 200
         data = response.json()
 
-        # Verify TMDB fields exist
-        assert "tmdb_data" in data
-        assert "tmdb_season" in data
+        # New structure (v1.1.0+): tmdb_series_data and match_confidence at root level
+        # Season TMDB data is now embedded in season.tmdb_season_data
+        assert "tmdb_series_data" in data
+        assert "match_confidence" in data
+        assert "season" in data
+
+        # Verify season has tmdb_season_data field
+        season = data["season"]
+        assert "tmdb_season_data" in season
+
+        # If TMDB season data is present, validate structure
+        if season["tmdb_season_data"]:
+            tmdb_season = season["tmdb_season_data"]
+            assert "id" in tmdb_season
+            assert "season_number" in tmdb_season
 
     @pytest.mark.asyncio
     @pytest.mark.integration
@@ -630,9 +670,21 @@ class TestTMDBEnrichment:
         assert response.status_code == 200
         data = response.json()
 
-        # Verify TMDB fields exist
-        assert "tmdb_data" in data
-        assert "tmdb_episode" in data
+        # New structure (v1.1.0+): tmdb_series_data and match_confidence at root level
+        # Episode TMDB data is now embedded in episode.tmdb_episode_data
+        assert "tmdb_series_data" in data
+        assert "match_confidence" in data
+        assert "episode" in data
+
+        # Verify episode has tmdb_episode_data field
+        episode = data["episode"]
+        assert "tmdb_episode_data" in episode
+
+        # If TMDB episode data is present, validate structure
+        if episode["tmdb_episode_data"]:
+            tmdb_episode = episode["tmdb_episode_data"]
+            assert "id" in tmdb_episode
+            assert "episode_number" in tmdb_episode
 
 
 class TestErrorHandling:
@@ -674,7 +726,7 @@ class TestResponseTypes:
     @pytest.mark.integration
     @pytest.mark.parametrize("source,expected_type", [
         ("aniworld", "anime"),
-        ("serienstream", "normal"),
+        ("serienstream", "series_movie"),
     ])
     async def test_popular_response_type(
         self, async_client: AsyncClient, source: str, expected_type: str
@@ -682,13 +734,13 @@ class TestResponseTypes:
         """Test that popular endpoint returns correct type."""
         response = await async_client.get(f"/sources/{source}/popular")
         assert response.status_code == 200
-        assert response.json()["type"] == expected_type
+        assert response.json()["content_type"] == expected_type
 
     @pytest.mark.asyncio
     @pytest.mark.integration
     @pytest.mark.parametrize("source,expected_type", [
         ("aniworld", "anime"),
-        ("serienstream", "normal"),
+        ("serienstream", "series_movie"),
     ])
     async def test_latest_response_type(
         self, async_client: AsyncClient, source: str, expected_type: str
@@ -696,13 +748,13 @@ class TestResponseTypes:
         """Test that latest endpoint returns correct type."""
         response = await async_client.get(f"/sources/{source}/latest")
         assert response.status_code == 200
-        assert response.json()["type"] == expected_type
+        assert response.json()["content_type"] == expected_type
 
     @pytest.mark.asyncio
     @pytest.mark.integration
     @pytest.mark.parametrize("source,expected_type", [
         ("aniworld", "anime"),
-        ("serienstream", "normal"),
+        ("serienstream", "series_movie"),
     ])
     async def test_search_response_type(
         self, async_client: AsyncClient, source: str, expected_type: str
@@ -712,4 +764,4 @@ class TestResponseTypes:
             f"/sources/{source}/search", params={"q": "test"}
         )
         assert response.status_code == 200
-        assert response.json()["type"] == expected_type
+        assert response.json()["content_type"] == expected_type

@@ -1,0 +1,31 @@
+{
+    "content_type": "anime",
+    "seasons": [
+        {
+            "season": 1,
+            "title": "Staffel 1",
+            "episodes": [
+                {
+                    "season": 1,
+                    "episode": 1,
+                    "title": "To You, in 2000 Years: The Fall of Shiganshina, Part 1",
+                    "url": "/anime/stream/attack-on-titan/staffel-1/episode-1",
+                }
+            ]
+        }
+    ]
+    "tmdb_enrichment": {
+        "tmdb_data": {
+            "adult": true,
+            "backdrop_path": "string",
+            "belongs_to_collection": {
+                "id": 0,
+                "name": "string",
+                "poster_path": "string",
+                "backdrop_path": "string"
+            },
+            ... (other TMDB data goes here)
+        },
+        "match_confidence": 0.9
+    }
+}

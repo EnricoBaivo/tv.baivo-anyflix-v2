@@ -8,10 +8,21 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from lib.models.tmdb import (  # noqa: TC001 - Pydantic needs these at runtime
+    TMDBEpisodeDetail,
     TMDBMovieDetail,
     TMDBSearchResult,
+    TMDBSeasonDetail,
     TMDBTVDetail,
 )
+
+
+class ContentType(str, Enum):
+    """Content type enumeration for media sources."""
+
+    ANIME = "anime"
+    SERIES_MOVIE = "series_movie"
+    ADULT = "adult"
+    UNKNOWN = "unknown"
 
 
 class MediaSource(BaseModel):
@@ -46,7 +57,7 @@ class MatchSource(str, Enum):
 
 
 class Episode(BaseModel):
-    """Episode information."""
+    """Episode information (base model without TMDB enrichment)."""
 
     # For regular episodes
     season: int | None = None
@@ -61,15 +72,6 @@ class Episode(BaseModel):
     name: str | None = None
     url: str
     tags: list[str] | None = Field(default_factory=list)
-
-    # Optional TMDB enrichment fields
-    tmdb_id: int | None = Field(None, description="TMDB episode ID")
-    tmdb_overview: str | None = Field(None, description="TMDB episode overview/description")
-    tmdb_vote_average: float | None = Field(None, description="TMDB episode vote average")
-    tmdb_vote_count: int | None = Field(None, description="TMDB episode vote count")
-    tmdb_air_date: str | None = Field(None, description="TMDB episode air date")
-    tmdb_still_path: str | None = Field(None, description="TMDB episode still image path")
-    tmdb_runtime: int | None = Field(None, description="TMDB episode runtime in minutes")
 
 
 class Season(BaseModel):
@@ -97,6 +99,93 @@ class SeriesDetail(BaseModel):
     slug: str
     seasons: list[Season] = Field(default_factory=list)
     movies: list[Movie] = Field(default_factory=list)
+
+
+# ============================================================================
+# Enriched Models with Embedded TMDB Data
+# ============================================================================
+
+
+class EnrichedEpisode(BaseModel):
+    """Episode with embedded TMDB episode data.
+
+    This model extends the base Episode with full TMDB episode details
+    including crew, guest_stars, videos, and images.
+    """
+
+    # Provider fields (regular episodes)
+    season: int | None = Field(None, description="Season number for series episodes")
+    episode: int | None = Field(None, description="Episode number within season")
+
+    # Provider fields (movies/specials)
+    kind: str | None = Field(
+        None, description="Content kind: 'series', 'movie', 'ova', 'special'"
+    )
+    number: int | None = Field(None, description="Film number for movie collections")
+
+    # Common provider fields
+    title: str = Field(..., description="Episode title from provider")
+    name: str | None = Field(None, description="Alternative episode name")
+    url: str = Field(..., description="Streaming URL path")
+    tags: list[str] = Field(default_factory=list, description="Provider-specific tags")
+
+    # Embedded TMDB data (new structure)
+    tmdb_episode_data: TMDBEpisodeDetail | None = Field(
+        None,
+        description="Complete TMDB episode details including crew, guest_stars, videos, images",
+    )
+
+
+class EnrichedSeason(BaseModel):
+    """Season with embedded TMDB season data.
+
+    This model extends the base Season with full TMDB season details
+    and uses EnrichedEpisode for episodes.
+    """
+
+    # Provider fields
+    season: int = Field(..., description="Season number (0 for specials)")
+    title: str | None = Field(None, description="Season title from provider")
+    episodes: list[EnrichedEpisode] = Field(
+        default_factory=list,
+        description="List of episodes with optional TMDB enrichment",
+    )
+
+    # Embedded TMDB data (new structure)
+    tmdb_season_data: TMDBSeasonDetail | None = Field(
+        None,
+        description="Complete TMDB season details including metadata, poster, videos, images",
+    )
+    episode_count: int | None = Field(
+        None,
+        description="Total episode count from TMDB (may differ from episodes list length)",
+    )
+
+
+class EnrichedSeriesDetail(BaseModel):
+    """Hierarchical series detail with embedded TMDB data at all levels.
+
+    This is the top-level enriched model that contains:
+    - EnrichedSeasons with tmdb_season_data
+    - EnrichedEpisodes with tmdb_episode_data
+    - Series-level tmdb_series_data
+    """
+
+    slug: str
+    seasons: list[EnrichedSeason] = Field(default_factory=list)
+    movies: list[Movie] = Field(default_factory=list)
+
+    # Embedded TMDB data at series level
+    tmdb_series_data: TMDBTVDetail | None = Field(
+        None,
+        description="Complete TMDB TV series details",
+    )
+    match_confidence: float | None = Field(
+        None,
+        ge=0,
+        le=1,
+        description="Confidence score of TMDB match (0-1)",
+    )
 
 
 class MediaInfo(BaseModel):

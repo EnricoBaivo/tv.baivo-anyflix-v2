@@ -1,5 +1,7 @@
 """SerienStream provider implementation."""
 
+import httpx
+
 from lib.models.base import MediaSource, SearchResult, SourcePreference
 from lib.models.responses import PaginatedSearchResultResponse
 from lib.utils.caching import ServiceCacheConfig, cached
@@ -40,12 +42,7 @@ class SerienStreamProvider(BaseProvider):
         elements = Document(res.body).select("div.seriesListContainer div")
 
         all_series = await self._parse_media_list_elements(elements)
-        paginated_series, has_next_page = self._apply_pagination(all_series, page)
-        return PaginatedSearchResultResponse(
-            type=self.response_type,
-            list=paginated_series,
-            has_next_page=has_next_page,
-        )
+        return self._create_paginated_response(all_series, page)
 
     @cached(
         ttl=ServiceCacheConfig.PROVIDER_LATEST_TTL, key_prefix="serienstream_latest"
@@ -56,12 +53,7 @@ class SerienStreamProvider(BaseProvider):
         elements = Document(res.body).select("div.seriesListContainer div")
 
         all_series = await self._parse_media_list_elements(elements)
-        paginated_series, has_next_page = self._apply_pagination(all_series, page)
-        return PaginatedSearchResultResponse(
-            type=self.response_type,
-            list=paginated_series,
-            has_next_page=has_next_page,
-        )
+        return self._create_paginated_response(all_series, page)
 
     async def search(
         self, query: str, page: int = 1, _lang: str | None = None
@@ -88,8 +80,8 @@ class SerienStreamProvider(BaseProvider):
                 media_info = await self.get_detail(link, episodes=False)
                 image_url = media_info.cover_image_url if media_info else ""
                 available_languages = media_info.available_languages if media_info else []
-            except Exception:
-                self.logger.exception("Failed to fetch detail for search result %s", link)
+            except (httpx.HTTPError, ValueError, AttributeError) as e:
+                self.logger.warning("Failed to fetch detail for search result %s: %s", link, e)
                 media_info = None
                 image_url = ""
                 available_languages = []
@@ -105,10 +97,16 @@ class SerienStreamProvider(BaseProvider):
         # Fetch details concurrently with rate limiting
         paginated_results = await self.async_pool(3, paginated_items, fetch_search_detail)
 
-        return PaginatedSearchResultResponse(
-            type=self.response_type,
-            list=paginated_results,
-            has_next_page=has_next_page,
+        # Calculate pagination metadata for search results
+        total_items = len(matching_items)
+        total_pages = (total_items + self.ITEMS_PER_PAGE - 1) // self.ITEMS_PER_PAGE if total_items > 0 else 1
+
+        return self._create_paginated_response(
+            all_items=matching_items,
+            page=page,
+            paginated_items=paginated_results,
+            total_items=total_items,
+            total_pages=total_pages
         )
 
     def get_source_preferences(self) -> list[SourcePreference]:

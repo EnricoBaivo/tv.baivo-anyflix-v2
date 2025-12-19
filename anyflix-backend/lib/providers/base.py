@@ -9,13 +9,16 @@ import httpx
 
 from lib.extractors.extract_any import extract_any
 from lib.models.base import (
+    ContentType,
     MediaInfo,
     MediaSource,
     SearchResult,
     SourcePreference,
+    VideoSource,
 )
 from lib.models.responses import (
     PaginatedSearchResultResponse,
+    PaginationMetadata,
     VideoListResponse,
 )
 from lib.utils.caching import ServiceCacheConfig, cached
@@ -71,11 +74,14 @@ class BaseProvider(ABC):
         self.client = HTTPClient()
         self.logger = get_logger(self.__class__.__module__)
 
-        # Determine if this is an anime source
-        self.is_anime_source = (
-            "anime" in source.name.lower() or "aniworld" in source.name.lower()
-        )
-        self.response_type = "anime" if self.is_anime_source else "normal"
+        # Determine content type based on source name
+        source_name_lower = source.name.lower()
+        if "anime" in source_name_lower or "aniworld" in source_name_lower:
+            self.content_type = ContentType.ANIME
+        elif "adult" in source_name_lower or "nsfw" in source_name_lower:
+            self.content_type = ContentType.ADULT
+        else:
+            self.content_type = ContentType.SERIES_MOVIE
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -268,6 +274,52 @@ class BaseProvider(ABC):
         has_next_page = end_index < len(items)
 
         return paginated_items, has_next_page
+
+    def _create_paginated_response(
+        self,
+        all_items: list,
+        page: int,
+        paginated_items: list | None = None,
+        total_items: int | None = None,
+        total_pages: int | None = None,
+    ) -> PaginatedSearchResultResponse:
+        """Create a paginated response with complete metadata.
+
+        Args:
+            all_items: All available items (for calculating totals)
+            page: Current page number (1-based)
+            paginated_items: Pre-paginated items (if None, will paginate all_items)
+            total_items: Total item count (if None, will use len(all_items))
+            total_pages: Total page count (if None, will calculate from total_items)
+
+        Returns:
+            PaginatedSearchResultResponse with comprehensive pagination metadata
+        """
+        # Apply pagination if not already done
+        if paginated_items is None:
+            paginated_items, _ = self._apply_pagination(all_items, page)
+
+        # Calculate totals
+        if total_items is None:
+            total_items = len(all_items)
+        if total_pages is None:
+            total_pages = (total_items + self.ITEMS_PER_PAGE - 1) // self.ITEMS_PER_PAGE if total_items > 0 else 1
+
+        # Create pagination metadata
+        pagination = PaginationMetadata(
+            page=page,
+            per_page=self.ITEMS_PER_PAGE,
+            total_items=total_items,
+            total_pages=total_pages,
+            has_next=page < total_pages,
+            has_previous=page > 1,
+        )
+
+        return PaginatedSearchResultResponse(
+            content_type=self.content_type,
+            items=paginated_items,
+            pagination=pagination,
+        )
 
     # =========================================================================
     # Async Helpers
@@ -593,6 +645,10 @@ class BaseProvider(ABC):
             Episode dictionary with proper season/episode/title fields
         """
         title_anchor = element.select_first("td.seasonEpisodeTitle a")
+        if not title_anchor or not title_anchor._element:
+            self.logger.warning("Missing title anchor in episode element")
+            return None
+
         episode_span = title_anchor.select_first("span")
         url = title_anchor.attr("href")
         episode_season_id = element.attr("data-episode-season-id")
@@ -752,11 +808,11 @@ class BaseProvider(ABC):
         else:
             videos = []
 
-        return VideoListResponse(type=self.response_type, videos=videos)
+        return VideoListResponse(content_type=self.content_type, videos=videos)
 
     async def _extract_videos_from_host(
-        self, redirect: str, host: str, lang: str, type_str: str, headers: dict
-    ) -> list:
+        self, redirect: str, host: str, lang: str, type_str: str, headers: dict[str, str]
+    ) -> list[VideoSource]:
         """Extract videos from a single host asynchronously.
 
         Args:

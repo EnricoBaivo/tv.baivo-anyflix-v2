@@ -37,8 +37,7 @@ class TestAniWorldProvider:
         """Test provider basic properties."""
         assert provider.source.name == "AniWorld"
         assert provider.source.base_url == "https://aniworld.to"
-        assert provider.is_anime_source is True
-        assert provider.response_type == "anime"
+        assert provider.content_type.value == "anime"
 
     def test_get_source_preferences(self, provider):
         """Test that source preferences are returned correctly."""
@@ -63,16 +62,16 @@ class TestAniWorldProvider:
             result = await provider.search("one punch", page=1)
 
         assert result is not None
-        assert hasattr(result, "list")
-        assert hasattr(result, "has_next_page")
-        assert hasattr(result, "type")
-        assert result.type == "anime"
+        assert hasattr(result, "items")
+        assert hasattr(result, "pagination")
+        assert hasattr(result, "content_type")
+        assert result.content_type.value == "anime"
 
         # Should find results for "one punch"
-        assert len(result.list) > 0, "Should find results for 'one punch'"
+        assert len(result.items) > 0, "Should find results for 'one punch'"
 
         # Validate first result structure
-        first = result.list[0]
+        first = result.items[0]
         assert first.name
         assert first.link
         # Provider name is the actual source name from the provider
@@ -86,11 +85,11 @@ class TestAniWorldProvider:
             result = await provider.get_popular(page=1)
 
         assert result is not None
-        assert result.type == "anime"
-        assert len(result.list) > 0, "Popular should return results"
+        assert result.content_type.value == "anime"
+        assert len(result.items) > 0, "Popular should return results"
 
         # Validate result structure
-        for item in result.list[:5]:
+        for item in result.items[:5]:
             assert item.name
             assert item.link
             assert item.image_url
@@ -103,8 +102,8 @@ class TestAniWorldProvider:
             result = await provider.get_latest_updates(page=1)
 
         assert result is not None
-        assert result.type == "anime"
-        assert len(result.list) > 0, "Latest updates should return results"
+        assert result.content_type.value == "anime"
+        assert len(result.items) > 0, "Latest updates should return results"
 
     @pytest.mark.asyncio
     @pytest.mark.integration
@@ -180,8 +179,7 @@ class TestSerienStreamProvider:
         """Test provider basic properties."""
         assert provider.source.name == "SerienStream"
         assert provider.source.base_url == "https://serienstream.to"
-        assert provider.is_anime_source is False
-        assert provider.response_type == "normal"
+        assert provider.content_type.value == "series_movie"
 
     def test_get_source_preferences(self, provider):
         """Test that source preferences are returned correctly."""
@@ -203,10 +201,10 @@ class TestSerienStreamProvider:
             result = await provider.search("witcher", page=1)
 
         assert result is not None
-        assert result.type == "normal"
-        assert len(result.list) > 0, "Should find results for 'witcher'"
+        assert result.content_type.value == "series_movie"
+        assert len(result.items) > 0, "Should find results for 'witcher'"
 
-        first = result.list[0]
+        first = result.items[0]
         assert first.name
         assert first.link
         assert first.provider in ["serienstream", "SerienStream"]
@@ -219,8 +217,8 @@ class TestSerienStreamProvider:
             result = await provider.get_popular(page=1)
 
         assert result is not None
-        assert result.type == "normal"
-        assert len(result.list) > 0
+        assert result.content_type.value == "series_movie"
+        assert len(result.items) > 0
 
     @pytest.mark.asyncio
     @pytest.mark.integration
@@ -230,8 +228,8 @@ class TestSerienStreamProvider:
             result = await provider.get_latest_updates(page=1)
 
         assert result is not None
-        assert result.type == "normal"
-        assert len(result.list) > 0
+        assert result.content_type.value == "series_movie"
+        assert len(result.items) > 0
 
     @pytest.mark.asyncio
     @pytest.mark.integration
@@ -297,8 +295,8 @@ class TestSearchResultStructure:
         async with provider:
             result = await provider.search("one punch", page=1)
 
-        if result.list:
-            first = result.list[0]
+        if result.items:
+            first = result.items[0]
             # media_info should be present (may be None for lightweight results)
             assert hasattr(first, "media_info")
             # available_languages should be present
@@ -313,8 +311,8 @@ class TestSearchResultStructure:
         async with provider:
             result = await provider.search("witcher", page=1)
 
-        if result.list:
-            first = result.list[0]
+        if result.items:
+            first = result.items[0]
             assert hasattr(first, "media_info")
             assert hasattr(first, "available_languages")
 

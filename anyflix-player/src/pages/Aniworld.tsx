@@ -1,15 +1,15 @@
 import { useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { components } from "@/lib/api/types";
 import PopularMediaRow from "@/components/media/PopularMediaRow";
 import LatestUpdateMediaRow from "@/components/media/LatestUpdateMediaRow";
+import type { MediaSpotlightCompat } from "@/lib/utils/mediaMapper";
 
 const Aniworld = () => {
   const { toast } = useToast();
   const source = "aniworld"; // Using aniworld as the primary source
 
   const handleMediaClick = useCallback(
-    (media: components["schemas"]["MediaSpotlight"]) => {
+    (media: MediaSpotlightCompat) => {
       console.log("Anime clicked:", media);
       // TODO: Navigate to anime detail page or open modal
     },

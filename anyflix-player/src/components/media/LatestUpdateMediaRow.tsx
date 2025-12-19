@@ -1,6 +1,6 @@
 import { useLatest } from "@/lib/api/hooks";
-import { components } from "@/lib/api/types";
 import MediaRow from "./MediaRow";
+import { mapSearchResultsToMediaSpotlight, type MediaSpotlightCompat } from "@/lib/utils/mediaMapper";
 
 const LatestUpdateMediaRow = ({
   source,
@@ -11,7 +11,7 @@ const LatestUpdateMediaRow = ({
   source: string;
   title: string;
   page?: number;
-  onMediaClick: (media: components["schemas"]["MediaSpotlight"]) => void;
+  onMediaClick: (media: MediaSpotlightCompat) => void;
 }) => {
   const { data, error, isLoading } = useLatest(source, page ?? 1);
   if (isLoading) {
@@ -27,10 +27,17 @@ const LatestUpdateMediaRow = ({
   if (error) {
     return <div>Error loading latest updates</div>;
   }
+  if (!data?.items || data.items.length === 0) {
+    return <div>No content found</div>;
+  }
+  
+  // Map SearchResult[] to MediaSpotlightCompat[] for MediaRow compatibility
+  const mappedMedia = mapSearchResultsToMediaSpotlight(data.items);
+  
   return (
     <MediaRow
       title={title}
-      media={data.list}
+      media={mappedMedia}
       onMediaClick={onMediaClick}
     />
   );

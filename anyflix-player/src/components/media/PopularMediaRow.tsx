@@ -1,6 +1,7 @@
 import { usePopular } from "@/lib/api/hooks";
 import MediaRow from "./MediaRow";
 import { components } from "@/lib/api/types";
+import { mapSearchResultsToMediaSpotlight, type MediaSpotlightCompat } from "@/lib/utils/mediaMapper";
 
 const PopularMediaRow = ({
   title,
@@ -10,7 +11,7 @@ const PopularMediaRow = ({
 }: {
   title: string;
   source: string;
-  onMediaClick: (media: components["schemas"]["MediaSpotlight"]) => void;
+  onMediaClick: (media: MediaSpotlightCompat) => void;
   page?: number;
 }) => {
   // Fetch data from anime backend API
@@ -25,15 +26,19 @@ const PopularMediaRow = ({
       </div>
     );
   }
-  if (!data?.list || data.list.length === 0) {
+  if (!data?.items || data.items.length === 0) {
     return <div>No content found</div>;
   }
 
   if (error) {
     return <div>Error loading popular media</div>;
   }
+  
+  // Map SearchResult[] to MediaSpotlightCompat[] for MediaRow compatibility
+  const mappedMedia = mapSearchResultsToMediaSpotlight(data.items);
+  
   return (
-    <MediaRow title={title} media={data.list} onMediaClick={onMediaClick} />
+    <MediaRow title={title} media={mappedMedia} onMediaClick={onMediaClick} />
   );
 };
 

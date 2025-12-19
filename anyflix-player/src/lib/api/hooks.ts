@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutate } from "./client";
-import type { paths } from "./types";
+import type { paths, components } from "./types";
 
 // Type helpers for better IntelliSense
 type ApiPaths = paths;
@@ -325,9 +325,7 @@ export type VideoSourcesResponse = NonNullable<
 >;
 
 // Export individual item types
-export type SearchResult = PopularResponse extends { list: (infer T)[] }
-  ? T
-  : never;
+export type SearchResult = components["schemas"]["SearchResult"];
 export type VideoSource = VideoSourcesResponse extends { videos: (infer T)[] }
   ? T
   : never;

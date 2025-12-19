@@ -16,7 +16,7 @@ import type { paths } from "./types";
 // Create the base client with your FastAPI backend URL
 // In development, use Vite proxy to avoid CORS issues
 const client = createClient<paths>({
-  baseUrl: "http://192.168.178.155:8000",
+  baseUrl: "http://192.168.178.22:8000",
   headers: {
     "Content-Type": "application/json",
   },

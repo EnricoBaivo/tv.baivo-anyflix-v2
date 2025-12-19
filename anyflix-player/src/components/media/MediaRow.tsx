@@ -3,19 +3,19 @@ import MediaCard from "./MediaCard";
 import { SectionTitle } from "../typography";
 import MediaInfo from "./MediaInfo";
 import MediaRowNavigationButton from "./MediaRowNavigationButton";
-import { components } from "@/lib/api/types";
+import type { MediaSpotlightCompat } from "@/lib/utils/mediaMapper";
 
 interface MediaRowProps {
   title: string;
-  media: components["schemas"]["MediaSpotlight"][];
-  onMediaClick?: (media: components["schemas"]["MediaSpotlight"]) => void;
+  media: MediaSpotlightCompat[];
+  onMediaClick?: (media: MediaSpotlightCompat) => void;
 }
 
 const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedMedia, setSelectedMedia] = useState<
-    components["schemas"]["MediaSpotlight"] | null
+    MediaSpotlightCompat | null
   >(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);

@@ -8,12 +8,12 @@ import { cn } from "@/lib/utils";
 import { useWebOSFocus } from "@/hooks/useWebOSFocus";
 import { getFocusClasses, getWebOSProps } from "@/lib/webos-focus";
 import { MediaTitle } from "../typography";
-import { components } from "@/lib/api/types";
 import { VideoTrailer } from "../VideoTrailer";
 import { useNavigate } from "react-router-dom";
+import type { MediaSpotlightCompat } from "@/lib/utils/mediaMapper";
 
 interface MediaCardProps {
-  media: components["schemas"]["MediaSpotlight"];
+  media: MediaSpotlightCompat;
   index: number;
   isSelected?: boolean;
   isHovered?: boolean;

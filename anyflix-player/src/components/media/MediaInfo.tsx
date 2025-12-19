@@ -1,14 +1,14 @@
-import { components } from "@/lib/api/types";
 import { Badge } from "@/components/ui/badge";
 import { MetadataText, DescriptionText, MediaTitle } from "../typography";
+import type { MediaSpotlightCompat } from "@/lib/utils/mediaMapper";
 
 interface MediaInfoProps {
-  media: components["schemas"]["MediaSpotlight"];
+  media: MediaSpotlightCompat;
 }
 
 const MediaInfo = ({ media }: MediaInfoProps) => {
-  // Use actual genres from media object with fallback
-  const genres = media.genres || [];
+  // Use actual genres from media object with fallback (not available in SearchResult, so empty for now)
+  const genres: string[] = [];
 
   // Determine content type and duration info
   const getContentInfo = () => {
@@ -64,38 +64,12 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
                 </span>
               </>
             )}
-            {media.media_status && (
+            {media.seasons_count && media.seasons_count >= 1 && (
               <>
                 <span>•</span>
                 <span className="capitalize">
-                  {media.seasons_count >= 1
-                    ? `${media.seasons_count}seasons`
-                    : `${media.episodes_count} episodes`}
+                  {media.seasons_count} seasons
                 </span>
-              </>
-            )}
-            {media.anilist_id && (
-              <>
-                <span>•</span>
-                <a
-                  href={`https://anilist.co/anime/${media.anilist_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  More Info
-                </a>
-              </>
-            )}
-            {media.tmdb_id && (
-              <>
-                <span>•</span>
-                <a
-                  href={`https://www.themoviedb.org/${media.media_source_type === "series" ? "tv" : "movie"}/${media.tmdb_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  More Info
-                </a>
               </>
             )}
           </div>
@@ -117,16 +91,7 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
           </MetadataText>
         )}
 
-        {media.description && (
-          <DescriptionText>
-            <span
-              dangerouslySetInnerHTML={{
-                __html: media.description.split("\n").at(0),
-              }}
-              className="line-clamp-3 block text-md"
-            />
-          </DescriptionText>
-        )}
+        {/* Description not available in SearchResult - would need to fetch from media_info if needed */}
       </div>
     </div>
   );

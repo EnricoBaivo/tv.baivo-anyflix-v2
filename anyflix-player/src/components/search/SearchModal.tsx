@@ -3,6 +3,7 @@ import SearchInput from "./SearchInput";
 import MediaCard from "../media/MediaCard";
 import { MediaTitle, MetadataText } from "../typography";
 import { useSearch } from "@/lib/api/hooks";
+import { mapSearchResultToMediaSpotlight } from "@/lib/utils/mediaMapper";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   // Memoized results and state
   const { results, hasSearched, loading } = useMemo(() => {
     return {
-      results: data?.list || [],
+      results: data?.items || [],
       hasSearched: Boolean(debouncedQuery.trim()),
       loading: isLoading,
     };
@@ -109,20 +110,23 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
               </div>
 
               <div className="grid px-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {results.map((media, index) => (
-                  <div className="relative" key={media.id}>
-                    <MediaCard 
-                      media={media} 
-                      index={index} 
-                      onFocus={() => handleCardFocus(index)}
-                    />
-                    {focusedCardIndex === index && (
-                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white transition-opacity duration-300 opacity-1">
-                        <MetadataText>{media.title}</MetadataText>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {results.map((searchResult, index) => {
+                  const media = mapSearchResultToMediaSpotlight(searchResult, index);
+                  return (
+                    <div className="relative" key={media.id}>
+                      <MediaCard 
+                        media={media} 
+                        index={index} 
+                        onFocus={() => handleCardFocus(index)}
+                      />
+                      {focusedCardIndex === index && (
+                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white transition-opacity duration-300 opacity-1">
+                          <MetadataText>{media.title}</MetadataText>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

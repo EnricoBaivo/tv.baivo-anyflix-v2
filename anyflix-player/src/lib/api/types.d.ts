@@ -201,10 +201,14 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 📺 Get Full Series Data
-         * @description Get complete series data with hierarchical structure.
+         * Get overall series data (overview, no full episode list)
+         * @description Get series overview data without full episode list.
+         *
+         *     This endpoint fetches basic series information including season/episode
+         *     counts but not the full episode details. Use /series/seasons for
+         *     full episode data.
          */
-        get: operations["get_series_detail_sources__source__series_get"];
+        get: operations["get_series_overview_sources__source__series_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -221,8 +225,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 📺 Get All Seasons
-         * @description Get all seasons for a series.
+         * Get all seasons with full episode data
+         * @description Get all seasons for a series with full episode details.
+         *
+         *     This endpoint fetches the complete episode list organized by season,
+         *     with TMDB data embedded in each season and episode.
          */
         get: operations["get_series_seasons_sources__source__series_seasons_get"];
         put?: never;
@@ -241,8 +248,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 📺 Get Specific Season
-         * @description Get details for a specific season.
+         * Get specific season with TMDB season details
+         * @description Get details for a specific season with targeted TMDB lookup.
+         *
+         *     This endpoint fetches season-specific TMDB data including all episodes
+         *     for that season only, with embedded tmdb_episode_data for each episode.
          */
         get: operations["get_series_season_sources__source__series_seasons__season_num__get"];
         put?: never;
@@ -261,8 +271,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 📺 Get Specific Episode
-         * @description Get details for a specific episode.
+         * Get specific episode with TMDB episode details
+         * @description Get details for a specific episode with targeted TMDB lookup.
+         *
+         *     This endpoint fetches episode-specific TMDB data including videos,
+         *     images, crew, and guest stars for that episode only.
          */
         get: operations["get_series_episode_sources__source__series_seasons__season_num__episodes__episode_num__get"];
         put?: never;
@@ -281,7 +294,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 📺 Get All Movies/OVAs
+         * Get all movies/OVAs for a series
          * @description Get all movies, OVAs, and specials for a series.
          */
         get: operations["get_series_movies_sources__source__series_movies_get"];
@@ -301,7 +314,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 📺 Get Specific Movie/OVA
+         * Get specific movie/OVA
          * @description Get details for a specific movie, OVA, or special.
          */
         get: operations["get_series_movie_sources__source__series_movies__movie_num__get"];
@@ -424,8 +437,96 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
+         * ContentType
+         * @description Content type enumeration for media sources.
+         * @enum {string}
+         */
+        ContentType: "anime" | "series_movie" | "adult" | "unknown";
+        /**
+         * EnrichedEpisode
+         * @description Episode with embedded TMDB episode data.
+         *
+         *     This model extends the base Episode with full TMDB episode details
+         *     including crew, guest_stars, videos, and images.
+         */
+        EnrichedEpisode: {
+            /**
+             * Season
+             * @description Season number for series episodes
+             */
+            season?: number | null;
+            /**
+             * Episode
+             * @description Episode number within season
+             */
+            episode?: number | null;
+            /**
+             * Kind
+             * @description Content kind: 'series', 'movie', 'ova', 'special'
+             */
+            kind?: string | null;
+            /**
+             * Number
+             * @description Film number for movie collections
+             */
+            number?: number | null;
+            /**
+             * Title
+             * @description Episode title from provider
+             */
+            title: string;
+            /**
+             * Name
+             * @description Alternative episode name
+             */
+            name?: string | null;
+            /**
+             * Url
+             * @description Streaming URL path
+             */
+            url: string;
+            /**
+             * Tags
+             * @description Provider-specific tags
+             */
+            tags?: string[];
+            /** @description Complete TMDB episode details including crew, guest_stars, videos, images */
+            tmdb_episode_data?: components["schemas"]["TMDBEpisodeDetail"] | null;
+        };
+        /**
+         * EnrichedSeason
+         * @description Season with embedded TMDB season data.
+         *
+         *     This model extends the base Season with full TMDB season details
+         *     and uses EnrichedEpisode for episodes.
+         */
+        EnrichedSeason: {
+            /**
+             * Season
+             * @description Season number (0 for specials)
+             */
+            season: number;
+            /**
+             * Title
+             * @description Season title from provider
+             */
+            title?: string | null;
+            /**
+             * Episodes
+             * @description List of episodes with optional TMDB enrichment
+             */
+            episodes?: components["schemas"]["EnrichedEpisode"][];
+            /** @description Complete TMDB season details including metadata, poster, videos, images */
+            tmdb_season_data?: components["schemas"]["TMDBSeasonDetail"] | null;
+            /**
+             * Episode Count
+             * @description Total episode count from TMDB (may differ from episodes list length)
+             */
+            episode_count?: number | null;
+        };
+        /**
          * Episode
-         * @description Episode information.
+         * @description Episode information (base model without TMDB enrichment).
          */
         Episode: {
             /** Season */
@@ -447,14 +548,20 @@ export interface components {
         };
         /**
          * EpisodeResponse
-         * @description Response for single episode.
+         * @description Response for single episode with embedded TMDB data.
          */
         EpisodeResponse: {
-            /** Type */
-            type: string;
-            /** Tmdb Data */
-            tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            episode: components["schemas"]["Episode"];
+            /** @description Type of content (anime, series_movie, adult) */
+            content_type: components["schemas"]["ContentType"];
+            /** @description Episode details with embedded TMDB episode data */
+            episode: components["schemas"]["EnrichedEpisode"];
+            /** @description Complete TMDB TV series details for context */
+            tmdb_series_data?: components["schemas"]["TMDBTVDetail"] | null;
+            /**
+             * Match Confidence
+             * @description Confidence score of TMDB match (0-1)
+             */
+            match_confidence?: number | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -590,12 +697,16 @@ export interface components {
          * @description Response for single movie.
          */
         MovieResponse: {
-            /** Type */
-            type: string;
+            /** @description Type of content (anime, series_movie, adult) */
+            content_type: components["schemas"]["ContentType"];
+            /** @description Movie details */
             movie: components["schemas"]["Movie"];
-            /** Tmdb Data */
-            tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            /** Match Confidence */
+            /** @description Complete TMDB movie details */
+            tmdb_series_data?: components["schemas"]["TMDBMovieDetail"] | null;
+            /**
+             * Match Confidence
+             * @description Confidence score of TMDB match (0-1)
+             */
             match_confidence?: number | null;
         };
         /**
@@ -603,29 +714,97 @@ export interface components {
          * @description Response for movies list.
          */
         MoviesResponse: {
-            /** Type */
-            type: string;
-            /** Movies */
+            /** @description Type of content (anime, series_movie, adult) */
+            content_type: components["schemas"]["ContentType"];
+            /**
+             * Movies
+             * @description List of movies, OVAs, and specials
+             */
             movies: components["schemas"]["Movie"][];
-            /** Tmdb Data */
-            tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            /** Match Confidence */
+            /**
+             * Tmdb Series Data
+             * @description Complete TMDB series or movie details
+             */
+            tmdb_series_data?: components["schemas"]["TMDBTVDetail"] | components["schemas"]["TMDBMovieDetail"] | null;
+            /**
+             * Match Confidence
+             * @description Confidence score of TMDB match (0-1)
+             */
             match_confidence?: number | null;
         };
         /**
          * PaginatedSearchResultResponse
-         * @description Paginated response for search results.
+         * @description Paginated response for search results with comprehensive metadata.
+         * @example {
+         *       "content_type": "anime",
+         *       "items": [
+         *         {
+         *           "available_languages": [
+         *             "de",
+         *             "de_sub"
+         *           ],
+         *           "image_url": "https://example.com/image.jpg",
+         *           "link": "/anime/stream/attack-on-titan",
+         *           "name": "Attack on Titan",
+         *           "provider": "AniWorld"
+         *         }
+         *       ],
+         *       "pagination": {
+         *         "has_next": true,
+         *         "has_previous": false,
+         *         "page": 1,
+         *         "per_page": 15,
+         *         "total_items": 100,
+         *         "total_pages": 7
+         *       }
+         *     }
          */
         PaginatedSearchResultResponse: {
-            /** Type */
-            type: string;
-            /** List */
-            list: components["schemas"]["SearchResult"][];
+            /** @description Type of content (anime, series_movie, adult) */
+            content_type: components["schemas"]["ContentType"];
             /**
-             * Has Next Page
-             * @default false
+             * Items
+             * @description Search result items for current page
              */
-            has_next_page: boolean;
+            items: components["schemas"]["SearchResult"][];
+            /** @description Pagination metadata */
+            pagination: components["schemas"]["PaginationMetadata"];
+        };
+        /**
+         * PaginationMetadata
+         * @description Pagination metadata for list responses.
+         */
+        PaginationMetadata: {
+            /**
+             * Page
+             * @description Current page number (1-based)
+             */
+            page: number;
+            /**
+             * Per Page
+             * @description Items per page
+             */
+            per_page: number;
+            /**
+             * Total Items
+             * @description Total number of items across all pages
+             */
+            total_items?: number | null;
+            /**
+             * Total Pages
+             * @description Total number of pages
+             */
+            total_pages?: number | null;
+            /**
+             * Has Next
+             * @description Whether there is a next page
+             */
+            has_next: boolean;
+            /**
+             * Has Previous
+             * @description Whether there is a previous page
+             */
+            has_previous: boolean;
         };
         /**
          * PreferencesResponse
@@ -674,27 +853,39 @@ export interface components {
         };
         /**
          * SeasonResponse
-         * @description Response for single season.
+         * @description Response for single season with embedded TMDB data.
          */
         SeasonResponse: {
-            /** Type */
-            type: string;
-            /** Tmdb Data */
-            tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            season: components["schemas"]["Season"];
+            /** @description Type of content (anime, series_movie, adult) */
+            content_type: components["schemas"]["ContentType"];
+            /** @description Season detail with episodes and embedded TMDB season data */
+            season: components["schemas"]["EnrichedSeason"];
+            /** @description Complete TMDB TV series details for context */
+            tmdb_series_data?: components["schemas"]["TMDBTVDetail"] | null;
+            /**
+             * Match Confidence
+             * @description Confidence score of TMDB match (0-1)
+             */
+            match_confidence?: number | null;
         };
         /**
          * SeasonsResponse
-         * @description Response for seasons list.
+         * @description Response for seasons list with embedded TMDB data.
          */
         SeasonsResponse: {
-            /** Type */
-            type: string;
-            /** Seasons */
-            seasons: components["schemas"]["Season"][];
-            /** Tmdb Data */
-            tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            /** Match Confidence */
+            /** @description Type of content (anime, series_movie, adult) */
+            content_type: components["schemas"]["ContentType"];
+            /**
+             * Seasons
+             * @description List of all seasons with embedded TMDB data per season
+             */
+            seasons: components["schemas"]["EnrichedSeason"][];
+            /** @description Complete TMDB TV series details */
+            tmdb_series_data?: components["schemas"]["TMDBTVDetail"] | null;
+            /**
+             * Match Confidence
+             * @description Confidence score of TMDB match (0-1)
+             */
             match_confidence?: number | null;
         };
         /**
@@ -711,18 +902,25 @@ export interface components {
         };
         /**
          * SeriesDetailResponse
-         * @description Response for hierarchical series detail.
+         * @description Response for hierarchical series detail with TMDB enrichment.
          */
         SeriesDetailResponse: {
-            /** Type */
-            type: string;
-            /** Tmdb Data */
-            tmdb_data?: components["schemas"]["TMDBMovieDetail"] | components["schemas"]["TMDBTVDetail"] | null;
-            /** Match Confidence */
-            match_confidence?: number | null;
-            /** Length */
-            length?: number | null;
+            /** @description Type of content (anime, series_movie, adult) */
+            content_type: components["schemas"]["ContentType"];
+            /** @description Series detail with seasons and movies */
             series: components["schemas"]["SeriesDetail"];
+            /**
+             * Season Count
+             * @description Total number of seasons
+             */
+            season_count?: number | null;
+            /** @description Complete TMDB TV series details */
+            tmdb_series_data?: components["schemas"]["TMDBTVDetail"] | null;
+            /**
+             * Match Confidence
+             * @description Confidence score of TMDB match (0-1)
+             */
+            match_confidence?: number | null;
         };
         /**
          * SourcesResponse
@@ -748,6 +946,24 @@ export interface components {
             name: string;
             /** Gender */
             gender: number;
+            /** Profile Path */
+            profile_path?: string | null;
+        };
+        /**
+         * TMDBCrew
+         * @description TMDB crew member model.
+         */
+        TMDBCrew: {
+            /** Id */
+            id: number;
+            /** Credit Id */
+            credit_id: string;
+            /** Name */
+            name: string;
+            /** Department */
+            department: string;
+            /** Job */
+            job: string;
             /** Profile Path */
             profile_path?: string | null;
         };
@@ -784,6 +1000,65 @@ export interface components {
             still_path?: string | null;
         };
         /**
+         * TMDBEpisodeDetail
+         * @description Full episode detail.
+         *
+         *     API: GET /tv/{series_id}/season/{season_number}/episode/{episode_number}
+         *     Docs: https://developer.themoviedb.org/reference/tv-episode-details
+         */
+        TMDBEpisodeDetail: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Overview */
+            overview: string;
+            /** Season Number */
+            season_number: number;
+            /** Episode Number */
+            episode_number: number;
+            /** Episode Type */
+            episode_type?: string | null;
+            /** Production Code */
+            production_code?: string | null;
+            /** Air Date */
+            air_date?: string | null;
+            /** Still Path */
+            still_path?: string | null;
+            /** Runtime */
+            runtime?: number | null;
+            /**
+             * Vote Average
+             * @default 0
+             */
+            vote_average: number;
+            /**
+             * Vote Count
+             * @default 0
+             */
+            vote_count: number;
+            /** Crew */
+            crew?: components["schemas"]["TMDBCrew"][];
+            /** Guest Stars */
+            guest_stars?: components["schemas"]["TMDBGuestStar"][];
+            videos?: components["schemas"]["TMDBVideoResult"] | null;
+            images?: components["schemas"]["TMDBEpisodeImages"] | null;
+        };
+        /**
+         * TMDBEpisodeImages
+         * @description TMDB episode images collection.
+         */
+        TMDBEpisodeImages: {
+            /** Backdrops */
+            backdrops?: components["schemas"]["TMDBImage"][];
+            /** Logos */
+            logos?: components["schemas"]["TMDBImage"][];
+            /** Posters */
+            posters?: components["schemas"]["TMDBImage"][];
+            /** Stills */
+            stills?: components["schemas"]["TMDBImage"][];
+        };
+        /**
          * TMDBExternalIds
          * @description TMDB external IDs.
          */
@@ -816,6 +1091,24 @@ export interface components {
             id: number;
             /** Name */
             name: string;
+        };
+        /**
+         * TMDBGuestStar
+         * @description TMDB guest star model.
+         */
+        TMDBGuestStar: {
+            /** Id */
+            id: number;
+            /** Credit Id */
+            credit_id: string;
+            /** Name */
+            name: string;
+            /** Character */
+            character: string;
+            /** Order */
+            order: number;
+            /** Profile Path */
+            profile_path?: string | null;
         };
         /**
          * TMDBImage
@@ -969,6 +1262,50 @@ export interface components {
             season_number: number;
             /** Vote Average */
             vote_average: number;
+        };
+        /**
+         * TMDBSeasonDetail
+         * @description Full season detail with all episodes.
+         *
+         *     API: GET /tv/{series_id}/season/{season_number}
+         *     Docs: https://developer.themoviedb.org/reference/tv-season-details
+         */
+        TMDBSeasonDetail: {
+            /** Id */
+            _id?: string | null;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Overview */
+            overview: string;
+            /** Season Number */
+            season_number: number;
+            /** Air Date */
+            air_date?: string | null;
+            /** Poster Path */
+            poster_path?: string | null;
+            /**
+             * Vote Average
+             * @default 0
+             */
+            vote_average: number;
+            /** Episodes */
+            episodes?: components["schemas"]["TMDBEpisode"][];
+            videos?: components["schemas"]["TMDBVideoResult"] | null;
+            images?: components["schemas"]["TMDBSeasonImages"] | null;
+        };
+        /**
+         * TMDBSeasonImages
+         * @description TMDB season images collection.
+         */
+        TMDBSeasonImages: {
+            /** Backdrops */
+            backdrops?: components["schemas"]["TMDBImage"][];
+            /** Logos */
+            logos?: components["schemas"]["TMDBImage"][];
+            /** Posters */
+            posters?: components["schemas"]["TMDBImage"][];
         };
         /**
          * TMDBSpokenLanguage
@@ -1131,9 +1468,12 @@ export interface components {
          * @description Response for video sources.
          */
         VideoListResponse: {
-            /** Type */
-            type: string;
-            /** Videos */
+            /** @description Type of content (anime, series_movie, adult) */
+            content_type: components["schemas"]["ContentType"];
+            /**
+             * Videos
+             * @description Available video sources
+             */
             videos: components["schemas"]["VideoSource"][];
         };
         /**
@@ -1551,7 +1891,7 @@ export interface operations {
             };
         };
     };
-    get_series_detail_sources__source__series_get: {
+    get_series_overview_sources__source__series_get: {
         parameters: {
             query: {
                 url: string;

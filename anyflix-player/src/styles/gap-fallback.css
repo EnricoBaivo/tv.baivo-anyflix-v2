@@ -1,0 +1,162 @@
+/**
+ * Flexbox/Grid Gap Fallback for webOS TV 6.x (Chromium 79)
+ *
+ * Chromium 79 does NOT support the CSS `gap` property for flexbox/grid.
+ * This feature was added in Chromium 84 (April 2020).
+ *
+ * This file provides margin-based fallbacks using the adjacent sibling selector.
+ * These styles will work in all browsers, including older ones.
+ *
+ * Usage: Apply these classes alongside your existing Tailwind gap utilities.
+ * The gap utilities will work in modern browsers, and these fallbacks
+ * will ensure spacing works in Chromium 79.
+ */
+
+/* ==========================================================================
+   HORIZONTAL FLEX GAP FALLBACKS
+   For: flex gap-* (row direction)
+   ========================================================================== */
+
+.flex.gap-1 > * + * { margin-left: 0.25rem; }
+.flex.gap-2 > * + * { margin-left: 0.5rem; }
+.flex.gap-3 > * + * { margin-left: 0.75rem; }
+.flex.gap-4 > * + * { margin-left: 1rem; }
+.flex.gap-5 > * + * { margin-left: 1.25rem; }
+.flex.gap-6 > * + * { margin-left: 1.5rem; }
+.flex.gap-8 > * + * { margin-left: 2rem; }
+.flex.gap-10 > * + * { margin-left: 2.5rem; }
+.flex.gap-12 > * + * { margin-left: 3rem; }
+
+/* ==========================================================================
+   VERTICAL FLEX GAP FALLBACKS
+   For: flex flex-col gap-*
+   ========================================================================== */
+
+.flex.flex-col.gap-1 > * + * { margin-left: 0; margin-top: 0.25rem; }
+.flex.flex-col.gap-2 > * + * { margin-left: 0; margin-top: 0.5rem; }
+.flex.flex-col.gap-3 > * + * { margin-left: 0; margin-top: 0.75rem; }
+.flex.flex-col.gap-4 > * + * { margin-left: 0; margin-top: 1rem; }
+.flex.flex-col.gap-5 > * + * { margin-left: 0; margin-top: 1.25rem; }
+.flex.flex-col.gap-6 > * + * { margin-left: 0; margin-top: 1.5rem; }
+.flex.flex-col.gap-8 > * + * { margin-left: 0; margin-top: 2rem; }
+.flex.flex-col.gap-10 > * + * { margin-left: 0; margin-top: 2.5rem; }
+.flex.flex-col.gap-12 > * + * { margin-left: 0; margin-top: 3rem; }
+
+/* ==========================================================================
+   SPACE-X FALLBACKS (Tailwind space-x-*)
+   For: space-x-* utilities
+   ========================================================================== */
+
+.space-x-1 > * + * { margin-left: 0.25rem; }
+.space-x-2 > * + * { margin-left: 0.5rem; }
+.space-x-3 > * + * { margin-left: 0.75rem; }
+.space-x-4 > * + * { margin-left: 1rem; }
+.space-x-6 > * + * { margin-left: 1.5rem; }
+.space-x-8 > * + * { margin-left: 2rem; }
+
+/* ==========================================================================
+   SPACE-Y FALLBACKS (Tailwind space-y-*)
+   For: space-y-* utilities
+   ========================================================================== */
+
+.space-y-1 > * + * { margin-top: 0.25rem; }
+.space-y-2 > * + * { margin-top: 0.5rem; }
+.space-y-3 > * + * { margin-top: 0.75rem; }
+.space-y-4 > * + * { margin-top: 1rem; }
+.space-y-6 > * + * { margin-top: 1.5rem; }
+.space-y-8 > * + * { margin-top: 2rem; }
+
+/* ==========================================================================
+   GRID GAP FALLBACKS
+   For: grid gap-*
+   Note: Grid gap fallback is trickier - using margin on all sides
+   ========================================================================== */
+
+/* Grid with horizontal gaps */
+.grid.gap-1 { margin: -0.125rem; }
+.grid.gap-1 > * { margin: 0.125rem; }
+
+.grid.gap-2 { margin: -0.25rem; }
+.grid.gap-2 > * { margin: 0.25rem; }
+
+.grid.gap-3 { margin: -0.375rem; }
+.grid.gap-3 > * { margin: 0.375rem; }
+
+.grid.gap-4 { margin: -0.5rem; }
+.grid.gap-4 > * { margin: 0.5rem; }
+
+.grid.gap-6 { margin: -0.75rem; }
+.grid.gap-6 > * { margin: 0.75rem; }
+
+.grid.gap-8 { margin: -1rem; }
+.grid.gap-8 > * { margin: 1rem; }
+
+/* ==========================================================================
+   INLINE-FLEX GAP FALLBACKS
+   For: inline-flex gap-*
+   ========================================================================== */
+
+.inline-flex.gap-1 > * + * { margin-left: 0.25rem; }
+.inline-flex.gap-2 > * + * { margin-left: 0.5rem; }
+.inline-flex.gap-3 > * + * { margin-left: 0.75rem; }
+.inline-flex.gap-4 > * + * { margin-left: 1rem; }
+.inline-flex.gap-6 > * + * { margin-left: 1.5rem; }
+
+/* ==========================================================================
+   FLEX-WRAP GAP FALLBACKS
+   For: flex flex-wrap gap-*
+   When items wrap, we need both horizontal and vertical margins
+   ========================================================================== */
+
+.flex.flex-wrap.gap-1 { margin: -0.125rem; }
+.flex.flex-wrap.gap-1 > * { margin: 0.125rem; }
+
+.flex.flex-wrap.gap-2 { margin: -0.25rem; }
+.flex.flex-wrap.gap-2 > * { margin: 0.25rem; }
+
+.flex.flex-wrap.gap-3 { margin: -0.375rem; }
+.flex.flex-wrap.gap-3 > * { margin: 0.375rem; }
+
+.flex.flex-wrap.gap-4 { margin: -0.5rem; }
+.flex.flex-wrap.gap-4 > * { margin: 0.5rem; }
+
+.flex.flex-wrap.gap-6 { margin: -0.75rem; }
+.flex.flex-wrap.gap-6 > * { margin: 0.75rem; }
+
+/* ==========================================================================
+   ITEMS-CENTER WITH GAP FALLBACK
+   Some common combinations
+   ========================================================================== */
+
+.flex.items-center.gap-2 > * + * { margin-left: 0.5rem; }
+.flex.items-center.gap-3 > * + * { margin-left: 0.75rem; }
+.flex.items-center.gap-4 > * + * { margin-left: 1rem; }
+
+/* ==========================================================================
+   JUSTIFY-END WITH GAP FALLBACK
+   ========================================================================== */
+
+.flex.justify-end.gap-2 > * + * { margin-left: 0.5rem; }
+.flex.justify-end.gap-3 > * + * { margin-left: 0.75rem; }
+.flex.justify-end.gap-4 > * + * { margin-left: 1rem; }
+
+/* ==========================================================================
+   COMMON MODAL/DIALOG PATTERNS
+   ========================================================================== */
+
+/* Modal buttons row: flex gap-4 justify-end */
+.flex.justify-end.gap-4 > * + * { margin-left: 1rem; }
+
+/* Form fields: flex flex-col gap-4 */
+.flex.flex-col.gap-4 > * + * { margin-top: 1rem; }
+
+/* ==========================================================================
+   OVERFLOW-X-AUTO WITH GAP (scrollable rows)
+   ========================================================================== */
+
+.overflow-x-auto.gap-4 > * + * { margin-left: 1rem; }
+.overflow-x-auto.gap-6 > * + * { margin-left: 1.5rem; }
+
+/* Flex with overflow-x-auto */
+.flex.overflow-x-auto.gap-4 > * + * { margin-left: 1rem; }
+.flex.overflow-x-auto.gap-6 > * + * { margin-left: 1.5rem; }

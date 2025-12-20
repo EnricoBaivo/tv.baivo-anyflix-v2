@@ -38,7 +38,8 @@ const DemoCard = ({ id, title, color, onSelect }: DemoCardProps) => {
       id={id}
       onSelect={onSelect}
       className={cn(
-        "flex-shrink-0 w-48 h-32 rounded-lg flex items-center justify-center cursor-pointer",
+        // Use mr-4 (margin-right) instead of gap for Chromium 79 compatibility
+        "flex-shrink-0 w-48 h-32 rounded-lg flex items-center justify-center cursor-pointer mr-4",
         color
       )}
     >
@@ -61,7 +62,8 @@ const DemoButton = ({ id, label, onSelect, variant = "secondary" }: DemoButtonPr
       id={id}
       onSelect={onSelect}
       className={cn(
-        "px-6 py-3 rounded-lg font-semibold cursor-pointer text-center min-w-[120px]",
+        // Use mr-4 (margin-right) instead of gap for Chromium 79 compatibility
+        "px-6 py-3 rounded-lg font-semibold cursor-pointer text-center min-w-[120px] mr-4",
         variant === "primary"
           ? "bg-primary text-white hover:bg-primary/90"
           : "bg-gray-700 text-white hover:bg-gray-600"
@@ -82,10 +84,23 @@ const DemoModal = ({ isOpen, onClose }: DemoModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{
+        // Force hardware acceleration for stable rendering on webOS TV
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
+      }}
+    >
+      {/* Backdrop - NO backdrop-blur (not supported in Chromium 79) */}
       <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="fixed inset-0 bg-black"
+        style={{
+          opacity: 0.85,
+          // Force hardware acceleration
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+        }}
         onClick={onClose}
       />
 
@@ -96,6 +111,11 @@ const DemoModal = ({ isOpen, onClose }: DemoModalProps) => {
         isModal
         trapFocus
         className="relative z-10 bg-gray-900 rounded-xl p-6 w-[500px] max-w-[90vw] border border-gray-700"
+        style={{
+          // Force hardware acceleration for consistent rendering
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+        }}
       >
         <h2 className="text-2xl font-bold text-white mb-4">Modal Dialog</h2>
 
@@ -105,7 +125,7 @@ const DemoModal = ({ isOpen, onClose }: DemoModalProps) => {
           <kbd className="px-2 py-1 bg-gray-700 rounded">Escape</kbd> to close.
         </p>
 
-        <div className="flex gap-4 justify-end">
+        <div className="flex justify-end">
           <DemoButton
             id="modal-cancel"
             label="Cancel"
@@ -202,7 +222,7 @@ const WebOsTestPageContent = () => {
             priority={0}
             rememberFocus
             navigationAxis="horizontal"
-            className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
+            className="flex overflow-x-auto pb-4 scrollbar-hide"
           >
             {POPULAR_SHOWS.map((show, index) => (
               <DemoCard
@@ -227,7 +247,7 @@ const WebOsTestPageContent = () => {
             priority={1}
             rememberFocus
             navigationAxis="horizontal"
-            className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
+            className="flex overflow-x-auto pb-4 scrollbar-hide"
           >
             {LATEST_UPDATES.map((show) => (
               <DemoCard
@@ -252,7 +272,7 @@ const WebOsTestPageContent = () => {
             priority={2}
             rememberFocus
             navigationAxis="horizontal"
-            className="flex gap-4"
+            className="flex"
           >
             <DemoButton
               id="btn-modal"
@@ -278,7 +298,7 @@ const WebOsTestPageContent = () => {
           <h2 className="text-xl font-semibold text-white mb-4">
             Navigation Instructions
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+          <div className="grid grid-cols-1 md:grid-cols-2 text-gray-300" style={{ gap: '1rem' }}>
             <div>
               <h3 className="font-semibold text-white mb-2">Arrow Keys</h3>
               <ul className="space-y-1 text-sm">

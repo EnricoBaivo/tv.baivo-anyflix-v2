@@ -1,3 +1,6 @@
+/* Chromium 79 (webOS TV 6.x) compatibility - gap property fallback */
+@import './styles/gap-fallback.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

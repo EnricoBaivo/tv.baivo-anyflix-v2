@@ -118,7 +118,10 @@ export const KeyboardNavigationProvider: React.FC<KeyboardNavigationProviderProp
 
       // Back button (webOS) or Escape (browser)
       if (keyCode === KEY_CODES.BACK || keyCode === KEY_CODES.ESCAPE) {
+        // CRITICAL: Stop event propagation to prevent webOS TV from handling it
+        // This prevents the "Exit app?" dialog from appearing
         event.preventDefault();
+        event.stopPropagation();
 
         // First check if there's a modal to close
         const layerStack = getFocusLayerStack();

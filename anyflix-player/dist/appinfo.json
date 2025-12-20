@@ -6,9 +6,13 @@
   "type": "web",
   "main": "index.html",
   "icon": "icon.png",
+  "largeIcon": "icon.png",
   "requestedPermissions": ["network", "storage"],
   "features": {
     "orientation": "landscape"
   },
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true,
+  "uiRevision": "2",
   "logLevel": "debug"
 }

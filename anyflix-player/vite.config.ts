@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    target: ["chrome79", "safari13"],
+    target: ["chrome79"],
   },
   esbuild: {
     target: "chrome79",

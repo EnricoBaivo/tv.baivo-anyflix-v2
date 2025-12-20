@@ -1,21 +1,40 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback, useId } from "react";
+import { useFocusContextSafe, type NavigationMode } from "../contexts/FocusContext";
+import { useFocusZone } from "../components/navigation/FocusZone";
 
 /**
  * Hook options for webOS TV focus management
  */
 interface WebOSFocusOptions {
+  /** Unique ID for this focusable element */
+  id?: string;
+  /** Callback when element receives focus */
   onFocus?: () => void;
+  /** Callback when element loses focus */
   onBlur?: () => void;
+  /** Callback when Enter/OK is pressed while focused */
   onEnter?: () => void;
+  /** Whether the element is disabled */
   disabled?: boolean;
+  /** Whether to auto-focus this element on mount */
   autoFocus?: boolean;
 }
 
 /**
  * Single unified hook for webOS TV focus management
- * Works with the global SpatialNavigation system initialized in KeyRemoteNavigationProvider
+ *
+ * This hook integrates with the FocusContext when available (recommended),
+ * but also works standalone for backward compatibility.
  *
  * @example
+ * // With FocusProvider (recommended)
+ * <FocusProvider>
+ *   <FocusZone id="my-zone" type="row">
+ *     <MyComponent />
+ *   </FocusZone>
+ * </FocusProvider>
+ *
+ * // In MyComponent:
  * const { isFocused, ref, focusableProps } = useWebOSFocus({
  *   onFocus: () => console.log('focused'),
  *   onEnter: () => handleClick(),
@@ -24,13 +43,49 @@ interface WebOSFocusOptions {
  * return <div ref={ref} {...focusableProps}>Content</div>
  */
 export const useWebOSFocus = (options: WebOSFocusOptions = {}) => {
-  const [isFocused, setIsFocused] = useState(false);
-  const [navigationMode, setNavigationMode] = useState<"pointer" | "5way">(
-    "pointer"
-  );
+  const autoId = useId();
+  const id = options.id || `focus-${autoId}`;
+
+  // Try to get focus context (may be null if not in FocusProvider)
+  const focusContext = useFocusContextSafe();
+  const focusZone = useFocusZone();
+
+  // Local state for standalone mode
+  const [localIsFocused, setLocalIsFocused] = useState(false);
+  const [localNavigationMode, setLocalNavigationMode] = useState<NavigationMode>("pointer");
   const elementRef = useRef<HTMLElement>(null);
 
+  // Use context values if available, otherwise use local state
+  const navigationMode = focusContext?.navigationMode ?? localNavigationMode;
+  const isFocused = focusContext
+    ? focusContext.focusedElementId === id
+    : localIsFocused;
+
+  // Register with FocusContext if available
   useEffect(() => {
+    const element = elementRef.current;
+    if (!element || !focusContext || !focusZone || options.disabled) return;
+
+    focusContext.registerElement({
+      id,
+      zoneId: focusZone.zoneId,
+      ref: element,
+      disabled: options.disabled,
+      onFocus: options.onFocus,
+      onBlur: options.onBlur,
+      onSelect: options.onEnter,
+    });
+
+    return () => {
+      focusContext.unregisterElement(id);
+    };
+  }, [id, focusContext, focusZone, options.disabled, options.onFocus, options.onBlur, options.onEnter]);
+
+  // Standalone mode: detect navigation mode
+  useEffect(() => {
+    // Skip if using FocusContext
+    if (focusContext) return;
+
     // Check if running on WebOS TV
     const isWebOS =
       typeof window !== "undefined" &&
@@ -38,21 +93,21 @@ export const useWebOSFocus = (options: WebOSFocusOptions = {}) => {
       (window as any).webOS !== undefined;
 
     if (isWebOS) {
-      setNavigationMode("5way");
+      setLocalNavigationMode("5way");
     }
 
     // Listen for cursor state changes (webOS TV specific)
     const handleCursorStateChange = (event: CustomEvent) => {
       const { visibility } = event.detail;
-      setNavigationMode(visibility ? "pointer" : "5way");
+      setLocalNavigationMode(visibility ? "pointer" : "5way");
     };
 
     // Detect navigation mode changes
-    const handlePointerMove = () => setNavigationMode("pointer");
+    const handlePointerMove = () => setLocalNavigationMode("pointer");
     const handleKeyDown = (e: KeyboardEvent) => {
       // Arrow keys switch to 5-way mode
       if ([37, 38, 39, 40].includes(e.keyCode)) {
-        setNavigationMode("5way");
+        setLocalNavigationMode("5way");
       }
     };
 
@@ -71,19 +126,23 @@ export const useWebOSFocus = (options: WebOSFocusOptions = {}) => {
         handleCursorStateChange as EventListener
       );
     };
-  }, []);
+  }, [focusContext]);
 
+  // Standalone mode: handle focus/blur/keydown
   useEffect(() => {
+    // Skip if using FocusContext
+    if (focusContext) return;
+
     const element = elementRef.current;
     if (!element || options.disabled) return;
 
     const handleFocus = () => {
-      setIsFocused(true);
+      setLocalIsFocused(true);
       options.onFocus?.();
     };
 
     const handleBlur = () => {
-      setIsFocused(false);
+      setLocalIsFocused(false);
       options.onBlur?.();
     };
 
@@ -100,7 +159,7 @@ export const useWebOSFocus = (options: WebOSFocusOptions = {}) => {
     element.addEventListener("keydown", handleKeyDown as EventListener);
 
     // Auto focus if requested
-    if (options.autoFocus && navigationMode === "5way") {
+    if (options.autoFocus && localNavigationMode === "5way") {
       element.focus();
     }
 
@@ -109,20 +168,59 @@ export const useWebOSFocus = (options: WebOSFocusOptions = {}) => {
       element.removeEventListener("blur", handleBlur);
       element.removeEventListener("keydown", handleKeyDown as EventListener);
     };
-  }, [options, navigationMode]);
+  }, [focusContext, options, localNavigationMode]);
+
+  // Handle auto-focus with FocusContext
+  useEffect(() => {
+    if (!focusContext || !options.autoFocus || options.disabled) return;
+
+    const timer = setTimeout(() => {
+      focusContext.setFocusedElement(id);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [focusContext, options.autoFocus, options.disabled, id]);
+
+  // Handle native focus events when using FocusContext
+  const handleNativeFocus = useCallback(() => {
+    if (focusContext && !options.disabled) {
+      focusContext.setFocusedElement(id);
+    }
+  }, [focusContext, options.disabled, id]);
+
+  // Handle Enter key when using FocusContext
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.keyCode === 13 || e.key === "Enter") {
+        e.preventDefault();
+        options.onEnter?.();
+      }
+    },
+    [options.onEnter]
+  );
 
   // Props to spread on the focusable element
   const focusableProps = {
     tabIndex: options.disabled ? -1 : 0,
     className: getFocusClasses(isFocused, navigationMode),
     "data-webos-focusable": !options.disabled,
+    "data-focused": isFocused,
+    ...(focusContext && {
+      onFocus: handleNativeFocus,
+      onKeyDown: handleKeyDown,
+    }),
   };
 
   return {
+    id,
     isFocused,
     navigationMode,
     ref: elementRef,
     focusableProps,
+    // Expose context functions for advanced use
+    setFocused: focusContext
+      ? () => focusContext.setFocusedElement(id)
+      : () => elementRef.current?.focus(),
   };
 };
 
@@ -145,9 +243,10 @@ export const useWebOSKeyHandler = (
     onOk?: () => void;
   } = {}
 ) => {
-  const [navigationMode, setNavigationMode] = useState<"pointer" | "5way">(
-    "pointer"
-  );
+  const focusContext = useFocusContextSafe();
+  const [localNavigationMode, setLocalNavigationMode] = useState<NavigationMode>("pointer");
+
+  const navigationMode = focusContext?.navigationMode ?? localNavigationMode;
 
   useEffect(() => {
     // Check if running on WebOS TV
@@ -157,13 +256,13 @@ export const useWebOSKeyHandler = (
       (window as any).webOS !== undefined;
 
     if (isWebOS) {
-      setNavigationMode("5way");
+      setLocalNavigationMode("5way");
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Arrow keys
       if ([37, 38, 39, 40].includes(e.keyCode)) {
-        setNavigationMode("5way");
+        setLocalNavigationMode("5way");
 
         const directionMap = {
           37: "left" as const,
@@ -186,8 +285,8 @@ export const useWebOSKeyHandler = (
         options.onOk();
       }
 
-      // Back button (webOS TV)
-      if (e.keyCode === 461 && options.onBack) {
+      // Back button (webOS TV) or Escape
+      if ((e.keyCode === 461 || e.keyCode === 27) && options.onBack) {
         const handled = options.onBack();
         if (handled) {
           e.preventDefault();
@@ -195,7 +294,7 @@ export const useWebOSKeyHandler = (
       }
     };
 
-    const handlePointerMove = () => setNavigationMode("pointer");
+    const handlePointerMove = () => setLocalNavigationMode("pointer");
 
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("pointermove", handlePointerMove);
@@ -214,7 +313,7 @@ export const useWebOSKeyHandler = (
  */
 const getFocusClasses = (
   isFocused: boolean,
-  navigationMode: "pointer" | "5way"
+  navigationMode: NavigationMode
 ) => {
   if (!isFocused) return "";
 
@@ -230,3 +329,9 @@ const getFocusClasses = (
   // Subtle focus ring for pointer navigation (mouse/magic remote pointer)
   return `${baseClasses} ring-offset-1 ${animationClasses}`;
 };
+
+/**
+ * Get focus classes for use in components
+ * Exported for use in custom components
+ */
+export { getFocusClasses };

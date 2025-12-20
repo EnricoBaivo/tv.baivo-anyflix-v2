@@ -317,12 +317,17 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
 # Middleware Configuration
 # ============================================================================
 
-# Add request tracking middleware (always enabled)
-app.add_middleware(RequestTrackingMiddleware)
-
 # Add debugging middleware (only in debug mode)
+# Note: This must be added BEFORE RequestTrackingMiddleware because
+# Starlette executes middlewares in LIFO order (last-added runs first).
+# We want RequestTrackingMiddleware to run first to set request_id.
 if settings.debug_extractors or settings.debug_providers:
     app.add_middleware(DebugMiddleware)
+
+# Add request tracking middleware (always enabled)
+# This must be added AFTER DebugMiddleware so it executes first and
+# sets request.state.request_id before DebugMiddleware tries to read it.
+app.add_middleware(RequestTrackingMiddleware)
 
 # Add CORS middleware
 app.add_middleware(

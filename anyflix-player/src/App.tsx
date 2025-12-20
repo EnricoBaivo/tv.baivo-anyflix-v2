@@ -4,17 +4,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SWRConfig } from "swr";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+/* import Navbar from "@/components/Navbar";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Aniworld from "./pages/Aniworld";
 import SerienStream from "./pages/SerienStream";
 import WatchMedia from "./pages/WatchMedia";
-import MediaDetail from "./pages/MediaDetail";
+import MediaDetail from "./pages/MediaDetail"; */
+import WebOsTestPage from "./pages/WebOsTestPage";
 
 // Wrapper component to conditionally show navbar
-const AppLayout = () => {
+/* const AppLayout = () => {
   const location = useLocation();
   const hideNavbarRoutes = ["/watch"]; // Routes where navbar should be hidden
   const shouldShowNavbar = !hideNavbarRoutes.includes(location.pathname);
@@ -38,12 +39,11 @@ const AppLayout = () => {
         <Route path="/watch" element={<WatchMedia />} />
         <Route path="/media-detail" element={<MediaDetail />} />
 
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
-};
+}; */
 
 const queryClient = new QueryClient();
 
@@ -64,9 +64,12 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div className="min-h-screen bg-background">
+          <WebOsTestPage />
+          {/* 
+         FOCUS ONLY ON WebOsTestPage.tsx
+         <div className="min-h-screen bg-background">
             <AppLayout />
-          </div>
+          </div> */}
         </BrowserRouter>
       </TooltipProvider>
     </SWRConfig>

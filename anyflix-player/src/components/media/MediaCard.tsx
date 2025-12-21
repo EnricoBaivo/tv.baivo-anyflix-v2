@@ -60,6 +60,7 @@ const MediaCard = React.memo(forwardRef<HTMLButtonElement, MediaCardProps>(({
       ref={ref}
       type="button"
       title={media.title}
+      data-index={index}
       {...focusableProps}
       className={cn(
         focusableProps.className,
@@ -68,6 +69,12 @@ const MediaCard = React.memo(forwardRef<HTMLButtonElement, MediaCardProps>(({
         !isSelected && isAnyHovered && !isHovered ? "scale-95" : "scale-100",
         isFocused && getFocusClasses("card", navigationMode)
       )}
+      onFocus={(e) => {
+        // Call focusableProps.onFocus first (for FocusContext)
+        focusableProps.onFocus?.(e);
+        // Then call parent's onFocus handler (for selection update)
+        onFocus?.();
+      }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={onClick}

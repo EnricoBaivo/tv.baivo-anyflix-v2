@@ -36,7 +36,9 @@ const MediaRow = ({ id, title, media, onMediaClick, priority = 0 }: MediaRowProp
   const zoneId = id || `media-row-${title.toLowerCase().replace(/\s+/g, '-')}`;
 
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  // PERFORMANCE FIX #2: Convert hover state to useRef to avoid re-renders
+  // Hover state doesn't need to trigger React re-renders since MediaCard handles its own hover styles
+  const hoveredIndexRef = useRef<number | null>(null);
   const [isRowHovered, setIsRowHovered] = useState<boolean>(false);
 
   const selectedMedia = media[selectedIndex];
@@ -73,11 +75,13 @@ const MediaRow = ({ id, title, media, onMediaClick, priority = 0 }: MediaRowProp
     setSelectedIndex(newIndex);
     onMediaClick?.(media[newIndex]);
 
-    // Focus the card at the new index
-    const cardRef = cardRefsRef.current.get(newIndex);
-    if (cardRef) {
-      cardRef.focus();
-    }
+    // Use requestAnimationFrame to ensure element is rendered before focusing
+    requestAnimationFrame(() => {
+      const cardRef = cardRefsRef.current.get(newIndex);
+      if (cardRef) {
+        cardRef.focus();
+      }
+    });
   }, [media, onMediaClick]);
 
   const handleKeyNavigation = useCallback(
@@ -112,11 +116,47 @@ const MediaRow = ({ id, title, media, onMediaClick, priority = 0 }: MediaRowProp
     }
   }, [handleKeyNavigation]);
 
+  // PERFORMANCE FIX #8: Create stable memoized event handlers using data attributes
+  // These handlers are created once and reused for all cards, preventing React.memo from breaking
+  const handleCardMouseEnter = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const index = parseInt(e.currentTarget.dataset.index || '0', 10);
+    hoveredIndexRef.current = index;
+  }, []);
+
+  const handleCardMouseLeave = useCallback(() => {
+    hoveredIndexRef.current = null;
+  }, []);
+
+  const handleCardFocus = useCallback((e: React.FocusEvent<HTMLButtonElement>) => {
+    const index = parseInt(e.currentTarget.dataset.index || '0', 10);
+    // Only update selection if not already selected
+    if (selectedIndex !== index) {
+      setSelectedIndex(index);
+      onMediaClick?.(media[index]);
+    }
+  }, [selectedIndex, media, onMediaClick]);
+
+  const handleCardClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const index = parseInt(e.currentTarget.dataset.index || '0', 10);
+    // Only update selection if not already selected
+    if (selectedIndex !== index) {
+      setSelectedIndex(index);
+      onMediaClick?.(media[index]);
+    }
+  }, [selectedIndex, media, onMediaClick]);
+
   // Initialize first media as selected
   useEffect(() => {
     if (media.length > 0) {
       setSelectedIndex(0);
     }
+  }, [media]);
+
+  // Cleanup cardRefsRef Map when media array changes to prevent memory leak
+  useEffect(() => {
+    return () => {
+      cardRefsRef.current.clear();
+    };
   }, [media]);
 
   // Row height: card height + title + info section
@@ -194,18 +234,12 @@ const MediaRow = ({ id, title, media, onMediaClick, priority = 0 }: MediaRowProp
                     media={item}
                     index={index}
                     isSelected={isSelected}
-                    isHovered={hoveredIndex === index}
+                    isHovered={hoveredIndexRef.current === index}
                     isAnyHovered={isRowHovered}
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                    onFocus={() => {
-                      setSelectedIndex(index);
-                      onMediaClick?.(item);
-                    }}
-                    onClick={() => {
-                      setSelectedIndex(index);
-                      onMediaClick?.(item);
-                    }}
+                    onMouseEnter={handleCardMouseEnter}
+                    onMouseLeave={handleCardMouseLeave}
+                    onFocus={handleCardFocus}
+                    onClick={handleCardClick}
                   />
                 </div>
               ) : null;

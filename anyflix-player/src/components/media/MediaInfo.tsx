@@ -29,70 +29,59 @@ const MediaInfo = ({ media }: MediaInfoProps) => {
   return (
     <div
       key={media.id}
-      className="relative max-w-5xl h-48 ml-16 transition-all duration-700 ease-in-out animate-in fade-in slide-in-from-right-4"
+      className="relative max-w-4xl transition-all duration-500 ease-in-out"
+      style={{ paddingLeft: '48px', marginTop: '0.75rem' }}
     >
-      {/* Media Info Section with Netflix-style typography */}
-      <div className="absolute -top-4 left-0">
-        <MediaTitle>{media.title}</MediaTitle>
+      {/* Netflix-style metadata - NO title (already on card) */}
+      <MetadataText>
+        <div className="flex items-center flex-wrap" style={{ gap: '0.75rem' }}>
+          {media.release_year && (
+            <span className="text-gray-300">{media.release_year}</span>
+          )}
+          {media.release_year && <span className="text-gray-500">•</span>}
 
-        <MetadataText>
-          <div className="flex items-center space-x-4 mb-2">
-            {media.release_year && (
-              <>
-                <span>{media.release_year}</span>
-                <span>•</span>
-              </>
-            )}
-            <span>{getContentInfo()}</span>
-            {getRatingInfo() && (
-              <>
-                <span>•</span>
-                <span>{getRatingInfo()}</span>
-              </>
-            )}
-            {media.best_ranking?.context === "highest Rated" && (
-              <>
-                <span>•</span>
-                <span>#{media.best_ranking.rank} Rated</span>
-              </>
-            )}
-            {media.media_status && (
-              <>
-                <span>•</span>
-                <span className="capitalize">
-                  {media.media_status.toLowerCase()}
-                </span>
-              </>
-            )}
-            {media.seasons_count && media.seasons_count >= 1 && (
-              <>
-                <span>•</span>
-                <span className="capitalize">
-                  {media.seasons_count} seasons
-                </span>
-              </>
-            )}
-          </div>
-        </MetadataText>
-        <div>{media.provider_url}</div>
-        {genres.length > 0 && (
-          <MetadataText>
-            <div className="flex items-center space-x-4 mb-6 flex-wrap">
-              {genres.slice(0, 5).map((genre, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className="px-3 py-2 hover:bg-gray-500 text-sm font-medium"
-                >
-                  {genre}
-                </Badge>
-              ))}
-            </div>
-          </MetadataText>
-        )}
+          <span className="text-gray-300">{getContentInfo()}</span>
 
-        {/* Description not available in SearchResult - would need to fetch from media_info if needed */}
-      </div>
+          {getRatingInfo() && (
+            <>
+              <span className="text-gray-500">•</span>
+              <span className="text-gray-300">{getRatingInfo()}</span>
+            </>
+          )}
+
+          {media.best_ranking?.context === "highest Rated" && (
+            <>
+              <span className="text-gray-500">•</span>
+              <span className="text-yellow-500 font-medium">
+                #{media.best_ranking.rank} Rated
+              </span>
+            </>
+          )}
+
+          {media.seasons_count && media.seasons_count >= 1 && (
+            <>
+              <span className="text-gray-500">•</span>
+              <span className="text-gray-300">
+                {media.seasons_count} {media.seasons_count === 1 ? 'Season' : 'Seasons'}
+              </span>
+            </>
+          )}
+        </div>
+      </MetadataText>
+
+      {genres.length > 0 && (
+        <div className="flex items-center flex-wrap mt-3" style={{ gap: '0.5rem' }}>
+          {genres.slice(0, 5).map((genre, index) => (
+            <Badge
+              key={index}
+              variant="outline"
+              className="px-3 py-1 text-sm font-medium text-gray-300 border-gray-600"
+            >
+              {genre}
+            </Badge>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SWRConfig } from "swr";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { FocusProvider } from "./contexts/FocusContext";
+import { KeyboardNavigationProvider } from "./providers/KeyboardNavigationProvider";
 import Navbar from "@/components/Navbar";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
@@ -61,16 +63,17 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <SWRConfig value={swrConfig}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          {/* <WebOsTestPage /> */}
-
-          <div className="min-h-screen bg-background">
-            <AppLayout />
-          </div>           {/* 
-         FOCUS ONLY ON WebOsTestPage.tsx*/}
-        </BrowserRouter>
+        <FocusProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <KeyboardNavigationProvider>
+              <div className="min-h-screen bg-background">
+                <AppLayout />
+              </div>
+            </KeyboardNavigationProvider>
+          </BrowserRouter>
+        </FocusProvider>
       </TooltipProvider>
     </SWRConfig>
   </QueryClientProvider>

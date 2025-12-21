@@ -46,9 +46,11 @@ export const MediaTitle = ({ children }: { children: React.ReactNode }) => {
 export const SectionTitle = ({
   children,
   className,
+  style,
 }: {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }) => {
   return (
     <h2
@@ -56,6 +58,7 @@ export const SectionTitle = ({
         "text-lg md:text-xl lg:text-2xl xl:text-3xl font-semibold text-white mb-4 leading-tight",
         className
       )}
+      style={style}
     >
       {children}
     </h2>

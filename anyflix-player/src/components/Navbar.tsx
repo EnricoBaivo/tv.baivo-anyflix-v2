@@ -1,192 +1,125 @@
-import React, { useState, useRef } from "react";
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Bell, User, Menu, X } from "lucide-react";
-import SearchModal from "./search/SearchModal";
-import { useWebOSKeyHandler } from "../hooks/useWebOSFocus";
+import { Search, User } from "lucide-react";
+import { FocusZone } from "./navigation/FocusZone";
+import { FocusableItem } from "./navigation/FocusableItem";
+import { cn } from "../lib/utils";
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const navRef = useRef<HTMLDivElement>(null);
 
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Aniworld", path: "/aniworld" },
     { name: "SerienStream", path: "/serienstream" },
-    { name: "test", path: "/test" },
-    { name: "Anime", path: "/anime" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
-  // webOS TV key handler for custom navigation
-  const { navigationMode } = useWebOSKeyHandler({
-    onNavigate: (direction) => {
-      if (direction === "down" && !isMenuOpen) {
-        setIsMenuOpen(true);
-        return true; // Handled
-      }
-      return false; // Not handled, use default behavior
-    },
-    onBack: () => {
-      if (isSearchOpen) {
-        setIsSearchOpen(false);
-        return true;
-      } else if (isMenuOpen) {
-        setIsMenuOpen(false);
-        return true;
-      } else {
-        // Handle app-level back navigation
-        if (window.history.length > 1) {
-          navigate(-1);
-          return true;
-        } else {
-          // Let default behavior handle exit confirmation
-          return false;
-        }
-      }
-    },
-  });
+  const handleNavClick = (path: string) => {
+    navigate(path);
+  };
 
-  // Helper function to generate webOS-compatible button classes
-  const getWebOSButtonClasses = (baseClasses: string, isActive?: boolean) => {
-    const webOSClasses = [
-      "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-      navigationMode === "5way" ? "focus:ring-offset-4" : "focus:ring-offset-1",
-      "min-w-[75px] min-h-[50px] flex items-center justify-center",
-      "transition-all duration-200",
-    ].join(" ");
-
-    const activeClasses = isActive ? "bg-anyflix-gray/30" : "";
-
-    return `${baseClasses} ${webOSClasses} ${activeClasses}`.trim();
+  const handleSearchClick = () => {
+    // TODO: Open search modal when implemented
+    console.log("Search clicked - modal not implemented yet");
   };
 
   return (
     <nav
-      ref={navRef}
-      className=" top-0 w-full z-50 bg-anyflix-black/95 backdrop-blur-sm transition-all duration-300"
+      className="fixed top-0 w-full z-50 bg-anyflix-black"
+      style={{
+        // NO backdrop-blur - not supported in Chromium 79
+        // Use solid background with opacity instead
+        backgroundColor: "hsl(0 0% 8% / 0.95)",
+        // Force hardware acceleration for stable rendering on webOS TV
+        transform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)",
+      }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <FocusZone
+          id="navbar-zone"
+          type="row"
+          priority={-1}
+          rememberFocus
+          navigationAxis="horizontal"
+          className="flex items-center justify-between h-20"
+        >
           {/* Logo */}
-          <div className="flex items-center">
-            <Link
-              to="/"
-              className={getWebOSButtonClasses(
-                "text-primary text-2xl font-bold focus:ring-offset-anyflix-black rounded-md px-2 py-1"
+          <div className="flex-shrink-0 mr-8">
+            <FocusableItem
+              id="nav-logo"
+              onSelect={() => handleNavClick("/")}
+              className={cn(
+                "text-primary text-2xl font-bold rounded-md px-3 py-2",
+                "cursor-pointer outline-none transition-all duration-300"
               )}
-              tabIndex={0}
+              focusClassName="ring-2 ring-primary ring-offset-2 ring-offset-background scale-105"
             >
-              ANYFLIX
-            </Link>
+              <Link to="/" className="pointer-events-none">
+                ANYFLIX
+              </Link>
+            </FocusableItem>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8 ml-8">
-            {navLinks.map((link) => (
-              <Link
+          {/* Navigation Links - Use mr-4 instead of gap for Chromium 79 compatibility */}
+          <div className="flex items-center flex-1">
+            {navLinks.map((link, index) => (
+              <FocusableItem
                 key={link.name}
-                to={link.path}
-                className={getWebOSButtonClasses(
-                  `text-sm font-medium hover:text-anyflix-light-gray focus:ring-offset-anyflix-black rounded-md px-3 py-2 ${
-                    isActive(link.path)
-                      ? "text-white"
-                      : "text-anyflix-light-gray"
-                  }`,
+                id={`nav-${link.name.toLowerCase()}`}
+                onSelect={() => handleNavClick(link.path)}
+                className={cn(
+                  // Use mr-4 (margin-right) instead of gap for Chromium 79 compatibility
+                  "px-4 py-2 rounded-md cursor-pointer outline-none transition-all duration-300",
+                  index < navLinks.length - 1 && "mr-4",
                   isActive(link.path)
+                    ? "text-white font-semibold"
+                    : "text-anyflix-light-gray font-medium hover:text-white"
                 )}
-                tabIndex={0}
+                focusClassName={cn(
+                  "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105",
+                  isActive(link.path) && "bg-anyflix-red/20"
+                )}
               >
-                {link.name}
-              </Link>
+                <Link to={link.path} className="pointer-events-none">
+                  {link.name}
+                </Link>
+              </FocusableItem>
             ))}
           </div>
 
-          {/* Right Side Icons */}
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className={getWebOSButtonClasses(
-                "text-white hover:text-anyflix-light-gray focus:ring-offset-anyflix-black rounded-md p-3"
-              )}
-              tabIndex={0}
-              aria-label="Open search"
+          {/* Right Side Icons - Use mr-4 instead of gap */}
+          <div className="flex items-center">
+            <FocusableItem
+              id="nav-search"
+              onSelect={handleSearchClick}
+              className="text-white hover:text-anyflix-light-gray rounded-md p-3 cursor-pointer outline-none transition-all duration-300 mr-4"
+              focusClassName="ring-2 ring-primary ring-offset-2 ring-offset-background scale-110"
             >
-              <Search className="h-5 w-5" />
-            </button>
-            <button
-              className={getWebOSButtonClasses(
-                "text-white hover:text-anyflix-light-gray focus:ring-offset-anyflix-black rounded-md p-3"
-              )}
-              tabIndex={0}
-              aria-label="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-            </button>
-            <Link
-              to="/auth"
-              className={getWebOSButtonClasses(
-                "text-white hover:text-anyflix-light-gray focus:ring-offset-anyflix-black rounded-md p-3"
-              )}
-              tabIndex={0}
-              aria-label="User profile"
-            >
-              <User className="h-5 w-5" />
-            </Link>
+              <button
+                aria-label="Open search"
+                className="pointer-events-none flex items-center justify-center"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+            </FocusableItem>
 
-            {/* Mobile menu button */}
-            <button
-              className={getWebOSButtonClasses(
-                "md:hidden text-white focus:ring-offset-anyflix-black rounded-md p-3"
-              )}
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              tabIndex={0}
-              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            <FocusableItem
+              id="nav-user"
+              onSelect={() => handleNavClick("/auth")}
+              className="text-white hover:text-anyflix-light-gray rounded-md p-3 cursor-pointer outline-none transition-all duration-300"
+              focusClassName="ring-2 ring-primary ring-offset-2 ring-offset-background scale-110"
             >
-              {isMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
+              <Link to="/auth" aria-label="User profile" className="pointer-events-none flex items-center justify-center">
+                <User className="h-5 w-5" />
+              </Link>
+            </FocusableItem>
           </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-anyflix-dark-gray rounded-lg mt-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  className={getWebOSButtonClasses(
-                    `px-3 py-2 text-base font-medium rounded-md focus:ring-offset-anyflix-dark-gray ${
-                      isActive(link.path)
-                        ? "text-white bg-anyflix-gray"
-                        : "text-anyflix-light-gray hover:text-white hover:bg-anyflix-gray"
-                    }`,
-                    isActive(link.path)
-                  )}
-                  onClick={() => setIsMenuOpen(false)}
-                  tabIndex={0}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+        </FocusZone>
       </div>
-
-      {/* Search Modal */}
-      <SearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-      />
     </nav>
   );
 };

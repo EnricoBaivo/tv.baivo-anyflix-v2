@@ -1,48 +1,84 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import MediaCard from "./MediaCard";
 import { SectionTitle } from "../typography";
 import MediaInfo from "./MediaInfo";
 import MediaRowNavigationButton from "./MediaRowNavigationButton";
+import { FocusZone } from "../navigation/FocusZone";
 import type { MediaSpotlightCompat } from "@/lib/utils/mediaMapper";
 
+// TV-optimized card dimensions (1920x1080 target)
+// Netflix-style: Selected card is wider (16:9), unselected are narrower (2:3)
+// Cards stay in original order, row scrolls to show selected card
+const CARD_SIZES = {
+  height: 270,                // Common height for all cards
+  selected: { width: 480 },   // 16:9 aspect ratio for backdrop (wider)
+  unselected: { width: 180 }, // 2:3 poster ratio (narrower)
+  gap: 12,                    // Gap between cards
+  padding: 48,                // TV safe area padding
+} as const;
+
 interface MediaRowProps {
+  /** Unique ID for focus zone registration */
+  id?: string;
+  /** Row title displayed above cards */
   title: string;
+  /** Media items to display */
   media: MediaSpotlightCompat[];
+  /** Callback when media is clicked/selected */
   onMediaClick?: (media: MediaSpotlightCompat) => void;
+  /** Focus zone priority (lower = higher priority) */
+  priority?: number;
 }
 
-const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
+const MediaRow = ({ id, title, media, onMediaClick, priority = 0 }: MediaRowProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedMedia, setSelectedMedia] = useState<
-    MediaSpotlightCompat | null
-  >(null);
+  const cardRefsRef = useRef<Map<number, HTMLButtonElement>>(new Map());
+  const zoneId = id || `media-row-${title.toLowerCase().replace(/\s+/g, '-')}`;
+
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isRowHovered, setIsRowHovered] = useState<boolean>(false);
 
-  const scrollToSelected = (index: number) => {
-    if (scrollRef.current && containerRef.current) {
-      const unselectedWidth = 300; // w-movie-md = 300px
-      const gap = 32; // space-x-8 = 32px (2rem = 32px)
-      const padding = 32; // px-8 = 32px padding on container
+  const selectedMedia = media[selectedIndex];
 
-      // Calculate cumulative width up to the target card
-      // All cards before the target will be unselected (use unselectedWidth)
-      let scrollPosition = 0;
-      for (let i = 0; i < index; i++) {
-        scrollPosition += unselectedWidth + gap;
-      }
+  // Calculate scroll offset to align selected card with MediaInfo (48px padding)
+  // Previous cards appear in the left gap, creating Netflix-style layout
+  const scrollOffset = useMemo(() => {
+    if (selectedIndex === 0) return 0;
 
-      // Subtract padding to align flush-left
-      scrollPosition -= padding;
-
-      scrollRef.current.scrollTo({
-        left: Math.max(0, scrollPosition), // Ensure we don't scroll to negative position
-        behavior: "smooth",
-      });
+    // Calculate total width of all cards before the selected one
+    // All cards before selected are in unselected (narrower) state
+    let offset = 0;
+    for (let i = 0; i < selectedIndex; i++) {
+      offset += CARD_SIZES.unselected.width + CARD_SIZES.gap;
     }
-  };
+    // Add TV safe area padding to align selected card with MediaInfo
+    // This creates a gap on the left showing part of the previous card
+    return -offset + CARD_SIZES.padding;
+  }, [selectedIndex]);
+
+  // Register card ref for programmatic focus
+  const setCardRef = useCallback((index: number, ref: HTMLButtonElement | null) => {
+    if (ref) {
+      cardRefsRef.current.set(index, ref);
+    } else {
+      cardRefsRef.current.delete(index);
+    }
+  }, []);
+
+  // Navigate to a specific index and focus the element
+  const navigateToIndex = useCallback((newIndex: number) => {
+    if (newIndex < 0 || newIndex >= media.length) return;
+
+    setSelectedIndex(newIndex);
+    onMediaClick?.(media[newIndex]);
+
+    // Focus the card at the new index
+    const cardRef = cardRefsRef.current.get(newIndex);
+    if (cardRef) {
+      cardRef.focus();
+    }
+  }, [media, onMediaClick]);
 
   const handleKeyNavigation = useCallback(
     (direction: "left" | "right") => {
@@ -56,32 +92,55 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
       }
 
       if (newIndex !== selectedIndex) {
-        setSelectedIndex(newIndex);
-        setSelectedMedia(media[newIndex]);
-        scrollToSelected(newIndex);
-        onMediaClick?.(media[newIndex]);
+        navigateToIndex(newIndex);
       }
     },
-    [selectedIndex, media, onMediaClick]
+    [selectedIndex, media.length, navigateToIndex]
   );
+
+  // Handle keyboard events for index-based navigation (overrides spatial navigation)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Only handle left/right arrow keys
+    if (e.key === 'ArrowRight' || e.keyCode === 39) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleKeyNavigation('right');
+    } else if (e.key === 'ArrowLeft' || e.keyCode === 37) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleKeyNavigation('left');
+    }
+  }, [handleKeyNavigation]);
 
   // Initialize first media as selected
   useEffect(() => {
-    if (media.length > 0 && !selectedMedia) {
-      setSelectedMedia(media.at(0));
+    if (media.length > 0) {
       setSelectedIndex(0);
     }
-  }, [media, selectedMedia]);
+  }, [media]);
+
+  // Row height: card height + title + info section
+  const rowHeight = CARD_SIZES.height + 140; // Extra space for title and info
 
   return (
     <div
       ref={containerRef}
-      className="relative group mb-16 focus:outline-none overflow-visible h-screen border-2 border-red-500"
+      className="relative group focus:outline-none overflow-hidden"
+      style={{
+        height: `${rowHeight}px`,
+        marginBottom: '3rem',
+      }}
       onMouseEnter={() => setIsRowHovered(true)}
       onMouseLeave={() => setIsRowHovered(false)}
     >
-      <SectionTitle className="ml-8 mb-0">{title}</SectionTitle>
-      <div className="relative overflow-visible">
+      <SectionTitle
+        className="mb-4"
+        style={{ paddingLeft: `${CARD_SIZES.padding}px` }}
+      >
+        {title}
+      </SectionTitle>
+
+      <div className="relative overflow-hidden">
         {/* Left navigation button */}
         <MediaRowNavigationButton
           direction="left"
@@ -90,52 +149,70 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
           title="Navigate to previous media"
         />
 
-        {/* Movies container - overflow-y must be visible for focus rings and hover effects */}
-        <div
-          ref={scrollRef}
-          className="flex space-x-8 overflow-x-auto overflow-y-visible scrollbar-hide px-8 pt-6 pb-12 group-hover:opacity-100 opacity-90 transition-all duration-300"
+        {/* Movies container - FocusZone with custom index-based navigation */}
+        <FocusZone
+          id={zoneId}
+          type="row"
+          priority={priority}
+          rememberFocus
+          navigationAxis="horizontal"
+          className="overflow-hidden group-hover:opacity-100 opacity-90 transition-all duration-300"
+          style={{ paddingLeft: `${CARD_SIZES.padding}px`, paddingRight: `${CARD_SIZES.padding}px` }}
         >
-          {media.map((item, index) =>
-            item?.id ? (
-              <div
-                key={item.id}
-                className={`flex-none transition-all duration-300 overflow-visible relative ${
-                  selectedIndex === index
-                    ? "w-movie-2xl h-movie-2xl"
-                    : "w-movie-md h-movie-2xl"
-                } ${
-                  hoveredIndex === index || selectedIndex === index
-                    ? "z-50"
-                    : "z-10"
-                }`}
-              >
-                <MediaCard
-                  media={item}
-                  index={index}
-                  isSelected={selectedIndex === index}
-                  isHovered={hoveredIndex === index}
-                  isAnyHovered={isRowHovered}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                  onFocus={() => {
-                    setSelectedIndex(index);
-                    setSelectedMedia(item);
-                    scrollToSelected(index);
-                    onMediaClick?.(item);
+          {/* Wrapper div to capture keyboard events before spatial navigation */}
+          <div onKeyDown={handleKeyDown}>
+          <div
+            className="flex items-stretch transition-transform duration-300 ease-out"
+            style={{
+              gap: `${CARD_SIZES.gap}px`,
+              // Scroll offset to position selected card at left edge
+              transform: `translateX(${scrollOffset}px)`,
+            }}
+          >
+            {media.map((item, index) => {
+              // Selected card is wider, others are narrower
+              const isSelected = index === selectedIndex;
+              const cardWidth = isSelected ? CARD_SIZES.selected.width : CARD_SIZES.unselected.width;
+
+              return item?.id ? (
+                <div
+                  key={item.id}
+                  className="flex-none transition-all duration-300 relative rounded-md overflow-hidden"
+                  style={{
+                    width: `${cardWidth}px`,
+                    height: `${CARD_SIZES.height}px`,
+                    zIndex: isSelected ? 50 : 10,
+                    // Netflix-style border for selected card
+                    border: isSelected ? '3px solid rgba(255, 255, 255, 0.8)' : '3px solid transparent',
+                    boxShadow: isSelected ? '0 0 20px rgba(0, 0, 0, 0.8)' : 'none',
+                    // Hardware acceleration
+                    willChange: 'width',
                   }}
-                  onClick={() => {
-                    setSelectedIndex(index);
-                    setSelectedMedia(item);
-                    scrollToSelected(index);
-                    onMediaClick?.(item);
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="text-white">{item?.id}</div>
-            )
-          )}
-        </div>
+                >
+                  <MediaCard
+                    ref={(ref) => setCardRef(index, ref)}
+                    media={item}
+                    index={index}
+                    isSelected={isSelected}
+                    isHovered={hoveredIndex === index}
+                    isAnyHovered={isRowHovered}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    onFocus={() => {
+                      setSelectedIndex(index);
+                      onMediaClick?.(item);
+                    }}
+                    onClick={() => {
+                      setSelectedIndex(index);
+                      onMediaClick?.(item);
+                    }}
+                  />
+                </div>
+              ) : null;
+            })}
+          </div>
+          </div>
+        </FocusZone>
 
         {/* Right navigation button */}
         <MediaRowNavigationButton
@@ -146,8 +223,12 @@ const MediaRow = ({ title, media, onMediaClick }: MediaRowProps) => {
         />
       </div>
 
-      {/* Media Info Section - positioned below selected card */}
-      {selectedMedia && <MediaInfo media={selectedMedia} />}
+      {/* Media Info Section - positioned below cards */}
+      {selectedMedia && (
+        <div style={{ paddingLeft: `${CARD_SIZES.padding}px`, marginTop: '1rem' }}>
+          <MediaInfo media={selectedMedia} />
+        </div>
+      )}
     </div>
   );
 };

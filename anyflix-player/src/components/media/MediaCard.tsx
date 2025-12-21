@@ -1,3 +1,4 @@
+import React, { forwardRef, useImperativeHandle } from "react";
 import {
   ThumbsUp,
   Star,
@@ -24,7 +25,7 @@ interface MediaCardProps {
   onClick?: () => void;
 }
 
-const MediaCard = ({
+const MediaCard = React.memo(forwardRef<HTMLButtonElement, MediaCardProps>(({
   media,
   index,
   isSelected = false,
@@ -34,7 +35,7 @@ const MediaCard = ({
   onMouseLeave,
   onFocus,
   onClick,
-}: MediaCardProps) => {
+}, forwardedRef) => {
   const navigate = useNavigate();
   // WebOS focus handling - when focused, automatically becomes selected
   const { ref, focusableProps, isFocused, navigationMode } = useWebOSFocus({
@@ -50,16 +51,20 @@ const MediaCard = ({
       );
     }, // Triggers click action when Enter is pressed
   });
+
+  // Combine refs: internal ref from useWebOSFocus and forwarded ref from parent
+  useImperativeHandle(forwardedRef, () => ref.current as HTMLButtonElement);
+
   return (
     <button
-      ref={ref as React.RefObject<HTMLButtonElement>}
+      ref={ref}
       type="button"
       title={media.title}
       {...focusableProps}
       className={cn(
         focusableProps.className,
-        "cursor-pointer transition-transform duration-300 transform-gpu origin-center h-full flex flex-col rounded-lg",
-        isSelected ? "media-card-selected" : "media-card group",
+        "cursor-pointer transition-all duration-300 transform-gpu w-full h-full flex flex-col",
+        "media-card group",
         !isSelected && isAnyHovered && !isHovered ? "scale-95" : "scale-100",
         isFocused && getFocusClasses("card", navigationMode)
       )}
@@ -69,8 +74,7 @@ const MediaCard = ({
     >
       <div
         className={cn(
-          "relative overflow-hidden flex-1",
-          isSelected ? "rounded-lg" : "rounded-md"
+          "relative overflow-hidden w-full h-full"
         )}
       >
         <img
@@ -167,25 +171,38 @@ const MediaCard = ({
             )}
           </div>
         </div>
-        <div
-          className={cn(
-            "absolute bottom-0 left-0 right-0 p-6 text-white transition-opacity duration-300 opacity-0",
-            isSelected && "opacity-100"
-          )}
-        >
-          {media.logo_urls?.length > 0 ? (
-            <img
-              src={media.logo_urls.at(0)}
-              alt={media.title}
-              className="w-80 p-6 m-12 object-cover origin-center transform-gpu absolute bottom-0 left-0"
-            />
-          ) : (
-            <MediaTitle>{media.title}</MediaTitle>
-          )}
-        </div>
+        {/* Title overlay - always visible for selected, hidden for others */}
+        {isSelected && (
+          <div className="absolute bottom-0 left-0 right-0 p-6 text-white bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+            {media.logo_urls?.length > 0 && media.logo_urls[0] ? (
+              <img
+                src={media.logo_urls[0]}
+                alt={media.title}
+                className="max-w-xs h-auto object-contain"
+                style={{
+                  filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))',
+                }}
+              />
+            ) : (
+              <h3 className="text-2xl md:text-3xl font-bold drop-shadow-lg">
+                {media.title}
+              </h3>
+            )}
+          </div>
+        )}
       </div>
     </button>
   );
-};
+}), (prevProps, nextProps) => {
+  // Custom comparison for better performance on TV hardware
+  return (
+    prevProps.media.id === nextProps.media.id &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isHovered === nextProps.isHovered &&
+    prevProps.index === nextProps.index
+  );
+});
+
+MediaCard.displayName = 'MediaCard';
 
 export default MediaCard;
